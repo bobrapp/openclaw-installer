@@ -7,6 +7,7 @@ Generates a branded, cryptographically-verified audit log PDF.
 import argparse
 import hashlib
 import io
+import json
 import os
 import sqlite3
 import sys
@@ -958,6 +959,160 @@ def build_verification_section(entries, styles):
     return story
 
 
+# ── Section: SBOM Dependency Diff ─────────────────────────────────────────────
+def build_sbom_diff_section(sbom_diff, styles):
+    """Render SBOM diff as a PDF section with added/removed/changed tables."""
+    story = []
+
+    story.append(PageBreak())
+    story.append(Spacer(1, 0.1 * inch))
+    story.append(_section_header("Supply-Chain SBOM Diff", styles))
+
+    s = sbom_diff.get("summary", {})
+    old_tag = sbom_diff.get("old_tag", "previous")
+    new_tag = sbom_diff.get("new_tag", "current")
+
+    story.append(Paragraph(
+        f"Dependency inventory comparison between <b>{old_tag}</b> and <b>{new_tag}</b>. "
+        f"This diff highlights new, removed, and version-changed components to support "
+        f"supply-chain risk assessment and compliance review.",
+        styles["body"],
+    ))
+    story.append(Spacer(1, 0.12 * inch))
+
+    # ── Summary table ─────────────────────────────────────────────────────────
+    story.append(Paragraph("Diff Summary", styles["subsection"]))
+
+    GREEN = HexColor("#1A7A40")
+    RED = HexColor("#A12C2C")
+    AMBER = HexColor("#B8860B")
+
+    def _styled(text, color=TEXT_DARK, bold=False):
+        font = "Helvetica-Bold" if bold else "Helvetica"
+        return Paragraph(
+            str(text),
+            ParagraphStyle("_s", fontName=font, fontSize=9, leading=12, textColor=color),
+        )
+
+    summary_rows = [
+        [_styled("Metric", bold=True), _styled("Value", bold=True)],
+        [_styled("Previous release"), _styled(f"{old_tag}  ({s.get('old_count', '?')} components)")],
+        [_styled("Current release"), _styled(f"{new_tag}  ({s.get('new_count', '?')} components)")],
+        [_styled("Added"), _styled(f"+{s.get('added', 0)}", GREEN if s.get('added', 0) > 0 else TEXT_DARK, bold=True)],
+        [_styled("Removed"), _styled(f"-{s.get('removed', 0)}", RED if s.get('removed', 0) > 0 else TEXT_DARK, bold=True)],
+        [_styled("Version changed"), _styled(f"~{s.get('version_changed', 0)}", AMBER if s.get('version_changed', 0) > 0 else TEXT_DARK, bold=True)],
+        [_styled("Unchanged"), _styled(f"={s.get('unchanged', 0)}")],
+    ]
+
+    sum_table = Table(summary_rows, colWidths=[2.2 * inch, 4.8 * inch])
+    sum_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("TEXTCOLOR", (0, 0), (-1, 0), white),
+        ("GRID", (0, 0), (-1, -1), 0.3, BORDER),
+        ("BACKGROUND", (0, 1), (0, -1), HexColor("#F3F5FA")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+    ]))
+    story.append(sum_table)
+    story.append(Spacer(1, 0.15 * inch))
+
+    # ── Helper to build a component table ─────────────────────────────────────
+    def _comp_table(heading, items, columns, col_widths, accent_color):
+        if not items:
+            return
+        story.append(Paragraph(heading, styles["subsection"]))
+        story.append(Paragraph(
+            f"{len(items)} component{'s' if len(items) != 1 else ''}.",
+            styles["body_muted"],
+        ))
+
+        hdr = [Paragraph(c, ParagraphStyle(
+            "th", fontName="Helvetica-Bold", fontSize=8, leading=10, textColor=white,
+        )) for c in columns]
+        rows = [hdr]
+
+        for item in items:
+            pkg = item.get("group", "")
+            if pkg:
+                pkg += "/"
+            pkg += item.get("name", "?")
+
+            row_cells = [Paragraph(pkg, styles["table_cell"])]
+
+            if "old_version" in item:
+                row_cells.append(Paragraph(item.get("old_version", ""), styles["table_cell_mono"]))
+                row_cells.append(Paragraph(item.get("new_version", ""), styles["table_cell_mono"]))
+            else:
+                row_cells.append(Paragraph(item.get("version", ""), styles["table_cell_mono"]))
+
+            row_cells.append(Paragraph(item.get("type", "library"), styles["table_cell"]))
+            rows.append(row_cells)
+
+        t = Table(rows, colWidths=col_widths, repeatRows=1)
+        cmds = [
+            ("BACKGROUND", (0, 0), (-1, 0), accent_color),
+            ("TEXTCOLOR", (0, 0), (-1, 0), white),
+            ("GRID", (0, 0), (-1, -1), 0.3, BORDER),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("LINEBELOW", (0, 0), (-1, 0), 1.5, accent_color),
+        ]
+        for r in range(2, len(rows), 2):
+            cmds.append(("BACKGROUND", (0, r), (-1, r), ROW_ALT))
+        t.setStyle(TableStyle(cmds))
+        story.append(t)
+        story.append(Spacer(1, 0.12 * inch))
+
+    # ── Added components ──────────────────────────────────────────────────────
+    _comp_table(
+        f"\u2795  Added Components ({len(sbom_diff.get('added', []))})",
+        sbom_diff.get("added", []),
+        ["Package", "Version", "Type"],
+        [3.5 * inch, 1.8 * inch, 1.7 * inch],
+        HexColor("#1A7A40"),
+    )
+
+    # ── Removed components ────────────────────────────────────────────────────
+    _comp_table(
+        f"\u274C  Removed Components ({len(sbom_diff.get('removed', []))})",
+        sbom_diff.get("removed", []),
+        ["Package", "Version", "Type"],
+        [3.5 * inch, 1.8 * inch, 1.7 * inch],
+        HexColor("#A12C2C"),
+    )
+
+    # ── Version-changed components ────────────────────────────────────────────
+    _comp_table(
+        f"\u2B06  Version Changes ({len(sbom_diff.get('version_changed', []))})",
+        sbom_diff.get("version_changed", []),
+        ["Package", "Old Version", "New Version", "Type"],
+        [2.8 * inch, 1.4 * inch, 1.4 * inch, 1.4 * inch],
+        AMBER,
+    )
+
+    # ── Footer note ───────────────────────────────────────────────────────────
+    if not sbom_diff.get("added") and not sbom_diff.get("removed") and not sbom_diff.get("version_changed"):
+        story.append(Paragraph(
+            "No dependency changes detected between releases. The supply chain is unchanged.",
+            styles["body_muted"],
+        ))
+
+    story.append(Spacer(1, 0.1 * inch))
+    story.append(Paragraph(
+        "SBOM generated using CycloneDX for npm. Diff computed by the AiGovOps sbom-diff tool. "
+        'For verification, see <a href="https://www.aigovopsfoundation.org/" color="#01696F">'
+        "www.aigovopsfoundation.org</a>.",
+        styles["body_muted"],
+    ))
+
+    return story
+
+
 # ── Utility ───────────────────────────────────────────────────────────────────
 def _section_header(title, styles):
     """Returns a styled section header paragraph with a left teal accent bar implemented via table."""
@@ -973,7 +1128,7 @@ def _section_header(title, styles):
 
 
 # ── Main PDF builder ──────────────────────────────────────────────────────────
-def generate_pdf(entries, output_path):
+def generate_pdf(entries, output_path, sbom_diff=None):
     """Build the full multi-page audit PDF."""
 
     # Generate QR code
@@ -1002,6 +1157,10 @@ def generate_pdf(entries, output_path):
 
     # Pages N+: Hash Verification
     story.extend(build_verification_section(entries, styles))
+
+    # Pages N+: SBOM Diff (if provided)
+    if sbom_diff:
+        story.extend(build_sbom_diff_section(sbom_diff, styles))
 
     # ── Document setup ────────────────────────────────────────────────────────
     doc = AuditDocTemplate(
@@ -1087,6 +1246,11 @@ def main():
         default="./aigovops-audit-report.pdf",
         help="Output PDF path (default: ./aigovops-audit-report.pdf)",
     )
+    parser.add_argument(
+        "--sbom-diff",
+        default=None,
+        help="Path to SBOM diff JSON (from sbom-diff.py). If provided, appends a supply-chain diff section.",
+    )
     args = parser.parse_args()
 
     # Load entries
@@ -1101,7 +1265,16 @@ def main():
     else:
         print(f"[INFO] Loaded {len(entries)} entries from database.")
 
-    generate_pdf(entries, args.output)
+    # Load SBOM diff if provided
+    sbom_diff = None
+    if args.sbom_diff and os.path.exists(args.sbom_diff):
+        print(f"[INFO] Loading SBOM diff from: {args.sbom_diff}")
+        with open(args.sbom_diff) as f:
+            sbom_diff = json.load(f)
+        s = sbom_diff.get("summary", {})
+        print(f"[INFO]   +{s.get('added',0)} added, -{s.get('removed',0)} removed, ~{s.get('version_changed',0)} changed")
+
+    generate_pdf(entries, args.output, sbom_diff=sbom_diff)
 
 
 if __name__ == "__main__":
