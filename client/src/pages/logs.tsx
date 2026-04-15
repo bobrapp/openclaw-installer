@@ -20,11 +20,10 @@ interface InstallLog {
 export default function Logs() {
   const { data: logs, isLoading, refetch } = useQuery<InstallLog[]>({
     queryKey: ["/api/logs"],
-    queryFn: () => apiRequest("/api/logs"),
   });
 
   const clearMutation = useMutation({
-    mutationFn: () => apiRequest("/api/logs", { method: "DELETE" }),
+    mutationFn: () => apiRequest("DELETE", "/api/logs"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/logs"] });
     },

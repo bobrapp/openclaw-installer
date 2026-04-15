@@ -141,9 +141,9 @@ fi
 # --- Disk Space ---
 available_gb=$(df -g / | tail -1 | awk '{print $4}')
 if [ "$available_gb" -ge 10 ]; then
-  log_pass "Disk space: ${available_gb}GB available (≥10GB required)"
+  log_pass "Disk space: \${available_gb}GB available (≥10GB required)"
 else
-  log_fail "Disk space: only ${available_gb}GB available (need ≥10GB)"
+  log_fail "Disk space: only \${available_gb}GB available (need ≥10GB)"
 fi
 
 # --- Xcode CLI Tools ---
@@ -238,19 +238,19 @@ fi
 # --- Disk Space ---
 available_gb=$(df -BG / | tail -1 | awk '{print $4}' | tr -d 'G')
 if [ "$available_gb" -ge 10 ]; then
-  log_pass "Disk space: ${available_gb}GB available"
+  log_pass "Disk space: \${available_gb}GB available"
 else
-  log_fail "Disk space: only ${available_gb}GB (need ≥10GB)"
+  log_fail "Disk space: only \${available_gb}GB (need ≥10GB)"
 fi
 
 # --- Memory ---
 mem_mb=$(free -m | awk '/Mem:/{print $2}')
 if [ "$mem_mb" -ge 2048 ]; then
-  log_pass "Memory: ${mem_mb}MB (≥2GB)"
+  log_pass "Memory: \${mem_mb}MB (≥2GB)"
 elif [ "$mem_mb" -ge 1024 ]; then
-  log_warn "Memory: ${mem_mb}MB — 2GB+ recommended"
+  log_warn "Memory: \${mem_mb}MB — 2GB+ recommended"
 else
-  log_fail "Memory: ${mem_mb}MB — minimum 1GB, recommend 2GB+"
+  log_fail "Memory: \${mem_mb}MB — minimum 1GB, recommend 2GB+"
 fi
 
 # --- Node.js ---
@@ -339,10 +339,10 @@ fi
 
 # --- Disk / Memory ---
 available_gb=$(df -BG / | tail -1 | awk '{print $4}' | tr -d 'G')
-[ "$available_gb" -ge 10 ] && log_pass "Disk: ${available_gb}GB" || log_fail "Disk: ${available_gb}GB (need ≥10GB)"
+[ "$available_gb" -ge 10 ] && log_pass "Disk: \${available_gb}GB" || log_fail "Disk: \${available_gb}GB (need ≥10GB)"
 
 mem_mb=$(free -m | awk '/Mem:/{print $2}')
-[ "$mem_mb" -ge 2048 ] && log_pass "Memory: ${mem_mb}MB" || log_warn "Memory: ${mem_mb}MB (2GB+ recommended)"
+[ "$mem_mb" -ge 2048 ] && log_pass "Memory: \${mem_mb}MB" || log_warn "Memory: \${mem_mb}MB (2GB+ recommended)"
 
 # --- Node.js / Git ---
 command -v node &>/dev/null && log_pass "Node.js $(node -v)" || log_fail "Node.js not found"
@@ -370,10 +370,10 @@ fi
 
 # --- Standard Checks ---
 available_gb=$(df -BG / | tail -1 | awk '{print $4}' | tr -d 'G')
-[ "$available_gb" -ge 10 ] && log_pass "Disk: ${available_gb}GB" || log_fail "Disk: ${available_gb}GB (need ≥10GB)"
+[ "$available_gb" -ge 10 ] && log_pass "Disk: \${available_gb}GB" || log_fail "Disk: \${available_gb}GB (need ≥10GB)"
 
 mem_mb=$(free -m | awk '/Mem:/{print $2}')
-[ "$mem_mb" -ge 1024 ] && log_pass "Memory: ${mem_mb}MB" || log_fail "Memory: ${mem_mb}MB (need ≥1GB)"
+[ "$mem_mb" -ge 1024 ] && log_pass "Memory: \${mem_mb}MB" || log_fail "Memory: \${mem_mb}MB (need ≥1GB)"
 
 command -v node &>/dev/null && log_pass "Node.js $(node -v)" || log_fail "Node.js not found"
 command -v git &>/dev/null && log_pass "Git installed" || log_fail "Git not found"
@@ -467,7 +467,7 @@ fi
 # --- Step 2: Clone & Setup ---
 echo ""
 echo "📥 Step 2: Clone OpenClaw"
-INSTALL_DIR="\${HOME}/.openclaw"
+INSTALL_DIR="\\${HOME}/.openclaw"
 run_or_dry "git clone https://github.com/openclaw/openclaw.git \\"$INSTALL_DIR\\""
 echo "rm -rf $INSTALL_DIR" >> "$ROLLBACK_LOG"
 
@@ -476,7 +476,7 @@ run_or_dry "cd \\"$INSTALL_DIR\\" && pnpm install"
 # --- Step 3: Configure LaunchAgent ---
 echo ""
 echo "⚙️  Step 3: LaunchAgent Setup"
-PLIST_PATH="\${HOME}/Library/LaunchAgents/com.clawdbot.gateway.plist"
+PLIST_PATH="\\${HOME}/Library/LaunchAgents/com.clawdbot.gateway.plist"
 
 if [ "$DRY_RUN" != "1" ]; then
 cat > "$PLIST_PATH" << PLIST
@@ -489,7 +489,7 @@ cat > "$PLIST_PATH" << PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/bin/node</string>
-    <string>\${HOME}/.openclaw/gateway.js</string>
+    <string>\\${HOME}/.openclaw/gateway.js</string>
   </array>
   <key>RunAtLoad</key>
   <true/>

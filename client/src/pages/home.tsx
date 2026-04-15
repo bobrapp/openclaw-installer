@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Laptop, Cloud, Server, Terminal, ArrowRight, Shield, FileCode2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-
 const iconMap: Record<string, typeof Laptop> = {
   laptop: Laptop,
   cloud: Cloud,
@@ -25,7 +23,6 @@ interface HostConfig {
 export default function Home() {
   const { data: hosts, isLoading } = useQuery<HostConfig[]>({
     queryKey: ["/api/hosts"],
-    queryFn: () => apiRequest("/api/hosts"),
   });
 
   return (

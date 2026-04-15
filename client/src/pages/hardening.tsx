@@ -30,14 +30,13 @@ export default function Hardening() {
   const { toast } = useToast();
 
   const { data: checks, isLoading } = useQuery<HardeningCheck[]>({
-    queryKey: ["/api/hardening", hostTarget],
-    queryFn: () => apiRequest(`/api/hardening/${hostTarget}`),
+    queryKey: [`/api/hardening/${hostTarget}`],
   });
 
   const toggleMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/hardening/toggle/${id}`, { method: "PATCH" }),
+    mutationFn: (id: number) => apiRequest("PATCH", `/api/hardening/toggle/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hardening", hostTarget] });
+      queryClient.invalidateQueries({ queryKey: [`/api/hardening/${hostTarget}`] });
     },
   });
 

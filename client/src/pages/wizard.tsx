@@ -10,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Circle, Loader2, ArrowRight, ArrowLeft, Copy, Download, Play, Eye, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+// Note: apiRequest signature is (method, url, data) for mutations
+// For GET queries, rely on the default queryFn
 
 interface HostConfig {
   id: string;
@@ -34,22 +36,18 @@ export default function Wizard() {
 
   const { data: hosts } = useQuery<HostConfig[]>({
     queryKey: ["/api/hosts"],
-    queryFn: () => apiRequest("/api/hosts"),
   });
 
   const { data: preflightScript } = useQuery<ScriptResponse>({
-    queryKey: ["/api/scripts/preflight", hostTarget],
-    queryFn: () => apiRequest(`/api/scripts/preflight/${hostTarget}`),
+    queryKey: [`/api/scripts/preflight/${hostTarget}`],
   });
 
   const { data: installScript } = useQuery<ScriptResponse>({
-    queryKey: ["/api/scripts/install", hostTarget],
-    queryFn: () => apiRequest(`/api/scripts/install/${hostTarget}`),
+    queryKey: [`/api/scripts/install/${hostTarget}`],
   });
 
   const { data: rollbackScript } = useQuery<ScriptResponse>({
-    queryKey: ["/api/scripts/rollback", hostTarget],
-    queryFn: () => apiRequest(`/api/scripts/rollback/${hostTarget}`),
+    queryKey: [`/api/scripts/rollback/${hostTarget}`],
   });
 
   const host = hosts?.find((h) => h.id === hostTarget);

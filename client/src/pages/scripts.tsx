@@ -20,18 +20,15 @@ export default function Scripts() {
   const { toast } = useToast();
 
   const { data: preflight, isLoading: preLoading } = useQuery<ScriptResponse>({
-    queryKey: ["/api/scripts/preflight", hostTarget],
-    queryFn: () => apiRequest(`/api/scripts/preflight/${hostTarget}`),
+    queryKey: [`/api/scripts/preflight/${hostTarget}`],
   });
 
   const { data: install, isLoading: instLoading } = useQuery<ScriptResponse>({
-    queryKey: ["/api/scripts/install", hostTarget],
-    queryFn: () => apiRequest(`/api/scripts/install/${hostTarget}`),
+    queryKey: [`/api/scripts/install/${hostTarget}`],
   });
 
   const { data: rollback, isLoading: rollLoading } = useQuery<ScriptResponse>({
-    queryKey: ["/api/scripts/rollback", hostTarget],
-    queryFn: () => apiRequest(`/api/scripts/rollback/${hostTarget}`),
+    queryKey: [`/api/scripts/rollback/${hostTarget}`],
   });
 
   const copy = (text: string) => {
