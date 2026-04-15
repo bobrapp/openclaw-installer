@@ -29,6 +29,32 @@ Built with **AiGovOps Foundation** immutable logging — every action is cryptog
 - **Owner-only access**: Secured by passphrase authentication (irreversible once set)
 - Implements the [AiGovOps Foundation](https://www.aigovopsfoundation.org/) governance-as-code standard
 
+### Signed PDF Audit Report Export
+- **Export the immutable audit log as a branded PDF** compliance artifact
+- Full SHA-256 hash chain table with all entries
+- AiGovOps Foundation branding (navy/teal color scheme, shield logo)
+- QR code linking to [aigovopsfoundation.org](https://www.aigovopsfoundation.org/)
+- Co-founder attribution and digital signature metadata
+- Python-based generator using ReportLab (`scripts/generate-audit-pdf.py`)
+
+### GitHub Actions CI Pipeline
+- **Automated preflight checks on every PR** (`.github/workflows/preflight.yml`)
+- 8 checks: Node.js version, npm audit, TypeScript compilation, build, lint, test, schema validation, security scan
+- Posts pass/fail results as a GitHub commit status check
+
+### Standalone HTML Wizard
+- **Self-contained single-file installer wizard** (`public/aigovops-wizard.html`)
+- 7 steps: Welcome → Configuration → Security → Review → Dry Run → Install → Audit Log
+- Pre-filled sensible defaults per host platform (macOS, DigitalOcean, Azure VM, Generic VPS)
+- Privacy-first: all data stays in browser memory — no server calls, no cookies, no localStorage
+- Dark mode, step-by-step progress tracking, confirmation at each step
+- Works offline as a standalone HTML file
+
+### How I Built This (Project Timeline)
+- **9-phase narrative** of the entire project build from research to deployment
+- Documents every decision, every architecture choice, every lesson learned
+- Stats: 9 Phases, 4 Host Targets, 40+ Hardening Checks, 8 Frameworks Compared
+
 ### AiGovOps Foundation Attribution
 - Credits co-founders **Bob Rapp** and **Ken Johnston**
 - Links to [www.aigovopsfoundation.org](https://www.aigovopsfoundation.org/)
@@ -42,6 +68,8 @@ Built with **AiGovOps Foundation** immutable logging — every action is cryptog
 | Backend | Express.js, Server-Sent Events (SSE) |
 | Database | SQLite (better-sqlite3) + Drizzle ORM |
 | Crypto | Node.js `crypto` module (SHA-256) |
+| PDF Export | Python 3, ReportLab, qrcode, Pillow |
+| CI/CD | GitHub Actions |
 | Build | Vite, esbuild, TypeScript |
 
 ## Getting Started
@@ -83,7 +111,8 @@ openclaw-installer/
 │       │   ├── logs.tsx        # Install log viewer
 │       │   ├── compare.tsx     # Framework comparison (8 frameworks)
 │       │   ├── preflight-runner.tsx  # Live preflight check executor
-│       │   ├── audit-log.tsx   # Immutable audit log viewer (owner-only)
+│       │   ├── audit-log.tsx   # Immutable audit log viewer + PDF export (owner-only)
+│       │   ├── how-i-built-this.tsx  # 9-phase project build timeline
 │       │   └── foundation.tsx  # AiGovOps Foundation attribution
 │       └── lib/
 │           └── queryClient.ts  # API client with deployment proxy support
@@ -91,6 +120,13 @@ openclaw-installer/
 │   ├── routes.ts               # API routes + SSE + script generators
 │   ├── storage.ts              # SQLite storage + audit chain + owner auth
 │   └── index.ts                # Express server entry
+├── scripts/
+│   └── generate-audit-pdf.py   # Branded PDF audit report generator
+├── public/
+│   └── aigovops-wizard.html    # Standalone 7-step wizard (50KB, self-contained)
+├── .github/
+│   └── workflows/
+│       └── preflight.yml       # CI pipeline with 8 checks + commit status
 ├── shared/
 │   └── schema.ts               # Drizzle ORM schema (5 tables)
 └── README.md
@@ -155,9 +191,14 @@ Entry #3: prevHash="def456.." → hash=SHA256("...|def456..") = ghi789...
 ### Audit Log (Owner-only)
 - `GET /api/audit/logs` — Fetch audit entries (requires `x-owner-passphrase` header)
 - `GET /api/audit/verify` — Verify hash chain integrity
+- `GET /api/audit/export-pdf` — Export signed PDF audit report (requires `x-owner-passphrase`)
 - `GET /api/owner/has-passphrase` — Check if owner passphrase is configured
 - `POST /api/owner/set-passphrase` — Set owner passphrase (one-time only)
 - `POST /api/owner/verify` — Verify a passphrase
+
+### Wizard
+- `GET /api/wizard-html` — Serve standalone wizard HTML
+- `GET /aigovops-wizard.html` — Direct access to standalone wizard
 
 ## Security Model
 
@@ -180,6 +221,23 @@ This project implements standards from the [AiGovOps Foundation](https://www.aig
 ### Co-Founders
 - **Bob Rapp** — Principal AI Architect, former Vodafone, IBM Watson, GE Healthcare, Microsoft
 - **Ken Johnston** — Former Microsoft, Ford Motor Company, CEO Autonomic.ai
+
+## Version History
+
+### April 2026 v1 — AiGovOps Foundation Framework
+- GitHub Actions CI pipeline with 8 automated checks
+- Signed PDF audit report export with SHA-256 chain and QR code
+- Standalone HTML wizard (7 steps, pre-filled defaults, offline-capable)
+- "How I Built This" project timeline (9 phases)
+- Full AiGovOps Foundation branding integration
+
+### Initial Release
+- Guided installation wizard (4 hosts, 6-step flow)
+- Live preflight runner with SSE streaming
+- Framework comparison (8 AI agent frameworks)
+- Immutable audit logging with SHA-256 hash chain
+- Production hardening checklist (40+ checks)
+- Owner passphrase authentication
 
 ## Contributing
 
