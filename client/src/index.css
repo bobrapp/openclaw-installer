@@ -176,3 +176,77 @@
 .terminal-block::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.5);
 }
+
+/* ── Breathing logo glow ── */
+.breathing-logo {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { filter: drop-shadow(0 0 2px hsl(183 98% 22% / 0.3)); }
+  50% { filter: drop-shadow(0 0 10px hsl(183 98% 22% / 0.6)); }
+}
+
+.dark .breathing-logo {
+  animation: breathe-dark 4s ease-in-out infinite;
+}
+
+@keyframes breathe-dark {
+  0%, 100% { filter: drop-shadow(0 0 3px hsl(188 35% 47% / 0.4)); }
+  50% { filter: drop-shadow(0 0 14px hsl(188 35% 47% / 0.7)); }
+}
+
+/* ── Animated progress ring ── */
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* ── Fade-in-up for staggered reveals ── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Celebration shimmer on cards ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.celebration-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(183 98% 22% / 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out;
+}
+
+/* ── Warm gradient hero ── */
+.hero-gradient {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--background)) 0%,
+    hsl(183 30% 95%) 50%,
+    hsl(215 30% 95%) 100%
+  );
+}
+
+.dark .hero-gradient {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--background)) 0%,
+    hsl(183 20% 10%) 50%,
+    hsl(215 20% 10%) 100%
+  );
+}

@@ -292,6 +292,21 @@ export default function Releases() {
 
       {!isLoading && !error && (
         <>
+          {/* Gratitude card */}
+          <Card className="border-primary/20 bg-gradient-to-r from-card to-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">Thank you for building in the open</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Every release is a gift to the community. {releases.length > 0 ? `${releases.length} releases shipped so far.` : ''} Keep going.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card>

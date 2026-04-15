@@ -27,7 +27,7 @@ export default function Home() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-8 hero-gradient -mx-6 -mt-6 px-6 pt-8 pb-6 rounded-b-xl">
         <h1 className="text-xl font-bold tracking-tight" data-testid="text-page-title">
           OpenClaw / Moltbot Installer
         </h1>

@@ -1,4 +1,4 @@
-import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart, BookOpen, FileDown, Activity, Server } from "lucide-react";
+import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart, BookOpen, FileDown, Activity, Server, Sparkles } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -12,6 +12,9 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import { BreathingLogo } from "@/components/breathing-logo";
+import { SoundToggle } from "@/components/sound-toggle";
+import { playSound } from "@/lib/sound-engine";
 
 const navItems = [
   { title: "Host Selection", url: "/", icon: Home },
@@ -23,6 +26,7 @@ const navItems = [
   { title: "How I Built This", url: "/how-i-built-this", icon: BookOpen },
   { title: "Release Dashboard", url: "/releases", icon: Activity },
   { title: "Hosting Deals", url: "/hosting", icon: Server },
+  { title: "Agent Patterns", url: "/patterns", icon: Sparkles },
 ];
 
 const hostItems = [
@@ -40,11 +44,7 @@ export function AppSidebar() {
       <SidebarHeader className="px-4 py-3 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
-            </svg>
+            <BreathingLogo size={14} />
           </div>
           <div>
             <p className="text-sm font-semibold leading-none">OpenClaw</p>
@@ -60,7 +60,7 @@ export function AppSidebar() {
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url}>
+                    <Link href={item.url} onClick={() => playSound("navigate")}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -112,13 +112,18 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="px-4 py-3 border-t border-sidebar-border">
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground">
-            OpenClaw/Moltbot Guided Setup
-          </p>
-          <p className="text-xs text-muted-foreground/60">
-            A work of the AiGovOps Foundation
-          </p>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              OpenClaw/Moltbot Guided Setup
+            </p>
+            <SoundToggle />
+          </div>
+          <Link href="/humans" className="group">
+            <p className="text-xs text-muted-foreground/60 group-hover:text-primary transition-colors">
+              Built by humans, for humans ❤️
+            </p>
+          </Link>
         </div>
       </SidebarFooter>
     </Sidebar>

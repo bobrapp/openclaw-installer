@@ -6,6 +6,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Play, CheckCircle2, AlertTriangle, XCircle, Loader2, RotateCcw } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
+import { celebrate, announceToScreenReader } from "@/lib/celebrations";
+import { playSound } from "@/lib/sound-engine";
+import { CelebrationToast, useCelebration } from "@/components/celebration-toast";
 
 interface CheckResult {
   name: string;
@@ -28,6 +31,7 @@ export default function PreflightRunner() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast, celebrate: showToast, dismiss } = useCelebration();
 
   const runPreflight = useCallback(() => {
     setChecks([]);
@@ -50,6 +54,13 @@ export default function PreflightRunner() {
 
       if (data.type === "summary") {
         setSummary(data);
+        if (data.result === "PASS" || data.failed === 0) {
+          const msg = celebrate("preflight", "normal");
+          showToast(msg);
+          playSound("success");
+        } else {
+          playSound("error");
+        }
       } else if (data.type === "check") {
         setChecks((prev) => {
           const updated = [...prev];
@@ -261,6 +272,7 @@ export default function PreflightRunner() {
           </CardContent>
         </Card>
       )}
+      <CelebrationToast message={toast.message} visible={toast.visible} onDone={dismiss} />
     </div>
   );
 }

@@ -21,6 +21,9 @@ import HowIBuiltThis from "@/pages/how-i-built-this";
 import Releases from "@/pages/releases";
 import HostingDeals from "@/pages/hosting-deals";
 import NotFound from "@/pages/not-found";
+import Patterns from "@/pages/patterns";
+import Humans from "@/pages/humans";
+import { AmbientBackground } from "@/components/ambient-background";
 
 function AppRouter() {
   return (
@@ -37,6 +40,8 @@ function AppRouter() {
       <Route path="/how-i-built-this" component={HowIBuiltThis} />
       <Route path="/releases" component={Releases} />
       <Route path="/hosting" component={HostingDeals} />
+      <Route path="/patterns" component={Patterns} />
+      <Route path="/humans" component={Humans} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -54,7 +59,8 @@ export default function App() {
         <TooltipProvider>
           <Router hook={useHashLocation}>
             <SidebarProvider style={style as React.CSSProperties}>
-              <div className="flex h-screen w-full">
+              <AmbientBackground />
+              <div className="flex h-screen w-full relative">
                 <AppSidebar />
                 <div className="flex flex-col flex-1 min-w-0">
                   <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 backdrop-blur-sm">
