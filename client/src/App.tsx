@@ -17,6 +17,7 @@ import Compare from "@/pages/compare";
 import PreflightRunner from "@/pages/preflight-runner";
 import AuditLog from "@/pages/audit-log";
 import Foundation from "@/pages/foundation";
+import HowIBuiltThis from "@/pages/how-i-built-this";
 import NotFound from "@/pages/not-found";
 
 function AppRouter() {
@@ -31,6 +32,7 @@ function AppRouter() {
       <Route path="/preflight" component={PreflightRunner} />
       <Route path="/audit" component={AuditLog} />
       <Route path="/foundation" component={Foundation} />
+      <Route path="/how-i-built-this" component={HowIBuiltThis} />
       <Route component={NotFound} />
     </Switch>
   );

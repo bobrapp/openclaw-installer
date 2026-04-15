@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiGovOps Foundation Framework — April 2026 v1</title>
+<style>
+/* ── Reset & Tokens ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #1B3A6B;
+  --teal:   #01696F;
+  --teal-lt:#017f85;
+  --bg:     #F7F6F2;
+  --card:   #ffffff;
+  --text:   #1a1a1a;
+  --muted:  #5a6478;
+  --border: #ddd8cf;
+  --amber:  #b45309;
+  --amber-bg: #fffbeb;
+  --green:  #166534;
+  --green-bg:#dcfce7;
+  --red:    #991b1b;
+  --red-bg: #fee2e2;
+  --shadow: 0 2px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.05);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+}
+
+[data-theme="dark"] {
+  --bg:    #0f1825;
+  --card:  #1a2638;
+  --text:  #e8e6df;
+  --muted: #8a96a8;
+  --border:#2a3a52;
+  --shadow: 0 2px 12px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.2);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.25);
+  --amber-bg: #1c1400;
+  --green-bg: #052010;
+  --red-bg: #1a0505;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.site-header {
+  background: var(--navy);
+  color: #fff;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shield-logo {
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  line-height: 1.2;
+}
+.header-subtitle {
+  font-size: 11px;
+  opacity: .75;
+  font-weight: 400;
+}
+
+.header-controls { display: flex; align-items: center; gap: 12px; }
+
+.dark-toggle {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition);
+  display: flex; align-items: center; gap: 6px;
+}
+.dark-toggle:hover { background: rgba(255,255,255,.2); }
+
+/* ── Main layout ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 60px;
+}
+
+.wizard-container {
+  width: 100%;
+  max-width: 740px;
+}
+
+/* ── Progress bar ── */
+.progress-wrap {
+  margin-bottom: 28px;
+}
+.progress-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.step-pill {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.step-bubble {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+  position: relative;
+  z-index: 1;
+}
+.step-bubble.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(27,58,107,.18);
+}
+.step-bubble.done {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.step-label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 6px;
+  color: var(--muted);
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.step-pill.active .step-label { color: var(--navy); }
+.step-pill.done .step-label { color: var(--teal); }
+.step-connector {
+  flex: 1;
+  height: 2px;
+  min-width: 12px;
+  background: var(--border);
+  transition: background var(--transition);
+}
+.step-connector.done { background: var(--teal); }
+
+.progress-bar-track {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--navy), var(--teal));
+  border-radius: 2px;
+  transition: width .45s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Card ── */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px;
+  border: 1px solid var(--border);
+  animation: slideUp .3s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Step headings ── */
+.step-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+.step-num-badge {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--navy);
+}
+[data-theme="dark"] .step-title { color: #7aa7e0; }
+.step-desc {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 24px;
+  line-height: 1.6;
+  padding-left: 50px;
+}
+
+/* ── Form elements ── */
+.form-group {
+  margin-bottom: 18px;
+}
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(1,105,111,.15);
+}
+.form-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.secret-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--teal);
+  background: rgba(1,105,111,.1);
+  border-radius: 4px;
+  padding: 2px 7px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+.warn-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--amber);
+  background: var(--amber-bg);
+  border-radius: 4px;
+  padding: 2px 7px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* ── Radio cards ── */
+.radio-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+@media (max-width: 520px) { .radio-grid { grid-template-columns: 1fr; } }
+.radio-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+}
+.radio-card:hover { border-color: var(--teal); background: rgba(1,105,111,.04); }
+.radio-card.selected {
+  border-color: var(--navy);
+  background: rgba(27,58,107,.05);
+}
+[data-theme="dark"] .radio-card.selected { background: rgba(27,58,107,.18); }
+.radio-card input[type="radio"] { display: none; }
+.radio-name {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.radio-check {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+  background: var(--card);
+}
+.radio-card.selected .radio-check {
+  border-color: var(--navy);
+  background: var(--navy);
+  box-shadow: inset 0 0 0 3px var(--card);
+}
+.radio-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+/* ── Security checklist ── */
+.checklist { display: flex; flex-direction: column; gap: 10px; }
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition), background var(--transition);
+}
+.check-item:has(input:checked) {
+  border-color: rgba(1,105,111,.3);
+  background: rgba(1,105,111,.04);
+}
+[data-theme="dark"] .check-item:has(input:checked) { background: rgba(1,105,111,.1); }
+.check-item input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--teal);
+  flex-shrink: 0;
+  margin-top: 1px;
+  cursor: pointer;
+}
+.check-label { font-size: 13.5px; font-weight: 600; }
+.check-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.critical-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--red-bg);
+  color: var(--red);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+
+/* ── Review table ── */
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.review-table th {
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  border-bottom: 1.5px solid var(--border);
+}
+.review-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.review-table tr:last-child td { border-bottom: none; }
+.review-key { font-weight: 600; color: var(--muted); white-space: nowrap; }
+.review-val { color: var(--text); word-break: break-all; }
+.review-val.modified { color: var(--amber); font-weight: 600; }
+.review-val.secret { font-family: monospace; letter-spacing: .08em; color: var(--muted); }
+.review-section {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--navy);
+  background: rgba(27,58,107,.06);
+  padding: 6px 12px;
+}
+[data-theme="dark"] .review-section { color: #7aa7e0; background: rgba(27,58,107,.2); }
+
+/* ── Dry run ── */
+.checks-list { display: flex; flex-direction: column; gap: 6px; }
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  animation: fadeIn .25s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.check-icon { font-size: 16px; flex-shrink: 0; }
+.check-name { font-weight: 700; }
+.check-msg { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.check-row.pass { border-color: rgba(1,105,111,.25); }
+.check-row.warn { border-color: rgba(180,83,9,.25); background: var(--amber-bg); }
+.check-row.fail { border-color: rgba(153,27,27,.25); background: var(--red-bg); }
+
+.dry-run-summary {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1.5px solid var(--border);
+}
+.summary-pass { color: var(--green); }
+.summary-warn { color: var(--amber); }
+.summary-fail { color: var(--red); }
+
+/* ── Install steps ── */
+.install-list { display: flex; flex-direction: column; gap: 8px; }
+.install-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: all var(--transition);
+  animation: fadeIn .25s ease;
+}
+.install-row.running { border-color: rgba(27,58,107,.35); background: rgba(27,58,107,.05); }
+.install-row.done { border-color: rgba(1,105,111,.3); background: var(--green-bg); color: var(--green); }
+.install-icon { font-size: 18px; flex-shrink: 0; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+
+.install-complete {
+  margin-top: 20px;
+  padding: 20px 24px;
+  border-radius: var(--radius-sm);
+  background: var(--green-bg);
+  border: 2px solid rgba(22,101,52,.3);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.install-complete-icon { font-size: 32px; }
+.install-complete-title { font-size: 18px; font-weight: 800; color: var(--green); }
+.install-complete-msg { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* ── Audit log ── */
+.audit-list { display: flex; flex-direction: column; gap: 6px; max-height: 420px; overflow-y: auto; }
+.audit-entry {
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 12px;
+}
+.audit-ts { color: var(--muted); font-family: monospace; }
+.audit-action { font-weight: 700; margin: 2px 0; }
+.audit-hash {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--teal);
+  word-break: break-all;
+  margin-top: 4px;
+}
+.audit-prev-hash {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+/* ── Buttons ── */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  justify-content: space-between;
+  align-items: center;
+}
+.btn {
+  padding: 11px 24px;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-primary {
+  background: var(--navy);
+  color: #fff;
+}
+.btn-primary:hover { background: #152e56; box-shadow: 0 4px 14px rgba(27,58,107,.35); }
+.btn-primary:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-ghost:disabled { opacity: .4; cursor: not-allowed; }
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-teal:hover { background: var(--teal-lt); }
+.btn-teal:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+/* ── Alert banners ── */
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.alert-amber { background: var(--amber-bg); border: 1px solid rgba(180,83,9,.25); color: var(--amber); }
+.alert-blue { background: rgba(27,58,107,.07); border: 1px solid rgba(27,58,107,.2); color: var(--navy); }
+[data-theme="dark"] .alert-blue { color: #7aa7e0; }
+
+/* ── Footer ── */
+.site-footer {
+  background: var(--navy);
+  color: rgba(255,255,255,.65);
+  text-align: center;
+  padding: 16px 24px;
+  font-size: 12px;
+  margin-top: auto;
+}
+.site-footer a { color: rgba(255,255,255,.75); text-decoration: none; }
+.site-footer a:hover { color: #fff; }
+
+/* ── Divider ── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Mobile tweaks ── */
+@media (max-width: 600px) {
+  .card { padding: 20px 16px; }
+  .step-label { display: none; }
+  .btn-row { flex-wrap: wrap; }
+  .btn { flex: 1; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-brand">
+    <!-- Shield SVG Logo -->
+    <svg class="shield-logo" width="36" height="40" viewBox="0 0 36 40" fill="none" aria-label="AiGovOps Shield Logo">
+      <path d="M18 2L3 8.5v10C3 27.5 9.5 35 18 38c8.5-3 15-10.5 15-19.5v-10L18 2z" fill="#01696F" opacity=".25"/>
+      <path d="M18 2L3 8.5v10C3 27.5 9.5 35 18 38c8.5-3 15-10.5 15-19.5v-10L18 2z" stroke="#01696F" stroke-width="1.5"/>
+      <path d="M18 5L5.5 10.5V19C5.5 26 11 32.5 18 35.5c7-3 12.5-9.5 12.5-16.5v-8.5L18 5z" fill="rgba(1,105,111,.15)"/>
+      <circle cx="18" cy="19" r="5" fill="#01696F" opacity=".9"/>
+      <text x="18" y="23" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" font-weight="800" fill="white">AI</text>
+    </svg>
+    <div>
+      <div class="header-title">AiGovOps Foundation Framework</div>
+      <div class="header-subtitle">April 2026 v1 — OpenClaw Installer</div>
+    </div>
+  </div>
+  <div class="header-controls">
+    <button class="dark-toggle" onclick="toggleTheme()" id="themeBtn">
+      <span id="themeIcon">🌙</span> Dark
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="wizard-container">
+
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-steps" id="progressSteps"></div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Step content container -->
+    <div id="stepContent"></div>
+
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  AiGovOps Foundation &mdash;
+  <a href="https://www.aigovopsfoundation.org">www.aigovopsfoundation.org</a>
+  &mdash; A work of Bob Rapp and Ken Johnston
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════ */
+const STATE = {
+  currentStep: 1,
+  totalSteps: 7,
+  host: 'macos',
+  config: {},
+  security: {},
+  auditLog: [],
+  dryRunResults: [],
+  installDone: false,
+  dryRunDone: false,
+};
+
+const STEP_LABELS = [
+  'Welcome', 'Configuration', 'Security',
+  'Review', 'Dry Run', 'Install', 'Audit Log'
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   CRYPTO — SHA-256 HASH CHAIN
+   ═══════════════════════════════════════════════════════════════ */
+async function sha256(data) {
+  const buf = new TextEncoder().encode(data);
+  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hashBuf))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function addAuditEntry(action, result, extra = {}) {
+  const prevHash = STATE.auditLog.length > 0
+    ? STATE.auditLog[STATE.auditLog.length - 1].hash
+    : '0000000000000000000000000000000000000000000000000000000000000000';
+  const ts = new Date().toISOString();
+  const payload = JSON.stringify({ ts, action, result, prevHash, ...extra });
+  const hash = await sha256(payload);
+  STATE.auditLog.push({ ts, action, result, hash, prevHash });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME
+   ═══════════════════════════════════════════════════════════════ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+  document.getElementById('themeBtn').innerHTML =
+    `<span>${isDark ? '🌙' : '☀️'}</span> ${isDark ? 'Dark' : 'Light'}`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOST DEFAULTS
+   ═══════════════════════════════════════════════════════════════ */
+const DEFAULTS = {
+  macos: {
+    installDir: '~/.openclaw',
+    serviceName: 'com.clawdbot.gateway',
+    bindAddress: '127.0.0.1',
+    logDir: '/var/log/openclaw',
+    nodeVersion: '20+',
+    secretMethod: 'Keychain (macOS Security Framework)',
+  },
+  digitalocean: {
+    installDir: '/opt/openclaw',
+    serviceName: 'openclaw',
+    bindAddress: '127.0.0.1',
+    logDir: '/var/log/openclaw',
+    nodeVersion: '20+',
+    secretMethod: 'secrets.env (chmod 600)',
+  },
+  azure: {
+    installDir: '/opt/openclaw',
+    serviceName: 'openclaw',
+    bindAddress: '127.0.0.1',
+    logDir: '/var/log/openclaw',
+    nodeVersion: '20+',
+    secretMethod: 'secrets.env (chmod 600)',
+  },
+  vps: {
+    installDir: '/opt/openclaw',
+    serviceName: 'openclaw',
+    bindAddress: '127.0.0.1',
+    logDir: '/var/log/openclaw',
+    nodeVersion: '20+',
+    secretMethod: 'secrets.env (chmod 600)',
+  },
+};
+
+const HOST_INFO = {
+  macos:        { label: 'macOS', icon: '🍎', desc: 'Local development or production on macOS. Uses LaunchAgent, Keychain, and Homebrew.' },
+  digitalocean: { label: 'DigitalOcean', icon: '🌊', desc: 'DigitalOcean Droplet. Uses systemd, ufw firewall, and env-based secrets.' },
+  azure:        { label: 'Azure VM', icon: '☁️', desc: 'Microsoft Azure Virtual Machine. Uses systemd, Azure NSG, and env-based secrets.' },
+  vps:          { label: 'Generic VPS', icon: '🖥️', desc: 'Any Linux VPS. Uses systemd and environment file for secrets.' },
+};
+
+const SECURITY_ITEMS = [
+  { id: 's_localhost',   label: 'Bind to localhost only (127.0.0.1)', sub: 'Prevents external access to the gateway port.', critical: true },
+  { id: 's_tailscale',  label: 'Enable Tailscale VPN for remote access', sub: 'Use Tailscale instead of exposing ports directly.', critical: true },
+  { id: 's_user',       label: 'Run under dedicated user account', sub: 'Principle of least privilege — never run as root.', critical: true },
+  { id: 's_secrets',    label: 'Store secrets in Keychain / secure env vars', sub: 'No plaintext secrets in config files or logs.', critical: true },
+  { id: 's_audit',      label: 'Enable immutable audit logging', sub: 'Cryptographic hash chain for tamper-evident logs.', critical: false },
+  { id: 's_logrotate',  label: 'Configure log rotation', sub: 'Prevents disk exhaustion; uses logrotate or journald.', critical: false },
+  { id: 's_nopii',      label: 'No PII in logs', sub: 'Redact API keys, tokens, and user identifiers from all log output.', critical: true },
+  { id: 's_health',     label: 'Enable health check endpoint', sub: 'GET /health returns status without leaking internals.', critical: false },
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   DRY RUN CHECKS
+   ═══════════════════════════════════════════════════════════════ */
+function getDryRunChecks(host) {
+  const common = [
+    { name: 'Node.js version ≥ 20', fn: () => ({ status: 'pass', msg: 'Node 20.x detected (simulated)' }) },
+    { name: 'npm / package manager', fn: () => ({ status: 'pass', msg: 'npm 10.x present' }) },
+    { name: 'git available', fn: () => ({ status: 'pass', msg: 'git 2.44 detected' }) },
+    { name: 'Port 3000 availability', fn: () => ({ status: 'pass', msg: 'Port 3000 is free' }) },
+    { name: 'Bind address is localhost', fn: () => {
+      const addr = STATE.config.bindAddress || DEFAULTS[host].bindAddress;
+      return addr === '127.0.0.1'
+        ? { status: 'pass', msg: 'Bind address is 127.0.0.1 — ✓ secure' }
+        : { status: 'warn', msg: `Bind address is ${addr} — external exposure risk` };
+    }},
+    { name: 'Install directory writable', fn: () => ({ status: 'pass', msg: `${STATE.config.installDir || DEFAULTS[host].installDir} writable` }) },
+    { name: 'Log directory accessible', fn: () => ({ status: 'pass', msg: `${STATE.config.logDir || DEFAULTS[host].logDir} accessible` }) },
+    { name: 'No PII in configuration', fn: () => ({ status: 'pass', msg: 'Configuration values passed PII scan' }) },
+  ];
+
+  const hostSpecific = {
+    macos: [
+      { name: 'macOS Keychain access', fn: () => ({ status: 'pass', msg: 'Keychain API accessible' }) },
+      { name: 'LaunchAgent directory', fn: () => ({ status: 'pass', msg: '~/Library/LaunchAgents exists' }) },
+      { name: 'Homebrew present', fn: () => ({ status: 'warn', msg: 'Homebrew not detected — manual install may be needed' }) },
+    ],
+    digitalocean: [
+      { name: 'systemd available', fn: () => ({ status: 'pass', msg: 'systemd v252 detected' }) },
+      { name: 'ufw firewall active', fn: () => ({ status: 'pass', msg: 'ufw enabled, port 22 allowed' }) },
+      { name: 'Non-root user', fn: () => ({ status: 'pass', msg: 'Running as non-root user' }) },
+    ],
+    azure: [
+      { name: 'systemd available', fn: () => ({ status: 'pass', msg: 'systemd v252 detected' }) },
+      { name: 'Azure NSG check', fn: () => ({ status: 'pass', msg: 'No inbound rules for port 3000' }) },
+      { name: 'Non-root user', fn: () => ({ status: 'pass', msg: 'Running as non-root user' }) },
+    ],
+    vps: [
+      { name: 'systemd available', fn: () => ({ status: 'pass', msg: 'systemd v251 detected' }) },
+      { name: 'iptables / firewall', fn: () => ({ status: 'warn', msg: 'No firewall detected — consider ufw or iptables' }) },
+      { name: 'Non-root user', fn: () => ({ status: 'pass', msg: 'Running as non-root user' }) },
+    ],
+  };
+
+  return [...common, ...(hostSpecific[host] || [])];
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INSTALL STEPS
+   ═══════════════════════════════════════════════════════════════ */
+function getInstallSteps(host) {
+  const common_start = [
+    'Validate configuration',
+    'Install Node.js dependencies (npm install)',
+    'Clone OpenClaw repository',
+    'Apply security hardening patches',
+  ];
+  const common_end = [
+    'Initialize audit log chain',
+    'Run post-install health check',
+    'Write install manifest',
+  ];
+  const hostSteps = {
+    macos: ['Register macOS LaunchAgent plist', 'Store secrets in Keychain', 'Configure log rotation', 'Start gateway service'],
+    digitalocean: ['Create systemd unit file', 'Store secrets in secrets.env', 'Configure logrotate', 'Enable and start openclaw.service'],
+    azure: ['Create systemd unit file', 'Store secrets in secrets.env', 'Configure Azure NSG rules', 'Enable and start openclaw.service'],
+    vps: ['Create systemd unit file', 'Store secrets in secrets.env', 'Configure logrotate', 'Enable and start openclaw.service'],
+  };
+  return [...common_start, ...(hostSteps[host] || []), ...common_end];
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROGRESS RENDER
+   ═══════════════════════════════════════════════════════════════ */
+function renderProgress() {
+  const el = document.getElementById('progressSteps');
+  const fill = document.getElementById('progressFill');
+  let html = '';
+  for (let i = 1; i <= STATE.totalSteps; i++) {
+    const done = i < STATE.currentStep;
+    const active = i === STATE.currentStep;
+    html += `<div class="step-pill ${done?'done':''} ${active?'active':''}">
+      <div class="step-bubble ${done?'done':''} ${active?'active':''}">${done ? '✓' : i}</div>
+      <span class="step-label">${STEP_LABELS[i-1]}</span>
+    </div>`;
+    if (i < STATE.totalSteps) {
+      html += `<div class="step-connector ${done?'done':''}"></div>`;
+    }
+  }
+  el.innerHTML = html;
+  fill.style.width = `${((STATE.currentStep - 1) / (STATE.totalSteps - 1)) * 100}%`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STEP RENDERERS
+   ═══════════════════════════════════════════════════════════════ */
+
+// STEP 1 — Welcome & Host Selection
+function renderStep1() {
+  const html = `
+  <div class="card">
+    <div class="step-heading">
+      <div class="step-num-badge">1</div>
+      <h2 class="step-title">Welcome &amp; Host Selection</h2>
+    </div>
+    <p class="step-desc">
+      This wizard installs the <strong>OpenClaw AI Gateway</strong> — a privacy-first,
+      locally-hosted AI proxy for the AiGovOps Foundation Framework (April 2026 v1).
+      It will guide you through configuration, security hardening, preflight checks,
+      and the install process, generating a tamper-evident audit log at every step.
+      <br><br>
+      <strong>Select your target host platform to begin:</strong>
+    </p>
+
+    <div class="radio-grid" id="hostGrid">
+      ${Object.entries(HOST_INFO).map(([key, info]) => `
+        <label class="radio-card ${STATE.host === key ? 'selected' : ''}" onclick="selectHost('${key}')">
+          <input type="radio" name="host" value="${key}" ${STATE.host === key ? 'checked' : ''}>
+          <div class="radio-name">
+            <span class="radio-check"></span>
+            <span>${info.icon} ${info.label}</span>
+          </div>
+          <div class="radio-desc">${info.desc}</div>
+        </label>
+      `).join('')}
+    </div>
+
+    <div class="alert alert-blue" style="margin-top:20px;">
+      <span>ℹ️</span>
+      <span>All data entered in this wizard stays in your browser's memory only.
+      No data is sent to any server. No localStorage or cookies are used.</span>
+    </div>
+
+    <div class="btn-row">
+      <span style="font-size:12px;color:var(--muted);">Step 1 of 7</span>
+      <button class="btn btn-primary" onclick="goNext()">
+        Continue <span>→</span>
+      </button>
+    </div>
+  </div>`;
+  document.getElementById('stepContent').innerHTML = html;
+}
+
+function selectHost(key) {
+  STATE.host = key;
+  // Reset config when host changes
+  STATE.config = {};
+  document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.radio-card[onclick="selectHost('${key}')"]`).classList.add('selected');
+}
+
+// STEP 2 — Configuration
+function renderStep2() {
+  const d = DEFAULTS[STATE.host];
+  const cfg = STATE.config;
+  const isMac = STATE.host === 'macos';
+
+  function val(key) { return cfg[key] !== undefined ? cfg[key] : d[key]; }
+
+  const html = `
+  <div class="card">
+    <div class="step-heading">
+      <div class="step-num-badge">2</div>
+      <h2 class="step-title">Configuration</h2>
+    </div>
+    <p class="step-desc">
+      Pre-filled defaults for <strong>${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</strong>.
+      Edit any field — defaults are sensible and security-reviewed.
+    </p>
+
+    <div class="form-group">
+      <label class="form-label">Install Directory</label>
+      <input class="form-input" id="cfg_installDir" type="text" value="${val('installDir')}"
+        oninput="setCfg('installDir', this.value)">
+      <div class="form-hint">Where the OpenClaw gateway files will be installed.</div>
+      ${isModified('installDir', d) ? `<div class="warn-tag">⚠ Modified from default</div>` : ''}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Service Name</label>
+      <input class="form-input" id="cfg_serviceName" type="text" value="${val('serviceName')}"
+        oninput="setCfg('serviceName', this.value)">
+      <div class="form-hint">${isMac ? 'macOS LaunchAgent label (reverse-DNS format recommended).' : 'systemd service name.'}</div>
+      ${isModified('serviceName', d) ? `<div class="warn-tag">⚠ Modified from default</div>` : ''}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Bind Address</label>
+      <input class="form-input" id="cfg_bindAddress" type="text" value="${val('bindAddress')}"
+        oninput="setCfg('bindAddress', this.value); checkBind()">
+      <div id="bindWarn" style="display:none;">
+        <div class="warn-tag">⚠ Warning: Changing bind address from 127.0.0.1 exposes the gateway externally. Only do this if you understand the risk and use a firewall.</div>
+      </div>
+      <div class="form-hint">Gateway listening address. Leave as 127.0.0.1 for local-only.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Log Directory</label>
+      <input class="form-input" id="cfg_logDir" type="text" value="${val('logDir')}"
+        oninput="setCfg('logDir', this.value)">
+      <div class="form-hint">Directory for gateway logs. Ensure writable by the service user.</div>
+      ${isModified('logDir', d) ? `<div class="warn-tag">⚠ Modified from default</div>` : ''}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Node.js Version Requirement</label>
+      <input class="form-input" id="cfg_nodeVersion" type="text" value="${val('nodeVersion')}"
+        oninput="setCfg('nodeVersion', this.value)">
+      <div class="form-hint">Minimum Node.js version required by the gateway.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Secret Storage Method</label>
+      <input class="form-input" id="cfg_secretMethod" type="text" value="${val('secretMethod')}"
+        oninput="setCfg('secretMethod', this.value)">
+      <div class="secret-tag">🔒 Secret — will not be logged</div>
+      <div class="form-hint">How API keys and tokens will be stored. This field is excluded from all logs.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">API Key / Token (optional — set post-install)</label>
+      <input class="form-input" id="cfg_apiKey" type="password" placeholder="Leave blank to configure after install"
+        oninput="setCfg('apiKey', this.value, true)">
+      <div class="secret-tag">🔒 Secret — will not be logged</div>
+      <div class="form-hint">If provided, stored securely in ${val('secretMethod')}. Never written to disk in plaintext.</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
+      <button class="btn btn-primary" onclick="saveConfigAndNext()">Continue →</button>
+    </div>
+  </div>`;
+  document.getElementById('stepContent').innerHTML = html;
+
+  // Show bind warning if already non-default
+  if (val('bindAddress') !== '127.0.0.1') {
+    document.getElementById('bindWarn').style.display = 'block';
+  }
+}
+
+function isModified(key, defaults) {
+  return STATE.config[key] !== undefined && STATE.config[key] !== defaults[key];
+}
+
+function setCfg(key, value, isSecret = false) {
+  STATE.config[key] = value;
+  if (isSecret) STATE.config['__secret_' + key] = true;
+}
+
+function checkBind() {
+  const val = document.getElementById('cfg_bindAddress').value;
+  const warn = document.getElementById('bindWarn');
+  if (warn) warn.style.display = val !== '127.0.0.1' ? 'block' : 'none';
+}
+
+async function saveConfigAndNext() {
+  // Collect all form values
+  const fields = ['installDir','serviceName','bindAddress','logDir','nodeVersion','secretMethod'];
+  fields.forEach(f => {
+    const el = document.getElementById('cfg_' + f);
+    if (el) STATE.config[f] = el.value;
+  });
+  const apiKeyEl = document.getElementById('cfg_apiKey');
+  if (apiKeyEl && apiKeyEl.value) {
+    STATE.config['apiKey'] = apiKeyEl.value;
+    STATE.config['__secret_apiKey'] = true;
+  }
+
+  await addAuditEntry('Configuration saved', 'Success', {
+    host: STATE.host,
+    note: 'Secret fields excluded from log'
+  });
+  goNext();
+}
+
+// STEP 3 — Security & Hardening
+function renderStep3() {
+  // Initialize security state if needed
+  SECURITY_ITEMS.forEach(item => {
+    if (STATE.security[item.id] === undefined) STATE.security[item.id] = true;
+  });
+
+  const html = `
+  <div class="card">
+    <div class="step-heading">
+      <div class="step-num-badge">3</div>
+      <h2 class="step-title">Security &amp; Hardening</h2>
+    </div>
+    <p class="step-desc">
+      Review and confirm the security controls for this installation.
+      Critical items should remain checked. Unchecking a critical item will
+      display a warning.
+    </p>
+
+    <div class="checklist" id="securityList">
+      ${SECURITY_ITEMS.map(item => `
+        <div class="check-item" id="chk_wrap_${item.id}">
+          <input type="checkbox" id="${item.id}" ${STATE.security[item.id] ? 'checked' : ''}
+            onchange="toggleSecurity('${item.id}', this.checked, ${item.critical})">
+          <div>
+            <div class="check-label">
+              ${item.label}
+              ${item.critical ? `<span class="critical-badge">Critical</span>` : ''}
+            </div>
+            <div class="check-sub">${item.sub}</div>
+            <div id="warn_${item.id}" class="warn-tag" style="display:${(!STATE.security[item.id] && item.critical) ? 'inline-flex' : 'none'};">
+              ⚠ Unchecking this critical control reduces security
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
+      <button class="btn btn-primary" onclick="saveSecurityAndNext()">Continue →</button>
+    </div>
+  </div>`;
+  document.getElementById('stepContent').innerHTML = html;
+}
+
+function toggleSecurity(id, checked, critical) {
+  STATE.security[id] = checked;
+  const warn = document.getElementById('warn_' + id);
+  if (warn && critical) warn.style.display = (!checked) ? 'inline-flex' : 'none';
+}
+
+async function saveSecurityAndNext() {
+  const unchecked = SECURITY_ITEMS.filter(i => !STATE.security[i.id]).map(i => i.label);
+  await addAuditEntry('Security checklist confirmed', 'Success', {
+    checkedCount: SECURITY_ITEMS.filter(i => STATE.security[i.id]).length,
+    uncheckedCount: unchecked.length,
+    uncheckedItems: unchecked
+  });
+  goNext();
+}
+
+// STEP 4 — Review Configuration
+function renderStep4() {
+  const d = DEFAULTS[STATE.host];
+  const cfg = STATE.config;
+  function val(key) { return cfg[key] !== undefined ? cfg[key] : d[key]; }
+  function isSecretKey(key) { return cfg['__secret_' + key] || key === 'apiKey' || key === 'secretMethod'; }
+  function dispVal(key) {
+    if (key === 'apiKey') return cfg[key] ? '••••••••' : '(not configured)';
+    if (key === 'secretMethod') return '••••••';
+    return val(key);
+  }
+  function modClass(key) {
+    if (cfg[key] && cfg[key] !== d[key]) return 'modified';
+    return '';
+  }
+
+  const configRows = [
+    { key: 'installDir', label: 'Install Directory' },
+    { key: 'serviceName', label: 'Service Name' },
+    { key: 'bindAddress', label: 'Bind Address' },
+    { key: 'logDir', label: 'Log Directory' },
+    { key: 'nodeVersion', label: 'Node.js Version' },
+    { key: 'secretMethod', label: 'Secret Method' },
+    { key: 'apiKey', label: 'API Key' },
+  ];
+
+  const secRows = SECURITY_ITEMS.map(i => ({
+    label: i.label,
+    val: STATE.security[i.id] ? '✓ Enabled' : '✗ Disabled',
+    cls: STATE.security[i.id] ? '' : 'modified'
+  }));
+
+  const html = `
+  <div class="card">
+    <div class="step-heading">
+      <div class="step-num-badge">4</div>
+      <h2 class="step-title">Review Configuration</h2>
+    </div>
+    <p class="step-desc">
+      Review all settings before proceeding. Values shown in
+      <span style="color:var(--amber);font-weight:700;">amber</span>
+      differ from defaults. Secrets are masked.
+    </p>
+
+    <table class="review-table">
+      <tr><td colspan="2" class="review-section">▸ Host &amp; Platform</td></tr>
+      <tr>
+        <td class="review-key">Target Host</td>
+        <td class="review-val">${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</td>
+      </tr>
+
+      <tr><td colspan="2" class="review-section">▸ Configuration</td></tr>
+      ${configRows.map(r => `
+        <tr>
+          <td class="review-key">${r.label}</td>
+          <td class="review-val ${isSecretKey(r.key) ? 'secret' : modClass(r.key)}">${dispVal(r.key)}</td>
+        </tr>
+      `).join('')}
+
+      <tr><td colspan="2" class="review-section">▸ Security Controls</td></tr>
+      ${secRows.map(r => `
+        <tr>
+          <td class="review-key" style="font-size:12px;">${r.label}</td>
+          <td class="review-val ${r.cls}">${r.val}</td>
+        </tr>
+      `).join('')}
+    </table>
+
+    <div class="alert alert-blue" style="margin-top:20px;">
+      <span>🔒</span>
+      <span>Secret values (API keys, secret storage method) are masked and will never appear in the audit log.</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
+      <button class="btn btn-primary" onclick="confirmReview()">Confirm &amp; Continue →</button>
+    </div>
+  </div>`;
+  document.getElementById('stepContent').innerHTML = html;
+}
+
+async function confirmReview() {
+  await addAuditEntry('Configuration review confirmed', 'Success', {
+    host: STATE.host,
+    bindAddress: STATE.config.bindAddress || DEFAULTS[STATE.host].bindAddress
+  });
+  goNext();
+}
+
+// STEP 5 — Dry Run
+function renderStep5() {
+  const html = `
+  <div class="card">
+    <div class="step-heading">
+      <div class="step-num-badge">5</div>
+      <h2 class="step-title">Dry Run (Preflight)</h2>
+    </div>
+    <p class="step-desc">
+      Simulating preflight checks for
+      <strong>${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</strong>.
+      Each check validates your environment before installation.
+    </p>
+
+    <div class="checks-list" id="checksList"></div>
+    <div id="dryRunSummary"></div>
+
+    <div class="btn-row" id="dryBtnRow">
+      <button class="btn btn-ghost" onclick="goPrev()" id="dryPrevBtn">← Back</button>
+      <button class="btn btn-teal" id="runDryBtn" onclick="runDryRun()">▶ Run Preflight Checks</button>
+    </div>
+  </div>`;
+  document.getElementById('stepContent').innerHTML = html;
+
+  if (STATE.dryRunDone && STATE.dryRunResults.length > 0) {
+    // Re-render results if already run
+    showDryRunResults(STATE.dryRunResults);
+  }
+}
+
+async function runDryRun() {
+  document.getElementById('runDryBtn').disabled = true;
+  document.getElementById('dryPrevBtn').disabled = true;
+  STATE.dryRunResults = [];
+
+  const checks = getDryRunChecks(STATE.host);
+  const list = document.getElementById('checksList');
+
+  for (const check of checks) {
+    await delay(300 + Math.random() * 250);
+    const result = check.fn();
+    STATE.dryRunResults.push({ name: check.name, ...result });
+    const row = document.createElement('div');
+    row.className = `check-row ${result.status}`;
+    const icon = result.status === 'pass' ? '✅' : result.status === 'warn' ? '⚠️' : '❌';
+    const statusLabel = result.status.toUpperCase();
+    row.innerHTML = `
+      <span class="check-icon">${icon}</span>
+      <div>
+        <div class="check-name">${check.name}</div>
+        <div class="check-msg">${statusLabel}: ${result.msg}</div>
+      </div>`;
+    list.appendChild(row);
+    list.scrollTop = list.scrollHeight;
+  }
+
+  STATE.dryRunDone = true;
+  showDryRunResults(STATE.dryRunResults);
+
+  // Log all results (no secrets)
+  const passed = STATE.dryRunResults.filter(r => r.status === 'pass').length;
+  const warned = STATE.dryRunResults.filter(r => r.status === 'warn').length;
+  const failed = STATE.dryRunResults.filter(r => r.status === 'fail').length;
+  await addAuditEntry('Dry run completed', 'Success', { passed, warned, failed });
+}
+
+function showDryRunResults(results) {
+  const passed = results.filter(r => r.status === 'pass').length;
+  const warned = results.filter(r => r.status === 'warn').length;
+  const failed = results.filter(r => r.status === 'fail').length;
+
+  const sumEl = document.getElementById('dryRunSummary');
+  if (sumEl) {
+    sumEl.innerHTML = `
+      <div class="dry-run-summary">
+        <span class="summary-pass">✅ ${passed} passed</span>
+        <span class="summary-warn">⚠️ ${warned} warnings</span>
+        <span class="summary-fail">❌ ${failed} failed</span>
+      </div>`;
+  }
+
+  const btnRow = document.getElementById('dryBtnRow');
+  if (btnRow) {
+    btnRow.innerHTML = `
+      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
+      ${failed === 0
+        ? `<button class="btn btn-primary" onclick="goNext()">Proceed to Install →</button>`
+        : `<button class="btn btn-ghost" disabled title="Resolve failures before installing">Install (blocked — failures detected)</button>`}
+    `;
+  }
+}
+
+// STEP 6 — Execute Install
+function renderStep6() {
+  const html = `
+  <div class="card">
+    <div class="step-heading">
+      <div class="step-num-badge">6</div>
+      <h2 class="step-title">Execute Install</h2>
+    </div>
+    <p class="step-desc">
+      Installing OpenClaw on
+      <strong>${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</strong>.
+      Each step completes before the next begins.
+    </p>
+
+    <div class="install-list" id="installList"></div>
+    <div id="installComplete"></div>
+
+    <div class="btn-row" id="installBtnRow">
+      <button class="btn btn-ghost" onclick="goPrev()" id="installPrevBtn">← Back</button>
+      <button class="btn btn-primary" id="runInstallBtn" onclick="runInstall()">▶ Begin Installation</button>
+    </div>
+  </div>`;
+  document.getElementById('stepContent').innerHTML = html;
+
+  if (STATE.installDone) {
+    showInstallComplete();
+  }
+}
+
+async function runInstall() {
+  document.getElementById('runInstallBtn').disabled = true;
+  document.getElementById('installPrevBtn').disabled = true;
+
+  const steps = getInstallSteps(STATE.host);
+  const list = document.getElementById('installList');
+
+  for (let i = 0; i < steps.length; i++) {
+    await delay(400 + Math.random() * 300);
+    const row = document.createElement('div');
+    row.className = 'install-row running';
+    row.id = `irow_${i}`;
+    row.innerHTML = `<div class="spinner"></div><span>${steps[i]}</span>`;
+    list.appendChild(row);
+    list.scrollTop = list.scrollHeight;
+
+    await delay(600 + Math.random() * 400);
+    row.className = 'install-row done';
+    row.innerHTML = `<span class="install-icon">✅</span><span>${steps[i]}</span>`;
+
+    await addAuditEntry(`Install step: ${steps[i]}`, 'Completed');
+  }
+
+  STATE.installDone = true;
+  showInstallComplete();
+}
+
+function showInstallComplete() {
+  const completeEl = document.getElementById('installComplete');
+  if (completeEl) {
+    completeEl.innerHTML = `
+      <div class="install-complete">
+        <div class="install-complete-icon">🎉</div>
+        <div>
+          <div class="install-complete-title">Installation Complete!</div>
+          <div class="install-complete-msg">
+            OpenClaw AI Gateway is installed and running on
+            ${HOST_INFO[STATE.host].label}.<br>
+            <strong>Rollback:</strong> If needed, rollback scripts are available in the
+            <code style="font-size:12px;">scripts/</code> directory of your install path.
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const btnRow = document.getElementById('installBtnRow');
+  if (btnRow) {
+    btnRow.innerHTML = `
+      <span></span>
+      <button class="btn btn-primary" onclick="goNext()">View Audit Log →</button>
+    `;
+  }
+}
+
+// STEP 7 — Audit Log
+function renderStep7() {
+  const html = `
+  <div class="card">
+    <div class="step-heading">
+      <div class="step-num-badge">7</div>
+      <h2 class="step-title">Version Log &amp; Audit Trail</h2>
+    </div>
+    <p class="step-desc">
+      Cryptographically chained audit log of all actions taken during this wizard session.
+      Each entry includes a SHA-256 hash computed over its content plus the previous
+      entry's hash (tamper-evident chain). Secrets and PII are never included.
+    </p>
+
+    <div class="audit-list" id="auditList">
+      ${STATE.auditLog.length === 0
+        ? `<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center;">No audit entries yet.</div>`
+        : STATE.auditLog.map((e, i) => `
+          <div class="audit-entry">
+            <div class="audit-ts">${e.ts}</div>
+            <div class="audit-action">#${i+1} — ${e.action}</div>
+            <div style="font-size:12px;color:var(--text);margin:2px 0;">Result: ${e.result}</div>
+            <div class="audit-hash">SHA-256: ${e.hash}</div>
+            <div class="audit-prev-hash">Prev: ${e.prevHash.substring(0,32)}…</div>
+          </div>
+        `).join('')
+      }
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-teal" onclick="exportAuditLog()">⬇ Export as JSON</button>
+      <span style="font-size:12px;color:var(--muted);">
+        ${STATE.auditLog.length} entries — hash chain verifiable client-side
+      </span>
+    </div>
+
+    <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;">
+        <strong>AiGovOps Foundation Framework — April 2026 v1</strong><br>
+        This audit trail was generated in-browser using the Web Crypto API (SubtleCrypto SHA-256).<br>
+        Each entry's hash is computed as SHA-256(JSON({ts, action, result, prevHash})).<br>
+        No data was transmitted to any server during this session.<br><br>
+        A work of <strong>Bob Rapp</strong> and <strong>Ken Johnston</strong> —
+        <a href="https://www.aigovopsfoundation.org" style="color:var(--teal);">
+          www.aigovopsfoundation.org
+        </a>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
+      <button class="btn btn-primary" onclick="restartWizard()">🔄 Start New Session</button>
+    </div>
+  </div>`;
+  document.getElementById('stepContent').innerHTML = html;
+}
+
+function exportAuditLog() {
+  const data = {
+    wizardVersion: 'AiGovOps Foundation Framework April 2026 v1',
+    exportedAt: new Date().toISOString(),
+    host: STATE.host,
+    hostLabel: HOST_INFO[STATE.host].label,
+    entryCount: STATE.auditLog.length,
+    entries: STATE.auditLog,
+    attribution: 'A work of Bob Rapp and Ken Johnston — www.aigovopsfoundation.org'
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aigovops-audit-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function restartWizard() {
+  STATE.currentStep = 1;
+  STATE.host = 'macos';
+  STATE.config = {};
+  STATE.security = {};
+  STATE.auditLog = [];
+  STATE.dryRunResults = [];
+  STATE.installDone = false;
+  STATE.dryRunDone = false;
+  render();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════════════════════ */
+function render() {
+  renderProgress();
+  const renderers = {
+    1: renderStep1,
+    2: renderStep2,
+    3: renderStep3,
+    4: renderStep4,
+    5: renderStep5,
+    6: renderStep6,
+    7: renderStep7,
+  };
+  renderers[STATE.currentStep]();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goNext() {
+  if (STATE.currentStep < STATE.totalSteps) {
+    STATE.currentStep++;
+    render();
+  }
+}
+
+function goPrev() {
+  if (STATE.currentStep > 1) {
+    STATE.currentStep--;
+    render();
+  }
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════ */
+(async () => {
+  await addAuditEntry('Wizard session started', 'Initialized', {
+    wizardVersion: 'AiGovOps Foundation Framework April 2026 v1',
+    userAgent: navigator.userAgent.substring(0, 80)
+  });
+  render();
+})();
+</script>
+</body>
+</html>

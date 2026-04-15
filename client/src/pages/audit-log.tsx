@@ -16,6 +16,7 @@ import {
   Eye,
   EyeOff,
   KeyRound,
+  FileDown,
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
@@ -252,6 +253,30 @@ export default function AuditLogViewer() {
           >
             <ShieldCheck className="h-3 w-3 mr-1" />
             Verify Chain
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              try {
+                const res = await apiRequest("GET", "/api/audit/export-pdf", undefined, {
+                  "x-owner-passphrase": storedPassphrase,
+                });
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `aigovops-audit-report-${new Date().toISOString().slice(0, 10)}.pdf`;
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch (e) {
+                console.error("PDF export failed", e);
+              }
+            }}
+            data-testid="button-export-pdf"
+          >
+            <FileDown className="h-3 w-3 mr-1" />
+            Export PDF
           </Button>
           <Button
             size="sm"

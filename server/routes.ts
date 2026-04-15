@@ -1,5 +1,9 @@
 import type { Express } from "express";
 import type { Server } from "http";
+import { execSync } from "child_process";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
 import { storage } from "./storage";
 
 export function registerRoutes(server: Server, app: Express) {
@@ -172,6 +176,58 @@ export function registerRoutes(server: Server, app: Express) {
     const { passphrase } = req.body;
     const valid = storage.verifyOwnerPassphrase(passphrase);
     res.json({ valid });
+  });
+
+  // === PDF AUDIT REPORT EXPORT ===
+  app.get("/api/audit/export-pdf", (req, res) => {
+    const passphrase = req.headers["x-owner-passphrase"] as string;
+    if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const scriptPath = path.resolve(__dirname, "../scripts/generate-audit-pdf.py");
+    const dbPath = path.resolve(process.cwd(), "openclaw.db");
+    const tmpPdf = path.join(os.tmpdir(), `aigovops-audit-${Date.now()}.pdf`);
+
+    try {
+      const python = process.env.PYTHON_BIN ?? "python3";
+      execSync(`${python} "${scriptPath}" --db "${dbPath}" --output "${tmpPdf}"`, {
+        timeout: 60_000,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+
+      if (!fs.existsSync(tmpPdf)) {
+        throw new Error("PDF output not found");
+      }
+
+      const stat = fs.statSync(tmpPdf);
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Length", stat.size);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="aigovops-audit-report-${new Date().toISOString().slice(0, 10)}.pdf"`
+      );
+
+      const stream = fs.createReadStream(tmpPdf);
+      stream.pipe(res);
+      stream.on("end", () => { try { fs.unlinkSync(tmpPdf); } catch (_) {} });
+      stream.on("error", () => { try { fs.unlinkSync(tmpPdf); } catch (_) {} });
+    } catch (err: any) {
+      try { if (fs.existsSync(tmpPdf)) fs.unlinkSync(tmpPdf); } catch (_) {}
+      if (!res.headersSent) {
+        res.status(500).json({ error: "PDF generation failed", detail: String(err.message).slice(0, 500) });
+      }
+    }
+  });
+
+  // === STANDALONE WIZARD (serve static HTML) ===
+  app.get("/api/wizard-html", (_req, res) => {
+    const wizardPath = path.resolve(__dirname, "../public/aigovops-wizard.html");
+    if (fs.existsSync(wizardPath)) {
+      res.sendFile(wizardPath);
+    } else {
+      res.status(404).json({ error: "Wizard HTML not found" });
+    }
   });
 }
 
