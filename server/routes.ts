@@ -229,6 +229,139 @@ export function registerRoutes(server: Server, app: Express) {
       res.status(404).json({ error: "Wizard HTML not found" });
     }
   });
+
+  // === RELEASE DASHBOARD — GitHub release data, SBOM diffs, governance health ===
+  app.get("/api/releases", async (_req, res) => {
+    const OWNER = "bobrapp";
+    const REPO = "openclaw-installer";
+    const apiBase = `https://api.github.com/repos/${OWNER}/${REPO}`;
+    const headers: Record<string, string> = {
+      Accept: "application/vnd.github+json",
+      "User-Agent": "openclaw-installer-dashboard",
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    try {
+      // Fetch releases
+      const relRes = await fetch(`${apiBase}/releases?per_page=30`, { headers });
+      if (!relRes.ok) throw new Error(`GitHub releases API: ${relRes.status}`);
+      const rawReleases: any[] = await relRes.json();
+
+      const releases = rawReleases.map((r: any) => {
+        const assets = (r.assets ?? []).map((a: any) => ({
+          name: a.name,
+          download_url: a.browser_download_url,
+          size: a.size,
+        }));
+
+        // Parse SBOM component count from release body
+        let sbomComponentCount: number | null = null;
+        const countMatch = r.body?.match(/(\d+)\s+components?/i);
+        if (countMatch) sbomComponentCount = parseInt(countMatch[1], 10);
+
+        // Parse SBOM diff from release body
+        let sbomDiff: any = null;
+        const diffMatch = r.body?.match(/## SBOM Diff[\s\S]*?Added:\s*(\d+).*?Removed:\s*(\d+).*?Version Changed:\s*(\d+).*?Unchanged:\s*(\d+)/i);
+        if (diffMatch) {
+          const prevTagMatch = r.body?.match(/Previous tag:\s*`?(v[\d.]+)`?/i);
+          sbomDiff = {
+            summary: {
+              old_count: 0,
+              new_count: sbomComponentCount ?? 0,
+              added: parseInt(diffMatch[1], 10),
+              removed: parseInt(diffMatch[2], 10),
+              version_changed: parseInt(diffMatch[3], 10),
+              unchanged: parseInt(diffMatch[4], 10),
+            },
+            added: [],
+            removed: [],
+            version_changed: [],
+            old_tag: prevTagMatch ? prevTagMatch[1] : "previous",
+            new_tag: r.tag_name,
+          };
+          // Fill old_count from unchanged + removed
+          sbomDiff.summary.old_count =
+            sbomDiff.summary.unchanged + sbomDiff.summary.removed + sbomDiff.summary.version_changed;
+        }
+
+        return {
+          tag_name: r.tag_name,
+          name: r.name || r.tag_name,
+          published_at: r.published_at,
+          html_url: r.html_url,
+          body: r.body ?? "",
+          assets,
+          target_commitish: r.target_commitish,
+          sbom_component_count: sbomComponentCount,
+          sbom_diff: sbomDiff,
+        };
+      });
+
+      // Check governance files via Contents API
+      const govFiles = [
+        { path: "LICENSE", name: "LICENSE", description: "Open-source license" },
+        { path: "SECURITY.md", name: "Security Policy", description: "Responsible disclosure process" },
+        { path: "CONTRIBUTING.md", name: "Contributing Guide", description: "How to contribute" },
+        { path: "CODE_OF_CONDUCT.md", name: "Code of Conduct", description: "Community standards" },
+        { path: "CODEOWNERS", name: "CODEOWNERS", description: "Required reviewers for changes" },
+        { path: ".github/ISSUE_TEMPLATE/bug_report.md", name: "Bug Report Template", description: "Structured bug reporting" },
+        { path: ".github/ISSUE_TEMPLATE/feature_request.md", name: "Feature Request Template", description: "Feature proposal template" },
+        { path: ".github/PULL_REQUEST_TEMPLATE.md", name: "PR Template", description: "Pull request checklist" },
+        { path: ".github/FUNDING.yml", name: "Funding", description: "Sponsor/funding info" },
+        { path: ".github/workflows/preflight.yml", name: "CI Pipeline", description: "Automated testing on push/PR" },
+        { path: ".github/workflows/release.yml", name: "Release Workflow", description: "Automated release with SBOM" },
+      ];
+
+      const govChecks = await Promise.all(
+        govFiles.map(async (gf) => {
+          try {
+            const r2 = await fetch(`${apiBase}/contents/${gf.path}`, { headers });
+            return {
+              name: gf.name,
+              status: r2.ok ? "present" as const : "missing" as const,
+              description: gf.description,
+              url: r2.ok ? `https://github.com/${OWNER}/${REPO}/blob/master/${gf.path}` : undefined,
+            };
+          } catch {
+            return { name: gf.name, status: "missing" as const, description: gf.description };
+          }
+        })
+      );
+
+      // Branch protection check
+      try {
+        const bpRes = await fetch(`${apiBase}/branches/master/protection`, { headers });
+        govChecks.push({
+          name: "Branch protection",
+          status: bpRes.ok ? "present" : "missing",
+          description: "Prevent force-push and require reviews",
+          url: bpRes.ok ? `https://github.com/${OWNER}/${REPO}/settings/branches` : undefined,
+        });
+      } catch {
+        govChecks.push({ name: "Branch protection", status: "missing", description: "Prevent force-push and require reviews" });
+      }
+
+      // Tag protection check
+      try {
+        const tpRes = await fetch(`${apiBase}/tags/protection`, { headers });
+        const tpData: any[] = tpRes.ok ? await tpRes.json() : [];
+        govChecks.push({
+          name: "Tag protection",
+          status: tpData.length > 0 ? "present" : "missing",
+          description: "Prevent tag deletion (v* pattern)",
+          url: `https://github.com/${OWNER}/${REPO}/settings/tag_protection`,
+        });
+      } catch {
+        govChecks.push({ name: "Tag protection", status: "missing", description: "Prevent tag deletion (v* pattern)" });
+      }
+
+      res.json({ releases, governance: govChecks });
+    } catch (err: any) {
+      res.status(502).json({ error: "Failed to fetch release data", detail: String(err.message).slice(0, 500) });
+    }
+  });
 }
 
 function getHostConfigs() {

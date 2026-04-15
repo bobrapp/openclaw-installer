@@ -1,0 +1,19 @@
+# OpenClaw Installer — Code Owners
+# These users will be automatically requested for review on PRs.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @bobrapp
+
+# CI/CD and release workflows
+.github/ @bobrapp
+
+# Security-sensitive files
+SECURITY.md @bobrapp
+server/routes.ts @bobrapp
+server/storage.ts @bobrapp
+scripts/ @bobrapp
+
+# Supply-chain artifacts
+package.json @bobrapp
+package-lock.json @bobrapp

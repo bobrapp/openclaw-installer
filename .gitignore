@@ -9,3 +9,4 @@ dist/
 openclaw.db
 openclaw.db-shm
 openclaw.db-wal
+*.zip
