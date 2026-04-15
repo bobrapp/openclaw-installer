@@ -1,0 +1,22 @@
+spec:
+  name: openclaw-installer
+  region: nyc
+  services:
+    - name: openclaw
+      git:
+        branch: master
+        repo_clone_url: https://github.com/bobrapp/openclaw-installer.git
+      build_command: npm install && npm run build && cp public/aigovops-wizard.html dist/public/ && cp -r scripts dist/
+      run_command: NODE_ENV=production node dist/index.cjs
+      environment_slug: node-js
+      http_port: 5000
+      instance_count: 1
+      instance_size_slug: apps-s-1vcpu-1gb
+      routes:
+        - path: /
+      envs:
+        - key: NODE_ENV
+          value: production
+          scope: RUN_TIME
+      health_check:
+        http_path: /api/hosts

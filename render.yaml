@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: openclaw-installer
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build && cp public/aigovops-wizard.html dist/public/ && cp -r scripts dist/
+    startCommand: NODE_ENV=production node dist/index.cjs
+    healthCheckPath: /api/hosts
+    envVars:
+      - key: NODE_ENV
+        value: production

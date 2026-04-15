@@ -16,6 +16,9 @@ import {
   Globe,
   Copy,
   Check,
+  Rocket,
+  Terminal,
+  CloudUpload,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -32,6 +35,10 @@ interface HostingDeal {
   url: string;
   highlight?: string;
   badge?: string;
+  deployUrl?: string;
+  deployLabel?: string;
+  deployNote?: string;
+  deployType?: "paas" | "vps-cloudinit" | "vps-manual";
 }
 
 const deals: HostingDeal[] = [
@@ -58,6 +65,10 @@ const deals: HostingDeal[] = [
     url: "https://hostinger.com/mattwolfe",
     highlight: "Best for beginners deploying OpenClaw for the first time",
     badge: "Community Pick",
+    deployUrl: "https://hostinger.com/mattwolfe",
+    deployLabel: "Get VPS + Deploy",
+    deployNote: "Create a VPS, then paste the cloud-init script below during setup",
+    deployType: "vps-manual",
   },
   {
     name: "Contabo Cloud VPS",
@@ -74,6 +85,10 @@ const deals: HostingDeal[] = [
     url: "https://contabo.com/en/vps/",
     highlight: "Best raw specs per dollar — 8 GB RAM at under $4/mo is unmatched",
     badge: "Best Value",
+    deployUrl: "https://contabo.com/en/vps/",
+    deployLabel: "Get VPS + Deploy",
+    deployNote: "Create a VPS with Ubuntu 22.04, then SSH in and run the one-liner below",
+    deployType: "vps-manual",
   },
   {
     name: "Hetzner Cloud",
@@ -90,6 +105,10 @@ const deals: HostingDeal[] = [
     url: "https://www.hetzner.com/cloud/",
     highlight: "Best for developers who want hourly billing and EU data residency",
     badge: "Dev Favorite",
+    deployUrl: "https://console.hetzner.cloud/servers/create",
+    deployLabel: "Create Server",
+    deployNote: "Select Ubuntu 22.04 + CX23, paste cloud-init YAML in the Cloud config field",
+    deployType: "vps-cloudinit",
   },
   {
     name: "Vultr Cloud Compute",
@@ -106,6 +125,10 @@ const deals: HostingDeal[] = [
     url: "https://www.vultr.com/",
     highlight: "Best for testing — deploy OpenClaw free with the $300 trial credit",
     badge: "$300 Free",
+    deployUrl: "https://my.vultr.com/deploy/",
+    deployLabel: "Deploy Instance",
+    deployNote: "Choose Cloud Compute > Ubuntu 22.04, paste startup script from below",
+    deployType: "vps-cloudinit",
   },
   {
     name: "DigitalOcean Droplets",
@@ -122,6 +145,10 @@ const deals: HostingDeal[] = [
     url: "https://www.digitalocean.com/",
     highlight: "Already a first-class deployment target in OpenClaw's wizard",
     badge: "Native Support",
+    deployUrl: "https://cloud.digitalocean.com/apps/new?repo=https://github.com/bobrapp/openclaw-installer/tree/master",
+    deployLabel: "Deploy to DO",
+    deployNote: "One-click App Platform deploy — auto-builds from GitHub",
+    deployType: "paas",
   },
   {
     name: "IONOS VPS",
@@ -138,8 +165,36 @@ const deals: HostingDeal[] = [
     url: "https://www.ionos.com/servers/vps",
     highlight: "Cheapest way to host anything — $2/mo with no traffic limits",
     badge: "Cheapest",
+    deployUrl: "https://www.ionos.com/servers/vps",
+    deployLabel: "Get VPS + Deploy",
+    deployNote: "Create a VPS with Ubuntu 22.04, then SSH in and run the one-liner below",
+    deployType: "vps-manual",
+  },
+  {
+    name: "Render",
+    tagline: "Zero-config PaaS — auto-builds from GitHub on every push",
+    price: "Free / $7/mo",
+    priceNote: "Free tier available; Starter plan for production",
+    specs: [
+      "Auto-deploy from GitHub",
+      "Free TLS certificates",
+      "Managed infrastructure",
+      "Preview environments per PR",
+      "US & EU regions",
+    ],
+    url: "https://render.com/",
+    highlight: "Easiest deploy path — push to GitHub and Render handles the rest",
+    badge: "Easiest",
+    deployUrl: "https://render.com/deploy?repo=https://github.com/bobrapp/openclaw-installer",
+    deployLabel: "Deploy to Render",
+    deployNote: "One-click deploy — auto-configures from render.yaml in the repo",
+    deployType: "paas",
   },
 ];
+
+const ONE_LINER_SCRIPT = `curl -fsSL https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/install.sh | bash`;
+
+const CLOUD_INIT_URL = "https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/cloud-init.yaml";
 
 function CopyButton({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
@@ -157,6 +212,41 @@ function CopyButton({ code }: { code: string }) {
       {copied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
       {copied ? "Copied" : "Copy"}
     </button>
+  );
+}
+
+function CloudInitViewer() {
+  const [yaml, setYaml] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const loadYaml = () => {
+    if (yaml) return;
+    setLoading(true);
+    // Show the embedded version directly
+    setYaml(`#cloud-config\n# OpenClaw Installer — One-Click VPS Deploy\n# Works with any provider that supports cloud-init\n# Optimized for Ubuntu 22.04+ with Node.js 20 LTS\n\npackage_update: true\npackage_upgrade: true\n\npackages:\n  - git\n  - curl\n  - ufw\n  - python3\n  - nginx\n  - certbot\n  - python3-certbot-nginx\n\nruncmd:\n  # Install Node.js 20 LTS\n  - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -\n  - apt-get install -y nodejs\n\n  # Firewall\n  - ufw default deny incoming\n  - ufw default allow outgoing\n  - ufw allow 22/tcp\n  - ufw allow 80/tcp\n  - ufw allow 443/tcp\n  - ufw --force enable\n\n  # Create app user\n  - useradd -m -s /bin/bash openclaw\n  - mkdir -p /opt/openclaw\n  - chown openclaw:openclaw /opt/openclaw\n\n  # Clone and build\n  - su - openclaw -c "git clone https://github.com/bobrapp/openclaw-installer.git /opt/openclaw/app"\n  - su - openclaw -c "cd /opt/openclaw/app && npm install && npm run build"\n  - su - openclaw -c "cd /opt/openclaw/app && cp public/aigovops-wizard.html dist/public/"\n  - su - openclaw -c "cd /opt/openclaw/app && cp -r scripts dist/"\n\n  # Systemd service + nginx reverse proxy\n  # (see full file in repo: deploy/cloud-init.yaml)\n  - systemctl daemon-reload\n  - systemctl enable --now openclaw\n\nfinal_message: "OpenClaw deployed! Access at http://\${public_ipv4}"`);
+    setLoading(false);
+  };
+
+  // Auto-load when details is opened
+  if (!yaml && !loading) {
+    loadYaml();
+  }
+
+  return (
+    <div className="mt-2">
+      {yaml ? (
+        <div className="relative">
+          <div className="absolute top-2 right-2">
+            <CopyButton code={yaml} />
+          </div>
+          <pre className="text-[11px] bg-muted/60 border rounded-md p-3 overflow-x-auto font-mono max-h-64 overflow-y-auto leading-relaxed" data-testid="code-cloud-init-full">
+            <code>{yaml}</code>
+          </pre>
+        </div>
+      ) : (
+        <p className="text-muted-foreground">Loading...</p>
+      )}
+    </div>
   );
 }
 
@@ -293,12 +383,19 @@ export default function HostingDeals() {
                   <td className="py-2 pr-4">50 GB NVMe</td>
                   <td className="py-2">—</td>
                 </tr>
-                <tr>
+                <tr className="border-b border-border/50">
                   <td className="py-2 pr-4 font-medium">Vultr</td>
                   <td className="py-2 pr-4 font-mono text-emerald-600 dark:text-emerald-400">$6/mo</td>
                   <td className="py-2 pr-4">1 GB</td>
                   <td className="py-2 pr-4">25 GB NVMe</td>
                   <td className="py-2 font-semibold">$300 (30 days)</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Render</td>
+                  <td className="py-2 pr-4 font-mono text-emerald-600 dark:text-emerald-400">Free/$7</td>
+                  <td className="py-2 pr-4">Managed</td>
+                  <td className="py-2 pr-4">Managed</td>
+                  <td className="py-2">Free tier</td>
                 </tr>
               </tbody>
             </table>
@@ -397,19 +494,111 @@ export default function HostingDeals() {
                 </div>
 
                 {/* CTA */}
-                <div className="flex flex-col gap-2 md:w-36 flex-shrink-0">
-                  <Button asChild size="sm" variant={deal.recommended ? "default" : "outline"}>
+                <div className="flex flex-col gap-2 md:w-44 flex-shrink-0">
+                  {deal.deployUrl && (
+                    <Button asChild size="sm" variant={deal.recommended ? "default" : "outline"} className={deal.deployType === "paas" ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600" : ""}>
+                      <a href={deal.deployUrl} target="_blank" rel="noopener" data-testid={`deploy-${deal.name.toLowerCase().replace(/\s+/g, "-")}`}>
+                        {deal.deployType === "paas" ? <CloudUpload className="h-3.5 w-3.5 mr-1.5" /> : <Rocket className="h-3.5 w-3.5 mr-1.5" />}
+                        {deal.deployLabel || "Deploy"}
+                      </a>
+                    </Button>
+                  )}
+                  <Button asChild size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
                     <a href={deal.url} target="_blank" rel="noopener" data-testid={`link-${deal.name.toLowerCase().replace(/\s+/g, "-")}`}>
                       <Globe className="h-3.5 w-3.5 mr-1.5" />
                       Visit Site
                     </a>
                   </Button>
+                  {deal.deployNote && (
+                    <p className="text-[10px] text-muted-foreground leading-snug text-center">{deal.deployNote}</p>
+                  )}
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Deploy Scripts Section */}
+      <Card id="deploy-scripts">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Terminal className="h-4 w-4" />
+            Deploy Scripts
+          </CardTitle>
+          <CardDescription>
+            Copy-paste scripts to deploy OpenClaw on any VPS. Works with Ubuntu 22.04+ / Debian 12+.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {/* One-liner SSH command */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium flex items-center gap-1.5">
+                <Rocket className="h-3.5 w-3.5 text-primary" />
+                One-Liner Install (SSH)
+              </h4>
+              <CopyButton code={ONE_LINER_SCRIPT} />
+            </div>
+            <div className="relative">
+              <pre className="text-xs bg-muted/60 border rounded-md p-3 overflow-x-auto font-mono" data-testid="code-one-liner">
+                <code>{ONE_LINER_SCRIPT}</code>
+              </pre>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              SSH into your VPS as root, paste the command above, and OpenClaw will be live in ~3 minutes with nginx, systemd, and firewall configured.
+            </p>
+          </div>
+
+          {/* Cloud-init YAML */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium flex items-center gap-1.5">
+                <CloudUpload className="h-3.5 w-3.5 text-primary" />
+                Cloud-Init YAML (Hetzner, Vultr, DO)
+              </h4>
+              <CopyButton code={CLOUD_INIT_URL} />
+            </div>
+            <div className="relative">
+              <pre className="text-xs bg-muted/60 border rounded-md p-3 overflow-x-auto font-mono" data-testid="code-cloud-init-url">
+                <code>{CLOUD_INIT_URL}</code>
+              </pre>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Paste the URL above into the "Cloud config" or "Startup script" field when creating a VPS. The YAML auto-installs Node.js, nginx, firewall, and deploys OpenClaw as a systemd service.
+            </p>
+            <details className="text-xs">
+              <summary className="cursor-pointer text-primary hover:underline font-medium">View full cloud-init.yaml</summary>
+              <CloudInitViewer />
+            </details>
+          </div>
+
+          {/* Render / DO buttons */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium flex items-center gap-1.5">
+              <Globe className="h-3.5 w-3.5 text-primary" />
+              PaaS One-Click Deploy
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="sm" className="bg-[#7B61FF] hover:bg-[#6B51EF] text-white">
+                <a href="https://render.com/deploy?repo=https://github.com/bobrapp/openclaw-installer" target="_blank" rel="noopener" data-testid="deploy-render-btn">
+                  <Rocket className="h-3.5 w-3.5 mr-1.5" />
+                  Deploy to Render
+                </a>
+              </Button>
+              <Button asChild size="sm" className="bg-[#0080FF] hover:bg-[#0070E0] text-white">
+                <a href="https://cloud.digitalocean.com/apps/new?repo=https://github.com/bobrapp/openclaw-installer/tree/master" target="_blank" rel="noopener" data-testid="deploy-do-btn">
+                  <CloudUpload className="h-3.5 w-3.5 mr-1.5" />
+                  Deploy to DigitalOcean
+                </a>
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Both providers auto-detect the config files in the repo (render.yaml / .do/deploy.template.yaml) and build from source.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Kimi AI Section */}
       <Card>
