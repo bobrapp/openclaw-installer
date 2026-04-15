@@ -124,19 +124,27 @@ def load_from_db(db_path):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    # Try common column names; adapt as needed
     try:
         cur.execute(
-            """SELECT id, timestamp, user, prompt, results,
-                      prev_hash, current_hash
+            """SELECT id, timestamp, date, user, prompt, results,
+                      previous_hash, current_hash
                FROM audit_logs ORDER BY id ASC"""
         )
-        rows = [dict(r) for r in cur.fetchall()]
+        rows = []
+        for r in cur.fetchall():
+            d = dict(r)
+            # Normalize column name for internal use
+            d["prev_hash"] = d.pop("previous_hash", d.get("prev_hash", ""))
+            rows.append(d)
     except sqlite3.OperationalError:
         # Try alternate schema
         try:
             cur.execute("SELECT * FROM audit_logs ORDER BY rowid ASC")
-            rows = [dict(r) for r in cur.fetchall()]
+            rows = []
+            for r in cur.fetchall():
+                d = dict(r)
+                d["prev_hash"] = d.pop("previous_hash", d.get("prev_hash", ""))
+                rows.append(d)
         except sqlite3.OperationalError as e:
             print(f"[WARN] Could not read audit_logs: {e}. Using demo data.", file=sys.stderr)
             rows = None
@@ -147,12 +155,23 @@ def load_from_db(db_path):
 def verify_hash_chain(entries):
     """
     Verify the SHA-256 hash chain.
+    Matches the Node.js verification: genesis prev_hash is "0" (single char),
+    hash = SHA-256(timestamp|user|prompt|results|previousHash).
     Returns (is_valid, broken_at_id) where broken_at_id is None if valid.
     """
     for i, entry in enumerate(entries):
-        expected_prev = "0" * 64 if i == 0 else entries[i - 1].get("current_hash", "")
+        # Check prev_hash linkage (Node.js uses "0" for genesis, not 64 zeros)
+        expected_prev = "0" if i == 0 else entries[i - 1].get("current_hash", "")
         actual_prev = entry.get("prev_hash", "")
         if actual_prev != expected_prev:
+            return False, entry.get("id", i + 1)
+        # Verify current_hash recomputation
+        payload = (
+            f"{entry['timestamp']}|{entry['user']}|"
+            f"{entry['prompt']}|{entry['results']}|{actual_prev}"
+        )
+        expected_hash = hashlib.sha256(payload.encode()).hexdigest()
+        if entry.get("current_hash") and entry["current_hash"] != expected_hash:
             return False, entry.get("id", i + 1)
     return True, None
 
@@ -795,7 +814,7 @@ def build_verification_section(entries, styles):
         "Entry N fields: { id, timestamp, user, prompt, results, prev_hash }\n"
         "current_hash(N) = SHA-256( id | timestamp | user | prompt | results | current_hash(N-1) )\n"
         "prev_hash(N)     = current_hash(N-1)\n"
-        "Genesis entry:   prev_hash = '0' × 64"
+        "Genesis entry:   prev_hash = '0'"
     )
     story.append(Paragraph(mechanism_text, styles["mono"]))
 
@@ -900,7 +919,7 @@ def build_verification_section(entries, styles):
         ["Total Audit Entries", str(len(entries))],
         ["Hash Algorithm", "SHA-256"],
         ["Chain Status", "VERIFIED" if chain_valid else f"BROKEN at entry {broken_at}"],
-        ["Genesis Hash Seed", "0" * 16 + "... (64 zero chars)"],
+        ["Genesis Hash Seed", "0 (single character — genesis seed)"],
         ["Report Generated", datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")],
         ["Framework Version", "April 2026 v1"],
         ["Co-Founders", "Bob Rapp & Ken Johnston"],
