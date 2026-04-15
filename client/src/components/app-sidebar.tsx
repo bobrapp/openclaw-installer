@@ -15,29 +15,38 @@ import {
 import { BreathingLogo } from "@/components/breathing-logo";
 import { SoundToggle } from "@/components/sound-toggle";
 import { playSound } from "@/lib/sound-engine";
+import { useI18n } from "@/lib/i18n";
+import type { Translations } from "@/lib/i18n";
 
-const navItems = [
-  { title: "Host Selection", url: "/", icon: Home },
-  { title: "Compare Frameworks", url: "/compare", icon: GitCompareArrows },
-  { title: "Preflight Runner", url: "/preflight", icon: Play },
-  { title: "Install Logs", url: "/logs", icon: ScrollText },
-  { title: "Audit Log", url: "/audit", icon: Lock },
-  { title: "AiGovOps Foundation", url: "/foundation", icon: Heart },
-  { title: "How I Built This", url: "/how-i-built-this", icon: BookOpen },
-  { title: "Release Dashboard", url: "/releases", icon: Activity },
-  { title: "Hosting Deals", url: "/hosting", icon: Server },
-  { title: "Agent Patterns", url: "/patterns", icon: Sparkles },
-];
+function getNavItems(t: Translations) {
+  return [
+    { title: t.navHostSelection, url: "/", icon: Home },
+    { title: t.navCompareFrameworks, url: "/compare", icon: GitCompareArrows },
+    { title: t.navPreflightRunner, url: "/preflight", icon: Play },
+    { title: t.navInstallLogs, url: "/logs", icon: ScrollText },
+    { title: t.navAuditLog, url: "/audit", icon: Lock },
+    { title: t.navFoundation, url: "/foundation", icon: Heart },
+    { title: t.navHowIBuiltThis, url: "/how-i-built-this", icon: BookOpen },
+    { title: t.navReleaseDashboard, url: "/releases", icon: Activity },
+    { title: t.navHostingDeals, url: "/hosting", icon: Server },
+    { title: t.navAgentPatterns, url: "/patterns", icon: Sparkles },
+  ];
+}
 
-const hostItems = [
-  { title: "macOS", hostId: "macos" },
-  { title: "DigitalOcean", hostId: "digitalocean" },
-  { title: "Azure VM", hostId: "azure" },
-  { title: "Generic VPS", hostId: "generic-vps" },
-];
+function getHostItems(t: Translations) {
+  return [
+    { title: t.hostMacOS, hostId: "macos" },
+    { title: t.hostDigitalOcean, hostId: "digitalocean" },
+    { title: t.hostAzureVM, hostId: "azure" },
+    { title: t.hostGenericVPS, hostId: "generic-vps" },
+  ];
+}
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { t } = useI18n();
+  const navItems = getNavItems(t);
+  const hostItems = getHostItems(t);
 
   return (
     <Sidebar>
@@ -48,17 +57,17 @@ export function AppSidebar() {
           </div>
           <div>
             <p className="text-sm font-semibold leading-none">OpenClaw</p>
-            <p className="text-xs text-muted-foreground leading-none mt-0.5">Installer v1.0</p>
+            <p className="text-xs text-muted-foreground leading-none mt-0.5">{t.installerVersion}</p>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel>{t.navNavigation}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton asChild isActive={location === item.url}>
                     <Link href={item.url} onClick={() => playSound("navigate")}>
                       <item.icon className="h-4 w-4" />
@@ -72,7 +81,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Hosts</SidebarGroupLabel>
+          <SidebarGroupLabel>{t.navHosts}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {hostItems.map((item) => {
@@ -93,13 +102,13 @@ export function AppSidebar() {
                         <SidebarMenuButton asChild size="sm" isActive={location === hardenUrl}>
                           <Link href={hardenUrl} className="text-xs">
                             <Shield className="h-3 w-3" />
-                            <span>Hardening</span>
+                            <span>{t.hostHardening}</span>
                           </Link>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild size="sm" isActive={location === scriptsUrl}>
                           <Link href={scriptsUrl} className="text-xs">
                             <FileCode2 className="h-3 w-3" />
-                            <span>Scripts</span>
+                            <span>{t.hostScripts}</span>
                           </Link>
                         </SidebarMenuButton>
                       </div>
@@ -115,13 +124,13 @@ export function AppSidebar() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              OpenClaw/Moltbot Guided Setup
+              {t.footerSubtitle}
             </p>
             <SoundToggle />
           </div>
           <Link href="/humans" className="group">
             <p className="text-xs text-muted-foreground/60 group-hover:text-primary transition-colors">
-              Built by humans, for humans ❤️
+              {t.footerHumans}
             </p>
           </Link>
         </div>

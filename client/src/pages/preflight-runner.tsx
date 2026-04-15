@@ -6,9 +6,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Play, CheckCircle2, AlertTriangle, XCircle, Loader2, RotateCcw } from "lucide-react";
 import { apiRequest, API_BASE } from "@/lib/queryClient";
-import { celebrate, announceToScreenReader } from "@/lib/celebrations";
+import { celebrate } from "@/lib/celebrations";
 import { playSound } from "@/lib/sound-engine";
 import { CelebrationToast, useCelebration } from "@/components/celebration-toast";
+import { useI18n } from "@/lib/i18n";
 
 interface CheckResult {
   name: string;
@@ -32,6 +33,7 @@ export default function PreflightRunner() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast, celebrate: showToast, dismiss } = useCelebration();
+  const { t } = useI18n();
 
   const runPreflight = useCallback(() => {
     setChecks([]);
@@ -55,7 +57,9 @@ export default function PreflightRunner() {
       if (data.type === "summary") {
         setSummary(data);
         if (data.result === "PASS" || data.failed === 0) {
-          const msg = celebrate("preflight", "normal");
+          const msgs = [t.celebPreflight1, t.celebPreflight2, t.celebPreflight3];
+          const msg = msgs[Math.floor(Math.random() * msgs.length)];
+          celebrate(msg, "normal");
           showToast(msg);
           playSound("success");
         } else {
@@ -79,7 +83,7 @@ export default function PreflightRunner() {
       es.close();
       setIsRunning(false);
     };
-  }, [hostTarget]);
+  }, [hostTarget, t]);
 
   const reset = () => {
     if (eventSourceRef.current) {
@@ -121,11 +125,11 @@ export default function PreflightRunner() {
           <div className="flex items-center gap-2 mb-1">
             <Play className="h-5 w-5 text-primary" />
             <h1 className="text-xl font-bold tracking-tight" data-testid="text-runner-title">
-              Preflight Runner
+              {t.preflightTitle}
             </h1>
           </div>
           <p className="text-muted-foreground text-sm">
-            Execute preflight checks live and stream results to the audit log.
+            {t.preflightSubtitle}
           </p>
         </div>
       </div>
@@ -142,10 +146,10 @@ export default function PreflightRunner() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="macos">macOS (Local)</SelectItem>
-                  <SelectItem value="digitalocean">DigitalOcean</SelectItem>
-                  <SelectItem value="azure">Azure VM</SelectItem>
-                  <SelectItem value="generic-vps">Generic VPS</SelectItem>
+                  <SelectItem value="macos">{t.hostMacOS}</SelectItem>
+                  <SelectItem value="digitalocean">{t.hostDigitalOcean}</SelectItem>
+                  <SelectItem value="azure">{t.hostAzureVM}</SelectItem>
+                  <SelectItem value="generic-vps">{t.hostGenericVPS}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -157,19 +161,19 @@ export default function PreflightRunner() {
               {isRunning ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Running...
+                  {t.preflightRun}...
                 </>
               ) : (
                 <>
                   <Play className="h-4 w-4 mr-2" />
-                  Run Preflight
+                  {t.preflightRun}
                 </>
               )}
             </Button>
             {(checks.length > 0 || summary) && (
               <Button variant="outline" size="sm" onClick={reset} data-testid="button-reset-runner">
                 <RotateCcw className="h-3 w-3 mr-1" />
-                Reset
+                {t.preflightReset}
               </Button>
             )}
           </div>
@@ -263,10 +267,9 @@ export default function PreflightRunner() {
               <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Play className="h-6 w-6 text-primary" />
               </div>
-              <p className="text-sm font-medium mb-1">No preflight run yet</p>
+              <p className="text-sm font-medium mb-1">{t.preflightNoRun}</p>
               <p className="text-xs text-muted-foreground max-w-sm">
-                Select a host target and click "Run Preflight" to execute checks.
-                Results stream live and are recorded in the immutable audit log.
+                {t.preflightSelectHost}
               </p>
             </div>
           </CardContent>

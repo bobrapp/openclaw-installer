@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { celebrate } from "@/lib/celebrations";
 import { playSound } from "@/lib/sound-engine";
+import { useI18n } from "@/lib/i18n";
 
 interface Pattern {
   id: string;
@@ -359,13 +360,14 @@ function downloadConfig(pattern: Pattern) {
   a.download = `claw-${pattern.id}.yaml`;
   a.click();
   URL.revokeObjectURL(url);
-  celebrate("general", "subtle");
+  celebrate("Pattern downloaded", "subtle");
   playSound("success");
 }
 
 function PatternCard({ pattern }: { pattern: Pattern }) {
   const [copied, setCopied] = useState(false);
   const Icon = pattern.icon;
+  const { t } = useI18n();
 
   const copyConfig = async () => {
     try {
@@ -409,7 +411,7 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
         <div className="bg-muted/50 rounded-lg p-3 border border-border/50">
           <p className="text-xs font-medium text-primary flex items-center gap-1.5 mb-1">
             <Heart className="h-3 w-3" />
-            Why this matters for humanity
+            {t.patternsWhyMatters}
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">{pattern.whyItMatters}</p>
         </div>
@@ -417,7 +419,7 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
         {/* Config preview */}
         <details className="group/details">
           <summary className="text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-            View YAML config
+            {t.patternsViewConfig}
           </summary>
           <pre className="mt-2 p-3 bg-card border border-border rounded-md text-xs font-mono overflow-auto max-h-48 text-muted-foreground">
             {pattern.config}
@@ -427,11 +429,11 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => downloadConfig(pattern)} data-testid={`button-download-${pattern.id}`}>
             <Download className="h-3 w-3 mr-1.5" />
-            Download YAML
+            {t.patternsDownloadYaml}
           </Button>
           <Button size="sm" variant="ghost" onClick={copyConfig} data-testid={`button-copy-${pattern.id}`}>
             {copied ? <Check className="h-3 w-3 mr-1.5 text-emerald-500" /> : <Copy className="h-3 w-3 mr-1.5" />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? t.patternsCopied : t.patternsCopy}
           </Button>
         </div>
       </CardContent>
@@ -440,6 +442,7 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
 }
 
 export default function Patterns() {
+  const { t } = useI18n();
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-8">
       {/* Hero */}
@@ -447,26 +450,25 @@ export default function Patterns() {
         <div className="flex items-center justify-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           <h1 className="text-xl font-bold tracking-tight" data-testid="text-patterns-title">
-            Patterns for a Human-Friendly World
+            {t.patternsTitle}
           </h1>
           <Sparkles className="h-5 w-5 text-primary" />
         </div>
         <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Starter templates for ClawXXX agents designed around empathy, clarity, and care.
-          Each pattern embodies a different way AI can make the world feel more like home.
+          {t.patternsSubtitle}
         </p>
         <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Globe className="h-3 w-3" />
-            Open source
+            {t.patternsOpenSource}
           </span>
           <span className="flex items-center gap-1">
             <Heart className="h-3 w-3" />
-            Human-first
+            {t.patternsHumanFirst}
           </span>
           <span className="flex items-center gap-1">
             <Shield className="h-3 w-3" />
-            Governance-ready
+            {t.patternsGovernanceReady}
           </span>
         </div>
       </div>
@@ -481,10 +483,10 @@ export default function Patterns() {
       {/* Footer note */}
       <div className="text-center py-6 border-t border-border">
         <p className="text-xs text-muted-foreground">
-          These patterns are starting points — adapt them to your community, your values, your world.
+          {t.patternsFooter}
         </p>
         <p className="text-xs text-muted-foreground/60 mt-1">
-          A project of the{" "}
+          {t.patternsFoundationCredit}{" "}
           <a
             href="https://www.aigovopsfoundation.org/"
             target="_blank"

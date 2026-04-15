@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Heart, Sparkles, Globe, Coffee, Star } from "lucide-react";
 import { celebrateMilestone } from "@/lib/celebrations";
 import { playSound } from "@/lib/sound-engine";
+import { useI18n } from "@/lib/i18n";
 
 const gratitudes = [
   "To every open-source contributor who ever pushed a commit at 2 AM",
@@ -21,6 +22,7 @@ const gratitudes = [
 export default function Humans() {
   const [visibleItems, setVisibleItems] = useState(0);
   const [showGratitudes, setShowGratitudes] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     celebrateMilestone();
@@ -51,11 +53,11 @@ export default function Humans() {
       >
         <div className="flex items-center justify-center gap-3">
           <Heart className="h-6 w-6 text-pink-500 animate-pulse" />
-          <h1 className="text-xl font-bold tracking-tight">You found the humans.</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t.humansFound}</h1>
           <Heart className="h-6 w-6 text-pink-500 animate-pulse" />
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Behind every line of code, there's a person who cared enough to write it.
+          {t.humansBehind}
         </p>
       </div>
 
@@ -68,21 +70,21 @@ export default function Humans() {
         <div className="bg-card border border-border rounded-xl p-6 space-y-4">
           <h2 className="text-sm font-semibold flex items-center gap-2">
             <Star className="h-4 w-4 text-amber-500" />
-            Made with love by
+            {t.humansMadeBy}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm font-medium">Bob Rapp</p>
-              <p className="text-xs text-muted-foreground">Co-founder, AiGovOps Foundation</p>
+              <p className="text-xs text-muted-foreground">{t.humansCofounder}</p>
               <p className="text-xs text-muted-foreground/70">
-                Believes every human deserves technology that respects them
+                {t.humansBobDesc}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium">Ken Johnston</p>
-              <p className="text-xs text-muted-foreground">Co-founder, AiGovOps Foundation</p>
+              <p className="text-xs text-muted-foreground">{t.humansCofounder}</p>
               <p className="text-xs text-muted-foreground/70">
-                Working to make governance-as-code accessible to everyone
+                {t.humansKenDesc}
               </p>
             </div>
           </div>
@@ -98,7 +100,7 @@ export default function Humans() {
         <div className="bg-card border border-border rounded-xl p-6 space-y-3">
           <h2 className="text-sm font-semibold flex items-center gap-2">
             <Coffee className="h-4 w-4 text-amber-700 dark:text-amber-400" />
-            Built with
+            {t.humansBuiltWith}
           </h2>
           <div className="flex flex-wrap gap-2">
             {[
@@ -126,12 +128,10 @@ export default function Humans() {
         <div className="bg-card border border-border rounded-xl p-6 space-y-3">
           <h2 className="text-sm font-semibold flex items-center gap-2">
             <Globe className="h-4 w-4 text-primary" />
-            Our mission
+            {t.humansMission}
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            The AiGovOps Foundation works to make AI governance accessible, transparent, and human-centered.
-            We believe in governance-as-code, human-in-the-loop decision making, and empowering
-            disadvantaged communities through open-source tools.
+            {t.humansMissionText}
           </p>
           <a
             href="https://www.aigovopsfoundation.org/"
@@ -139,7 +139,7 @@ export default function Humans() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
           >
-            Learn more at aigovopsfoundation.org
+            {t.humansLearnMore}
             <Sparkles className="h-3 w-3" />
           </a>
         </div>
@@ -150,7 +150,7 @@ export default function Humans() {
         <div className="space-y-3 transition-all duration-700">
           <h2 className="text-sm font-semibold text-center flex items-center justify-center gap-2">
             <Heart className="h-4 w-4 text-pink-500" />
-            Gratitude wall
+            {t.humansGratitudeWall}
           </h2>
           <div className="space-y-2">
             {gratitudes.map((g, i) => (
@@ -169,7 +169,7 @@ export default function Humans() {
       {/* Sign-off */}
       <div className="text-center pt-4 border-t border-border">
         <p className="text-xs text-muted-foreground/50">
-          If you're reading this, you're one of us. Welcome home.
+          {t.humansWelcome}
         </p>
       </div>
     </div>

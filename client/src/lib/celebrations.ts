@@ -1,43 +1,12 @@
 /**
  * Celebration Layer — confetti bursts, affirming messages, and a11y announcements
- * Uses canvas-confetti for particle effects, Web Audio API for optional chimes
+ * Uses canvas-confetti for particle effects
+ * Messages are now provided by the caller (from i18n)
  */
 import confetti from "canvas-confetti";
 
-// ── Affirming messages for milestones ──
-const affirmations: Record<string, string[]> = {
-  preflight: [
-    "Preflight complete — your system is ready.",
-    "All checks passed. You're set up for success.",
-    "Environment verified. Safe to proceed.",
-  ],
-  install: [
-    "Installation complete. You just made it safer.",
-    "Deployed with care. Well done.",
-    "Another step toward a more human-friendly world.",
-  ],
-  hardening: [
-    "Hardened. Your infrastructure thanks you.",
-    "Security first — you're doing it right.",
-    "Locked down and ready for production.",
-  ],
-  general: [
-    "Nice work. Every step matters.",
-    "Progress feels good, doesn't it?",
-    "You're building something meaningful.",
-    "One more thing made better today.",
-    "Humans and AI, working together.",
-  ],
-};
-
-export function getAffirmation(category: string = "general"): string {
-  const pool = affirmations[category] || affirmations.general;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
 // ── Confetti presets ──
 export function celebrateSuccess() {
-  // Burst from both sides
   const defaults = {
     spread: 60,
     ticks: 80,
@@ -52,7 +21,6 @@ export function celebrateSuccess() {
 }
 
 export function celebrateMilestone() {
-  // Bigger celebration — stars and circles
   const duration = 2000;
   const end = Date.now() + duration;
 
@@ -84,7 +52,6 @@ export function celebrateMilestone() {
 }
 
 export function celebrateSubtle() {
-  // Single soft burst — for smaller wins
   confetti({
     particleCount: 25,
     spread: 70,
@@ -115,16 +82,13 @@ function getAnnouncer(): HTMLDivElement {
 export function announceToScreenReader(message: string) {
   const el = getAnnouncer();
   el.textContent = "";
-  // Small delay to ensure the change is detected
   requestAnimationFrame(() => {
     el.textContent = message;
   });
 }
 
-// ── Combined celebrate + announce ──
-export function celebrate(category: string = "general", intensity: "subtle" | "normal" | "milestone" = "normal") {
-  const message = getAffirmation(category);
-
+// ── Combined celebrate + announce (message passed in from i18n) ──
+export function celebrate(message: string, intensity: "subtle" | "normal" | "milestone" = "normal") {
   switch (intensity) {
     case "subtle":
       celebrateSubtle();

@@ -24,6 +24,8 @@ import NotFound from "@/pages/not-found";
 import Patterns from "@/pages/patterns";
 import Humans from "@/pages/humans";
 import { AmbientBackground } from "@/components/ambient-background";
+import { I18nProvider } from "@/lib/i18n";
+import { LanguagePicker } from "@/components/language-picker";
 
 function AppRouter() {
   return (
@@ -55,38 +57,43 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Router hook={useHashLocation}>
-            <SidebarProvider style={style as React.CSSProperties}>
-              <AmbientBackground />
-              <div className="flex h-screen w-full relative">
-                <AppSidebar />
-                <div className="flex flex-col flex-1 min-w-0">
-                  <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 backdrop-blur-sm">
-                    <div className="flex items-center gap-3">
-                      <SidebarTrigger data-testid="button-sidebar-toggle" />
-                      <div className="flex items-center gap-2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                          <path d="M2 17l10 5 10-5"/>
-                          <path d="M2 12l10 5 10-5"/>
-                        </svg>
-                        <span className="font-semibold text-sm tracking-tight">OpenClaw Installer</span>
+      <I18nProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Router hook={useHashLocation}>
+              <SidebarProvider style={style as React.CSSProperties}>
+                <AmbientBackground />
+                <div className="flex h-screen w-full relative">
+                  <AppSidebar />
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 backdrop-blur-sm">
+                      <div className="flex items-center gap-3">
+                        <SidebarTrigger data-testid="button-sidebar-toggle" />
+                        <div className="flex items-center gap-2">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                          </svg>
+                          <span className="font-semibold text-sm tracking-tight">OpenClaw Installer</span>
+                        </div>
                       </div>
-                    </div>
-                    <ThemeToggle />
-                  </header>
+                      <div className="flex items-center gap-1">
+                        <LanguagePicker />
+                        <ThemeToggle />
+                      </div>
+                    </header>
                   <main className="flex-1 overflow-auto">
                     <AppRouter />
                   </main>
                 </div>
               </div>
-            </SidebarProvider>
-          </Router>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+              </SidebarProvider>
+            </Router>
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </I18nProvider>
     </ThemeProvider>
   );
 }
