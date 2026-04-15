@@ -1,0 +1,288 @@
+name: Deploy to Vultr
+
+on:
+  # Auto-trigger on merge to master (with approval gate via environment)
+  push:
+    branches: [master]
+  # Manual trigger for ad-hoc deployments
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: "Vultr plan ID"
+        required: true
+        default: "vc2-1c-1gb"
+        type: choice
+        options:
+          - vc2-1c-1gb
+          - vc2-1c-2gb
+          - vc2-2c-4gb
+      region:
+        description: "Vultr region"
+        required: true
+        default: "ewr"
+        type: choice
+        options:
+          - ewr
+          - ord
+          - dfw
+          - lax
+          - atl
+          - ams
+          - fra
+          - sgp
+      destroy_after:
+        description: "Destroy instance after deploy (for testing)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+# Prevent concurrent deploys
+concurrency:
+  group: deploy-vultr
+  cancel-in-progress: false
+
+env:
+  INSTANCE_LABEL: openclaw-prod
+  OS_ID: 1743  # Ubuntu 22.04 x64
+
+jobs:
+  deploy:
+    name: Deploy to Vultr Cloud
+    runs-on: ubuntu-latest
+    # Require manual approval via GitHub environment protection rules
+    environment: production
+    outputs:
+      server_ip: ${{ steps.deploy.outputs.server_ip }}
+      server_id: ${{ steps.deploy.outputs.server_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Vultr API key
+        run: |
+          if [ -z "${{ secrets.VULTR_API_KEY }}" ]; then
+            echo "::error::VULTR_API_KEY secret is not set. Add it in Settings → Secrets → Actions."
+            exit 1
+          fi
+
+      - name: Read startup script
+        id: script
+        run: |
+          if [ ! -f deploy/install.sh ]; then
+            echo "::error::deploy/install.sh not found"
+            exit 1
+          fi
+          SCRIPT_B64=$(base64 -w 0 deploy/install.sh)
+          echo "data=$SCRIPT_B64" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing instance
+        id: existing
+        run: |
+          RESPONSE=$(curl -s \
+            -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+            "https://api.vultr.com/v2/instances?label=${{ env.INSTANCE_LABEL }}")
+
+          INSTANCE_ID=$(echo "$RESPONSE" | jq -r '.instances[0].id // empty')
+          INSTANCE_IP=$(echo "$RESPONSE" | jq -r '.instances[0].main_ip // empty')
+
+          if [ -n "$INSTANCE_ID" ] && [ "$INSTANCE_ID" != "null" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "instance_id=$INSTANCE_ID" >> "$GITHUB_OUTPUT"
+            echo "instance_ip=$INSTANCE_IP" >> "$GITHUB_OUTPUT"
+            echo "::notice::Existing instance found: $INSTANCE_LABEL (ID: $INSTANCE_ID, IP: $INSTANCE_IP)"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No existing instance — will create new"
+          fi
+
+      # If instance exists, reinstall it
+      - name: Reinstall existing instance
+        id: reinstall
+        if: steps.existing.outputs.found == 'true'
+        run: |
+          INSTANCE_ID="${{ steps.existing.outputs.instance_id }}"
+          echo "Reinstalling instance $INSTANCE_ID..."
+
+          # First, create/update the startup script
+          SCRIPT_CONTENT=$(echo "${{ steps.script.outputs.data }}" | base64 -d)
+          SCRIPT_ID=$(curl -s \
+            -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+            "https://api.vultr.com/v2/startup-scripts?type=boot" \
+            | jq -r '.startup_scripts[] | select(.name == "openclaw-deploy") | .id // empty')
+
+          if [ -n "$SCRIPT_ID" ]; then
+            # Update existing script
+            curl -s -X PATCH \
+              -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n --arg script "$SCRIPT_CONTENT" '{script: $script}')" \
+              "https://api.vultr.com/v2/startup-scripts/$SCRIPT_ID"
+          else
+            # Create new script
+            SCRIPT_ID=$(curl -s -X POST \
+              -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n --arg script "$SCRIPT_CONTENT" '{name: "openclaw-deploy", type: "boot", script: $script}')" \
+              "https://api.vultr.com/v2/startup-scripts" \
+              | jq -r '.startup_script.id')
+          fi
+
+          # Reinstall with the startup script
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg os_id "${{ env.OS_ID }}" \
+              --arg script_id "$SCRIPT_ID" \
+              '{os_id: ($os_id | tonumber), script_id: $script_id}')" \
+            "https://api.vultr.com/v2/instances/$INSTANCE_ID/reinstall")
+
+          echo "server_ip=${{ steps.existing.outputs.instance_ip }}" >> "$GITHUB_OUTPUT"
+          echo "server_id=$INSTANCE_ID" >> "$GITHUB_OUTPUT"
+          echo "reinstalled=true" >> "$GITHUB_OUTPUT"
+          echo "::notice::Reinstall triggered for instance $INSTANCE_ID"
+
+      # If no instance exists, create one
+      - name: Create new instance
+        id: create
+        if: steps.existing.outputs.found == 'false'
+        run: |
+          PLAN="${{ inputs.plan || 'vc2-1c-1gb' }}"
+          REGION="${{ inputs.region || 'ewr' }}"
+          SCRIPT_CONTENT=$(echo "${{ steps.script.outputs.data }}" | base64 -d)
+
+          echo "Creating $PLAN in $REGION..."
+
+          # Create startup script
+          SCRIPT_ID=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg script "$SCRIPT_CONTENT" '{name: "openclaw-deploy", type: "boot", script: $script}')" \
+            "https://api.vultr.com/v2/startup-scripts" \
+            | jq -r '.startup_script.id')
+
+          # Create instance
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg region "$REGION" \
+              --arg plan "$PLAN" \
+              --arg label "${{ env.INSTANCE_LABEL }}" \
+              --arg os_id "${{ env.OS_ID }}" \
+              --arg script_id "$SCRIPT_ID" \
+              '{
+                region: $region,
+                plan: $plan,
+                label: $label,
+                os_id: ($os_id | tonumber),
+                script_id: $script_id,
+                tags: ["openclaw", "github-actions"],
+                backups: "disabled",
+                activation_email: false
+              }')" \
+            "https://api.vultr.com/v2/instances")
+
+          INSTANCE_ID=$(echo "$RESPONSE" | jq -r '.instance.id // empty')
+          INSTANCE_IP=$(echo "$RESPONSE" | jq -r '.instance.main_ip // empty')
+
+          if [ -z "$INSTANCE_ID" ]; then
+            ERROR=$(echo "$RESPONSE" | jq -r '.error // "unknown error"')
+            echo "::error::Instance creation failed: $ERROR"
+            echo "error=$ERROR" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          # IP may not be assigned immediately — poll for it
+          for i in $(seq 1 12); do
+            if [ -z "$INSTANCE_IP" ] || [ "$INSTANCE_IP" = "0.0.0.0" ] || [ "$INSTANCE_IP" = "null" ]; then
+              sleep 10
+              INSTANCE_IP=$(curl -s \
+                -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+                "https://api.vultr.com/v2/instances/$INSTANCE_ID" \
+                | jq -r '.instance.main_ip // empty')
+            else
+              break
+            fi
+          done
+
+          echo "::notice::Instance created: ID=$INSTANCE_ID, IP=$INSTANCE_IP"
+          echo "server_id=$INSTANCE_ID" >> "$GITHUB_OUTPUT"
+          echo "server_ip=$INSTANCE_IP" >> "$GITHUB_OUTPUT"
+
+      - name: Consolidate outputs
+        id: deploy
+        run: |
+          if [ "${{ steps.reinstall.outputs.reinstalled }}" = "true" ]; then
+            echo "server_ip=${{ steps.reinstall.outputs.server_ip }}" >> "$GITHUB_OUTPUT"
+            echo "server_id=${{ steps.reinstall.outputs.server_id }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "server_ip=${{ steps.create.outputs.server_ip }}" >> "$GITHUB_OUTPUT"
+            echo "server_id=${{ steps.create.outputs.server_id }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wait for startup script to complete
+        run: |
+          SERVER_IP="${{ steps.deploy.outputs.server_ip }}"
+          echo "Waiting for OpenClaw to become available at http://$SERVER_IP ..."
+
+          for i in $(seq 1 30); do
+            if curl -sf --max-time 5 "http://$SERVER_IP/api/hosts" > /dev/null 2>&1; then
+              echo "::notice::OpenClaw is live at http://$SERVER_IP"
+              exit 0
+            fi
+            echo "  Attempt $i/30 — waiting 20s..."
+            sleep 20
+          done
+
+          echo "::warning::Instance created but app not responding after 10 minutes. Startup script may still be running."
+
+      # --- Cost guard ---
+      - name: Destroy instance (testing only)
+        if: inputs.destroy_after == true || inputs.destroy_after == 'true'
+        run: |
+          echo "::warning::Destroying instance ${{ steps.deploy.outputs.server_id }} (testing mode)"
+          curl -s -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.VULTR_API_KEY }}" \
+            "https://api.vultr.com/v2/instances/${{ steps.deploy.outputs.server_id }}"
+
+  # --- Find the merged PR and post status ---
+  notify:
+    name: Post Deploy Status
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find merged PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=$(gh pr list --state merged --json number,mergeCommit \
+            --jq ".[] | select(.mergeCommit.oid == \"$GITHUB_SHA\") | .number" \
+            --limit 10 2>/dev/null || echo "")
+
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+              --jq '.[0].number // empty' 2>/dev/null || echo "")
+          fi
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "::notice::PR number: ${PR_NUMBER:-none}"
+
+      - name: Post deployment status
+        uses: ./.github/actions/post-deploy-status
+        with:
+          provider: "Vultr"
+          status: ${{ needs.deploy.result }}
+          server_ip: ${{ needs.deploy.outputs.server_ip }}
+          server_id: ${{ needs.deploy.outputs.server_id }}
+          deploy_url: "http://${{ needs.deploy.outputs.server_ip }}"
+          pr_number: ${{ steps.pr.outputs.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

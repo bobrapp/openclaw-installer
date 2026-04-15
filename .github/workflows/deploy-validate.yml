@@ -1,0 +1,191 @@
+name: Deploy Config Validation
+
+on:
+  pull_request:
+    paths:
+      - "deploy/**"
+      - ".do/**"
+      - "render.yaml"
+      - "Dockerfile"
+      - "docker-compose*.yml"
+      - ".github/workflows/deploy-*.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+jobs:
+  validate-deploy-configs:
+    name: Validate Deploy Configs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- ShellCheck: lint install.sh ---
+      - name: Lint install.sh with ShellCheck
+        id: shellcheck
+        run: |
+          if [ -f deploy/install.sh ]; then
+            echo "### ShellCheck Results" >> "$GITHUB_STEP_SUMMARY"
+            if shellcheck deploy/install.sh; then
+              echo "✅ install.sh passed ShellCheck" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=pass" >> "$GITHUB_OUTPUT"
+            else
+              echo "❌ install.sh has ShellCheck warnings" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=fail" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "⚠️ deploy/install.sh not found — skipping" >> "$GITHUB_STEP_SUMMARY"
+            echo "result=skip" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --- YAML lint: cloud-init.yaml ---
+      - name: Install yamllint
+        run: pip install yamllint --quiet
+
+      - name: Lint cloud-init.yaml
+        id: cloudinit
+        run: |
+          echo "### Cloud-Init YAML Validation" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f deploy/cloud-init.yaml ]; then
+            if yamllint -d relaxed deploy/cloud-init.yaml; then
+              echo "✅ cloud-init.yaml is valid YAML" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=pass" >> "$GITHUB_OUTPUT"
+            else
+              echo "❌ cloud-init.yaml has YAML issues" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=fail" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "⚠️ deploy/cloud-init.yaml not found" >> "$GITHUB_STEP_SUMMARY"
+            echo "result=skip" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --- YAML lint: render.yaml ---
+      - name: Lint render.yaml
+        id: render
+        run: |
+          echo "### Render Config Validation" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f render.yaml ]; then
+            if yamllint -d relaxed render.yaml; then
+              echo "✅ render.yaml is valid" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=pass" >> "$GITHUB_OUTPUT"
+            else
+              echo "❌ render.yaml has issues" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=fail" >> "$GITHUB_OUTPUT"
+            fi
+            # Validate required fields
+            if grep -q "startCommand:" render.yaml && grep -q "buildCommand:" render.yaml; then
+              echo "✅ render.yaml has required start/build commands" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "⚠️ render.yaml missing startCommand or buildCommand" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          else
+            echo "⚠️ render.yaml not found" >> "$GITHUB_STEP_SUMMARY"
+            echo "result=skip" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --- YAML lint: DO deploy template ---
+      - name: Lint DigitalOcean deploy template
+        id: dotemplate
+        run: |
+          echo "### DigitalOcean Config Validation" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f .do/deploy.template.yaml ]; then
+            if yamllint -d relaxed .do/deploy.template.yaml; then
+              echo "✅ .do/deploy.template.yaml is valid" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=pass" >> "$GITHUB_OUTPUT"
+            else
+              echo "❌ .do/deploy.template.yaml has issues" >> "$GITHUB_STEP_SUMMARY"
+              echo "result=fail" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "⚠️ .do/deploy.template.yaml not found" >> "$GITHUB_STEP_SUMMARY"
+            echo "result=skip" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --- Dry-run build to ensure deploy would succeed ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Dry-run build
+        id: build
+        run: |
+          echo "### Build Dry-Run" >> "$GITHUB_STEP_SUMMARY"
+          if npm run build; then
+            echo "✅ Production build succeeded" >> "$GITHUB_STEP_SUMMARY"
+            echo "result=pass" >> "$GITHUB_OUTPUT"
+          else
+            echo "❌ Production build failed" >> "$GITHUB_STEP_SUMMARY"
+            echo "result=fail" >> "$GITHUB_OUTPUT"
+          fi
+
+      # --- Post summary comment to PR ---
+      - name: Post validation summary to PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const shellcheck = '${{ steps.shellcheck.outputs.result }}';
+            const cloudinit = '${{ steps.cloudinit.outputs.result }}';
+            const render = '${{ steps.render.outputs.result }}';
+            const dotemplate = '${{ steps.dotemplate.outputs.result }}';
+            const build = '${{ steps.build.outputs.result }}';
+
+            const icon = (r) => r === 'pass' ? '✅' : r === 'fail' ? '❌' : '⏭️';
+            const allPassed = [shellcheck, cloudinit, render, dotemplate, build].every(r => r !== 'fail');
+
+            const body = [
+              `## ${allPassed ? '✅' : '❌'} Deploy Config Validation`,
+              '',
+              '| Check | Status |',
+              '|-------|--------|',
+              `| ShellCheck (install.sh) | ${icon(shellcheck)} ${shellcheck} |`,
+              `| Cloud-Init YAML | ${icon(cloudinit)} ${cloudinit} |`,
+              `| Render Config | ${icon(render)} ${render} |`,
+              `| DigitalOcean Template | ${icon(dotemplate)} ${dotemplate} |`,
+              `| Production Build | ${icon(build)} ${build} |`,
+              '',
+              allPassed
+                ? '> All deploy configs are valid and the build succeeds. Safe to merge and deploy.'
+                : '> ⚠️ One or more checks failed. Please fix before merging.',
+              '',
+              `---`,
+              `*Validated at ${new Date().toISOString()} • [Workflow Run](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})*`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+
+      # --- Set commit status ---
+      - name: Set deploy-ready status
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHELLCHECK="${{ steps.shellcheck.outputs.result }}"
+          CLOUDINIT="${{ steps.cloudinit.outputs.result }}"
+          BUILD="${{ steps.build.outputs.result }}"
+
+          if [ "$SHELLCHECK" != "fail" ] && [ "$CLOUDINIT" != "fail" ] && [ "$BUILD" != "fail" ]; then
+            STATE="success"
+            DESC="All deploy configs valid, build succeeded"
+          else
+            STATE="failure"
+            DESC="Deploy config validation failed"
+          fi
+
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+            -f state="$STATE" \
+            -f target_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            -f description="$DESC" \
+            -f context="deploy/validate"

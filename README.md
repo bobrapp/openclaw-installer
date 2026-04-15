@@ -42,6 +42,13 @@ Built with **AiGovOps Foundation** immutable logging — every action is cryptog
 - 8 checks: Node.js version, npm audit, TypeScript compilation, build, lint, test, schema validation, security scan
 - Posts pass/fail results as a GitHub commit status check
 
+### One-Click Cloud Deploy
+- **Deploy buttons** for DigitalOcean App Platform, Render, Hetzner, Vultr, Hostinger, Contabo, and IONOS
+- **Cloud-init YAML** for providers that support it (Hetzner, Vultr, DO) — auto-installs Node.js, nginx, systemd, UFW
+- **One-liner SSH install script** (`deploy/install.sh`) — deploy in ~3 minutes on any Ubuntu 22.04+ VPS
+- **GitHub Actions auto-deploy** to Hetzner and Vultr on merge to master with approval gates
+- **Deploy validation workflow** lints all deploy configs on every PR and posts readiness status
+
 ### Standalone HTML Wizard
 - **Self-contained single-file installer wizard** (`public/aigovops-wizard.html`)
 - 7 steps: Welcome → Configuration → Security → Review → Dry Run → Install → Audit Log
@@ -69,7 +76,7 @@ Built with **AiGovOps Foundation** immutable logging — every action is cryptog
 | Database | SQLite (better-sqlite3) + Drizzle ORM |
 | Crypto | Node.js `crypto` module (SHA-256) |
 | PDF Export | Python 3, ReportLab, qrcode, Pillow |
-| CI/CD | GitHub Actions |
+| CI/CD | GitHub Actions (CI, deploy-validate, deploy-hetzner, deploy-vultr) |
 | Build | Vite, esbuild, TypeScript |
 
 ## Getting Started
@@ -125,8 +132,19 @@ openclaw-installer/
 ├── public/
 │   └── aigovops-wizard.html    # Standalone 7-step wizard (50KB, self-contained)
 ├── .github/
+│   ├── actions/
+│   │   └── post-deploy-status/ # Reusable action: PR comments + commit status
 │   └── workflows/
-│       └── preflight.yml       # CI pipeline with 8 checks + commit status
+│       ├── preflight.yml       # CI pipeline with 8 checks + commit status
+│       ├── deploy-validate.yml # Lint deploy configs on PR
+│       ├── deploy-hetzner.yml  # Auto-deploy to Hetzner Cloud
+│       └── deploy-vultr.yml    # Auto-deploy to Vultr Cloud
+├── deploy/
+│   ├── install.sh              # One-liner VPS install script
+│   └── cloud-init.yaml         # Cloud-init config for VPS providers
+├── .do/
+│   └── deploy.template.yaml   # DigitalOcean App Platform spec
+├── render.yaml                 # Render PaaS deploy config
 ├── shared/
 │   └── schema.ts               # Drizzle ORM schema (5 tables)
 └── README.md
@@ -238,6 +256,62 @@ This project implements standards from the [AiGovOps Foundation](https://www.aig
 - Immutable audit logging with SHA-256 hash chain
 - Production hardening checklist (40+ checks)
 - Owner passphrase authentication
+
+## Cloud Deployment
+
+### One-Click PaaS Deploy
+
+| Provider | Method | Link |
+|----------|--------|------|
+| **Render** | One-click from `render.yaml` | [Deploy to Render](https://render.com/deploy?repo=https://github.com/bobrapp/openclaw-installer) |
+| **DigitalOcean** | One-click App Platform | [Deploy to DO](https://cloud.digitalocean.com/apps/new?repo=https://github.com/bobrapp/openclaw-installer/tree/master) |
+
+### VPS Deploy (SSH One-Liner)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/install.sh | sudo bash
+```
+
+Installs Node.js 20, nginx reverse proxy, systemd service, and UFW firewall on Ubuntu 22.04+.
+
+### Cloud-Init (Hetzner, Vultr, DO Droplets)
+
+Paste this URL into the "Cloud config" or "Startup script" field when creating a VPS:
+
+```
+https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/cloud-init.yaml
+```
+
+### GitHub Actions Auto-Deploy
+
+The repo includes automated deployment workflows for Hetzner and Vultr that trigger on every merge to `master`. Both require:
+
+1. **GitHub Environment**: Create a `production` environment in Settings → Environments with required reviewers (approval gate)
+2. **Secrets**: Add the following in Settings → Secrets → Actions:
+
+| Secret | Description | Required By |
+|--------|-------------|-------------|
+| `HETZNER_API_TOKEN` | [Hetzner Cloud API token](https://docs.hetzner.cloud/#getting-started) | `deploy-hetzner.yml` |
+| `VULTR_API_KEY` | [Vultr API key](https://my.vultr.com/settings/#settingsapi) | `deploy-vultr.yml` |
+
+#### How It Works
+
+1. **PR opened** → `deploy-validate.yml` runs: ShellCheck on `install.sh`, YAML lint on all configs, dry-run build. Posts a validation summary comment to the PR.
+2. **PR merged to master** → `deploy-hetzner.yml` and `deploy-vultr.yml` trigger, but **pause for approval** (via the `production` environment protection rule).
+3. **Reviewer approves** → Workflow checks for an existing `openclaw-prod` server. If found, it rebuilds/reinstalls. If not, it creates a new server with cloud-init/startup script.
+4. **Health check** → Polls `http://<server-ip>/api/hosts` for up to 10 minutes until the app is live.
+5. **Status posted** → The reusable `post-deploy-status` action posts a formatted deployment report as a PR comment and sets a commit status check.
+
+#### Manual Dispatch
+
+Both workflows support `workflow_dispatch` for manual runs with configurable server type, region, and a "destroy after deploy" option for cost-controlled testing.
+
+#### Cost Safety
+
+- **Approval gate**: Deploys require manual approval — no accidental server creation
+- **Single-server logic**: Reuses existing `openclaw-prod` server instead of creating duplicates
+- **Destroy flag**: Manual dispatch includes a "destroy after" option for testing without ongoing costs
+- **Concurrency control**: Only one deploy per provider can run at a time
 
 ## Contributing
 

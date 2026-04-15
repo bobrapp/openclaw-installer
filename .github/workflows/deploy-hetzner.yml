@@ -1,0 +1,253 @@
+name: Deploy to Hetzner
+
+on:
+  # Auto-trigger on merge to master (with approval gate via environment)
+  push:
+    branches: [master]
+  # Manual trigger for ad-hoc deployments
+  workflow_dispatch:
+    inputs:
+      server_type:
+        description: "Hetzner server type"
+        required: true
+        default: "cx22"
+        type: choice
+        options:
+          - cx22
+          - cx32
+          - cax11
+          - cax21
+      location:
+        description: "Data center location"
+        required: true
+        default: "nbg1"
+        type: choice
+        options:
+          - nbg1
+          - fsn1
+          - hel1
+          - ash
+          - hil
+      destroy_after:
+        description: "Destroy server after deploy (for testing)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+
+# Prevent concurrent deploys
+concurrency:
+  group: deploy-hetzner
+  cancel-in-progress: false
+
+env:
+  SERVER_NAME: openclaw-prod
+  IMAGE: ubuntu-22.04
+
+jobs:
+  deploy:
+    name: Deploy to Hetzner Cloud
+    runs-on: ubuntu-latest
+    # Require manual approval via GitHub environment protection rules
+    environment: production
+    outputs:
+      server_ip: ${{ steps.deploy.outputs.server_ip }}
+      server_id: ${{ steps.deploy.outputs.server_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Hetzner API token
+        run: |
+          if [ -z "${{ secrets.HETZNER_API_TOKEN }}" ]; then
+            echo "::error::HETZNER_API_TOKEN secret is not set. Add it in Settings → Secrets → Actions."
+            exit 1
+          fi
+
+      - name: Read cloud-init config
+        id: cloudinit
+        run: |
+          if [ ! -f deploy/cloud-init.yaml ]; then
+            echo "::error::deploy/cloud-init.yaml not found"
+            exit 1
+          fi
+          # Store as base64 to preserve multiline
+          CLOUD_INIT_B64=$(base64 -w 0 deploy/cloud-init.yaml)
+          echo "data=$CLOUD_INIT_B64" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing server
+        id: existing
+        run: |
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+            "https://api.hetzner.cloud/v1/servers?name=${{ env.SERVER_NAME }}")
+
+          SERVER_ID=$(echo "$RESPONSE" | jq -r '.servers[0].id // empty')
+          SERVER_IP=$(echo "$RESPONSE" | jq -r '.servers[0].public_net.ipv4.ip // empty')
+
+          if [ -n "$SERVER_ID" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "server_id=$SERVER_ID" >> "$GITHUB_OUTPUT"
+            echo "server_ip=$SERVER_IP" >> "$GITHUB_OUTPUT"
+            echo "::notice::Existing server found: $SERVER_NAME (ID: $SERVER_ID, IP: $SERVER_IP)"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No existing server found — will create new"
+          fi
+
+      # If server exists, rebuild it (wipe + re-apply cloud-init)
+      - name: Rebuild existing server
+        id: rebuild
+        if: steps.existing.outputs.found == 'true'
+        run: |
+          echo "Rebuilding server ${{ steps.existing.outputs.server_id }}..."
+
+          # Get image ID for ubuntu-22.04
+          IMAGE_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+            "https://api.hetzner.cloud/v1/images?name=${{ env.IMAGE }}&type=system" \
+            | jq -r '.images[0].id')
+
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"image\": \"$IMAGE_ID\"}" \
+            "https://api.hetzner.cloud/v1/servers/${{ steps.existing.outputs.server_id }}/actions/rebuild")
+
+          ACTION_ID=$(echo "$RESPONSE" | jq -r '.action.id // empty')
+          if [ -z "$ACTION_ID" ]; then
+            echo "::error::Rebuild failed: $(echo "$RESPONSE" | jq -r '.error.message // "unknown error"')"
+            exit 1
+          fi
+
+          echo "Rebuild action started: $ACTION_ID"
+          echo "server_ip=${{ steps.existing.outputs.server_ip }}" >> "$GITHUB_OUTPUT"
+          echo "server_id=${{ steps.existing.outputs.server_id }}" >> "$GITHUB_OUTPUT"
+          echo "rebuilt=true" >> "$GITHUB_OUTPUT"
+
+      # If no server exists, create a new one with cloud-init
+      - name: Create new server
+        id: create
+        if: steps.existing.outputs.found == 'false'
+        run: |
+          SERVER_TYPE="${{ inputs.server_type || 'cx22' }}"
+          LOCATION="${{ inputs.location || 'nbg1' }}"
+          CLOUD_INIT=$(echo "${{ steps.cloudinit.outputs.data }}" | base64 -d)
+
+          echo "Creating $SERVER_TYPE in $LOCATION with cloud-init..."
+
+          RESPONSE=$(curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg name "${{ env.SERVER_NAME }}" \
+              --arg server_type "$SERVER_TYPE" \
+              --arg image "${{ env.IMAGE }}" \
+              --arg location "$LOCATION" \
+              --arg user_data "$CLOUD_INIT" \
+              '{
+                name: $name,
+                server_type: $server_type,
+                image: $image,
+                location: $location,
+                user_data: $user_data,
+                start_after_create: true,
+                labels: {
+                  project: "openclaw",
+                  managed_by: "github-actions",
+                  repo: "openclaw-installer"
+                }
+              }')" \
+            "https://api.hetzner.cloud/v1/servers")
+
+          SERVER_ID=$(echo "$RESPONSE" | jq -r '.server.id // empty')
+          SERVER_IP=$(echo "$RESPONSE" | jq -r '.server.public_net.ipv4.ip // empty')
+
+          if [ -z "$SERVER_ID" ]; then
+            ERROR=$(echo "$RESPONSE" | jq -r '.error.message // "unknown error"')
+            echo "::error::Server creation failed: $ERROR"
+            echo "error=$ERROR" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          echo "::notice::Server created: ID=$SERVER_ID, IP=$SERVER_IP"
+          echo "server_id=$SERVER_ID" >> "$GITHUB_OUTPUT"
+          echo "server_ip=$SERVER_IP" >> "$GITHUB_OUTPUT"
+
+      - name: Consolidate outputs
+        id: deploy
+        run: |
+          # Pick from rebuild or create
+          if [ "${{ steps.rebuild.outputs.rebuilt }}" = "true" ]; then
+            echo "server_ip=${{ steps.rebuild.outputs.server_ip }}" >> "$GITHUB_OUTPUT"
+            echo "server_id=${{ steps.rebuild.outputs.server_id }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "server_ip=${{ steps.create.outputs.server_ip }}" >> "$GITHUB_OUTPUT"
+            echo "server_id=${{ steps.create.outputs.server_id }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wait for cloud-init to complete
+        run: |
+          SERVER_IP="${{ steps.deploy.outputs.server_ip }}"
+          echo "Waiting for OpenClaw to become available at http://$SERVER_IP ..."
+
+          # Cloud-init takes ~3-5 minutes
+          for i in $(seq 1 30); do
+            if curl -sf --max-time 5 "http://$SERVER_IP/api/hosts" > /dev/null 2>&1; then
+              echo "::notice::OpenClaw is live at http://$SERVER_IP"
+              exit 0
+            fi
+            echo "  Attempt $i/30 — waiting 20s..."
+            sleep 20
+          done
+
+          echo "::warning::Server created but app not responding after 10 minutes. Cloud-init may still be running."
+
+      # --- Cost guard: optionally destroy after testing ---
+      - name: Destroy server (testing only)
+        if: inputs.destroy_after == true || inputs.destroy_after == 'true'
+        run: |
+          echo "::warning::Destroying server ${{ steps.deploy.outputs.server_id }} (testing mode)"
+          curl -s -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+            "https://api.hetzner.cloud/v1/servers/${{ steps.deploy.outputs.server_id }}"
+
+  # --- Find the merged PR and post status ---
+  notify:
+    name: Post Deploy Status
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Find merged PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Search for PRs merged with this commit
+          PR_NUMBER=$(gh pr list --state merged --json number,mergeCommit \
+            --jq ".[] | select(.mergeCommit.oid == \"$GITHUB_SHA\") | .number" \
+            --limit 10 2>/dev/null || echo "")
+
+          if [ -z "$PR_NUMBER" ]; then
+            # Fallback: search by commit message
+            PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" \
+              --jq '.[0].number // empty' 2>/dev/null || echo "")
+          fi
+
+          echo "number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "::notice::PR number: ${PR_NUMBER:-none}"
+
+      - name: Post deployment status
+        uses: ./.github/actions/post-deploy-status
+        with:
+          provider: "Hetzner"
+          status: ${{ needs.deploy.result }}
+          server_ip: ${{ needs.deploy.outputs.server_ip }}
+          server_id: ${{ needs.deploy.outputs.server_id }}
+          deploy_url: "http://${{ needs.deploy.outputs.server_ip }}"
+          pr_number: ${{ steps.pr.outputs.number }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}

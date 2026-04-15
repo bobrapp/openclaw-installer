@@ -1,0 +1,118 @@
+name: "Post Deploy Status"
+description: "Posts formatted deployment status as a PR comment and commit status check"
+
+inputs:
+  provider:
+    description: "Cloud provider name (e.g. Hetzner, Vultr)"
+    required: true
+  status:
+    description: "Deployment status (success, failure, cancelled)"
+    required: true
+  server_ip:
+    description: "Public IP of the deployed server"
+    required: false
+    default: ""
+  server_id:
+    description: "Provider-specific server/instance ID"
+    required: false
+    default: ""
+  deploy_url:
+    description: "URL where the app is accessible"
+    required: false
+    default: ""
+  error_message:
+    description: "Error details if deployment failed"
+    required: false
+    default: ""
+  pr_number:
+    description: "PR number to comment on (if triggered by PR merge)"
+    required: false
+    default: ""
+  github_token:
+    description: "GitHub token for API calls"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Determine emoji and label
+      id: meta
+      shell: bash
+      run: |
+        if [ "${{ inputs.status }}" = "success" ]; then
+          echo "emoji=✅" >> "$GITHUB_OUTPUT"
+          echo "label=Deployed" >> "$GITHUB_OUTPUT"
+          echo "color=#28a745" >> "$GITHUB_OUTPUT"
+        elif [ "${{ inputs.status }}" = "failure" ]; then
+          echo "emoji=❌" >> "$GITHUB_OUTPUT"
+          echo "label=Failed" >> "$GITHUB_OUTPUT"
+          echo "color=#cb2431" >> "$GITHUB_OUTPUT"
+        else
+          echo "emoji=⚠️" >> "$GITHUB_OUTPUT"
+          echo "label=Cancelled" >> "$GITHUB_OUTPUT"
+          echo "color=#dbab09" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Post PR comment
+      if: inputs.pr_number != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+      run: |
+        BODY="${{ steps.meta.outputs.emoji }} **${{ inputs.provider }} Deployment — ${{ steps.meta.outputs.label }}**"
+        BODY="$BODY"$'\n\n'
+
+        BODY="$BODY| Field | Value |"$'\n'
+        BODY="$BODY|-------|-------|"$'\n'
+        BODY="$BODY| Provider | ${{ inputs.provider }} |"$'\n'
+        BODY="$BODY| Status | ${{ steps.meta.outputs.label }} |"$'\n'
+        BODY="$BODY| Commit | \`${GITHUB_SHA::8}\` |"$'\n'
+        BODY="$BODY| Workflow | [Run #${GITHUB_RUN_NUMBER}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"$'\n'
+
+        if [ -n "${{ inputs.server_ip }}" ]; then
+          BODY="$BODY| Server IP | \`${{ inputs.server_ip }}\` |"$'\n'
+        fi
+        if [ -n "${{ inputs.server_id }}" ]; then
+          BODY="$BODY| Server ID | \`${{ inputs.server_id }}\` |"$'\n'
+        fi
+        if [ -n "${{ inputs.deploy_url }}" ]; then
+          BODY="$BODY| URL | ${{ inputs.deploy_url }} |"$'\n'
+        fi
+        if [ -n "${{ inputs.error_message }}" ]; then
+          BODY="$BODY"$'\n'"<details><summary>Error Details</summary>"$'\n\n'"\`\`\`"$'\n'"${{ inputs.error_message }}"$'\n'"\`\`\`"$'\n\n'"</details>"$'\n'
+        fi
+
+        BODY="$BODY"$'\n'"---"$'\n'"*Posted by OpenClaw Deploy Bot • $(date -u '+%Y-%m-%d %H:%M UTC')*"
+
+        gh pr comment "${{ inputs.pr_number }}" \
+          --repo "$GITHUB_REPOSITORY" \
+          --body "$BODY"
+
+    - name: Set commit status
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+      run: |
+        STATE="success"
+        if [ "${{ inputs.status }}" = "failure" ]; then
+          STATE="failure"
+        elif [ "${{ inputs.status }}" = "cancelled" ]; then
+          STATE="error"
+        fi
+
+        DESCRIPTION="${{ inputs.provider }}: ${{ steps.meta.outputs.label }}"
+        if [ -n "${{ inputs.server_ip }}" ]; then
+          DESCRIPTION="$DESCRIPTION — ${{ inputs.server_ip }}"
+        fi
+
+        TARGET_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        if [ -n "${{ inputs.deploy_url }}" ]; then
+          TARGET_URL="${{ inputs.deploy_url }}"
+        fi
+
+        PROVIDER_LC=$(echo "${{ inputs.provider }}" | tr '[:upper:]' '[:lower:]')
+        gh api "repos/${GITHUB_REPOSITORY}/statuses/${GITHUB_SHA}" \
+          -f state="$STATE" \
+          -f target_url="$TARGET_URL" \
+          -f description="$DESCRIPTION" \
+          -f context="deploy/$PROVIDER_LC"
