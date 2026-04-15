@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# OpenClaw Installer — One-liner VPS Deploy Script
-# Usage: curl -fsSL https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/install.sh | bash
+# OpenClaw Installer — Automated VPS Deploy Script
+# Recommended usage (download-then-execute, safer than pipe to bash):
+#   curl -fsSL -o /tmp/openclaw-install.sh https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/install.sh
+#   bash /tmp/openclaw-install.sh
 # Supports: Ubuntu 22.04+, Debian 12+
 # Creates: openclaw user, systemd service, nginx reverse proxy
 
@@ -70,7 +72,8 @@ else
 fi
 
 info "Installing dependencies & building..."
-su - openclaw -c "cd $APP_DIR && npm install --production=false" > /dev/null 2>&1
+# Use npm ci (clean install from lockfile) for reproducible builds
+su - openclaw -c "cd $APP_DIR && npm ci" > /dev/null 2>&1
 su - openclaw -c "cd $APP_DIR && npm run build" > /dev/null 2>&1
 su - openclaw -c "cd $APP_DIR && cp public/aigovops-wizard.html dist/public/"
 su - openclaw -c "cd $APP_DIR && cp -r scripts dist/"
@@ -91,8 +94,11 @@ WorkingDirectory=/opt/openclaw/app
 ExecStart=/usr/bin/node dist/index.cjs
 Environment=NODE_ENV=production
 Environment=PORT=5000
+EnvironmentFile=-/etc/openclaw/secrets.env
 Restart=on-failure
-RestartSec=5
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=5
 ProtectSystem=strict
 PrivateTmp=true
 NoNewPrivileges=true
@@ -101,6 +107,15 @@ ReadWritePaths=/opt/openclaw
 [Install]
 WantedBy=multi-user.target
 EOF
+
+# --- Secrets env file ---
+mkdir -p /etc/openclaw
+if [ ! -f /etc/openclaw/secrets.env ]; then
+  touch /etc/openclaw/secrets.env
+  chmod 600 /etc/openclaw/secrets.env
+  chown openclaw:openclaw /etc/openclaw/secrets.env
+  ok "Created /etc/openclaw/secrets.env (add GITHUB_TOKEN etc. here)"
+fi
 
 systemctl daemon-reload
 systemctl enable --now openclaw
@@ -161,5 +176,5 @@ echo -e "${GREEN}║                                                  ║${NC}"
 echo -e "${GREEN}║  Next steps:                                     ║${NC}"
 echo -e "${GREEN}║  • Point a domain to this IP                     ║${NC}"
 echo -e "${GREEN}║  • Run: certbot --nginx -d your.domain.com       ║${NC}"
-echo -e "${GREEN}║  • Update: cd /opt/openclaw/app && git pull       ║${NC}"
+echo -e "${GREEN}║  • Update: sudo bash /opt/openclaw/app/deploy/update.sh║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════════════╝${NC}"

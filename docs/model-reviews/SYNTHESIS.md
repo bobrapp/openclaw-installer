@@ -37,31 +37,53 @@ Three frontier AI models independently reviewed the OpenClaw Installer project e
 | Gemini 3.1 Pro | Systemd service may hit `StartLimitHit` if app fails before secrets exist | Cloud-init restart loops on first boot |
 | Gemini 3.1 Pro | Auto-generate OpenAPI docs from existing drizzle-zod schemas | Zero-effort API docs from existing code |
 
-## Fixes Applied (v1.1.0)
+## Fixes Applied
 
-Based on the council's recommendations, the following fixes were implemented:
+### Session 1 — v1.1.0 (P0/P1 Critical)
 
-### P0 (Critical — Applied)
 1. **Passphrase hashing** — Replaced bare SHA-256 with `scryptSync` + random salt + `timingSafeEqual` (`server/storage.ts`)
 2. **Command injection** — Replaced `execSync` with `execFileSync` in PDF export (`server/routes.ts`)
 3. **Input validation** — Added Zod schema validation on all POST/PATCH endpoints (`server/routes.ts`)
 4. **Hetzner rebuild** — Fixed to delete + recreate with cloud-init instead of bare rebuild (`.github/workflows/deploy-hetzner.yml`)
-
-### P1 (High — Applied)
 5. **Package identity** — Changed `package.json` name from `rest-express` to `openclaw-installer`
 6. **Server binding** — Default to `127.0.0.1` in production mode (`server/index.ts`)
 7. **Database backup** — Added daily SQLite backup cron to deploy script (`deploy/install.sh`)
 
-### Remaining Recommendations (Future Work)
-- [ ] Gate all mutating endpoints behind owner auth middleware
-- [ ] Add unit tests for audit chain, auth, and API validation
-- [ ] Add `.github/dependabot.yml` for automated dependency updates
+### Session 2 — v1.2.0 (All Remaining P0/P1)
+
+**P0 — Critical Security:**
+
+8. **Owner auth middleware** — All mutating endpoints (`POST /api/logs`, `PATCH /api/state/:id`, `POST /api/state/reset`, `PATCH /api/hardening/toggle/:id`, `POST /api/logs/archive`) now require owner passphrase in `x-owner-passphrase` header (`server/routes.ts`)
+9. **DELETE /api/logs removed** — Contradicted immutability claim. Replaced with `POST /api/logs/archive` which logs the action to the audit chain before clearing (`server/routes.ts`)
+10. **Preflight results marked as simulated** — Audit log entries from the SSE preflight runner now include `[SIMULATED — web preview, not real host checks]` to prevent fabricated data in the audit chain (`server/routes.ts`)
+11. **GitHub Actions script injection** — Moved `${{ secrets.* }}` and `${{ inputs.* }}` from shell interpolation into `env:` blocks in both Hetzner and Vultr deploy workflows
+12. **Deploy trigger deduplication** — Hetzner changed to `workflow_dispatch` only (Vultr keeps push trigger with `paths-ignore` for docs/markdown)
+
+**P1 — High Priority:**
+
+13. **`/health` endpoint** — Returns `{ status, uptime, version, memory, db, timestamp }` at `GET /health` (`server/routes.ts`)
+14. **Rate limiting** — `POST /api/owner/verify` limited to 5 attempts per IP per 60 seconds with automatic cleanup (`server/routes.ts`)
+15. **Unused deps removed** — Stripped `passport`, `passport-local`, `express-session`, `memorystore` and their `@types/*` packages (20 packages removed)
+16. **Dependabot** — Added `.github/dependabot.yml` for weekly npm and GitHub Actions dependency updates
+17. **Error handling** — Changed `catch (err: any)` to `catch (err: unknown)` with proper narrowing; internal paths/tracebacks no longer leaked to clients
+18. **install.sh hardened** — Download-then-execute pattern (not pipe to bash), `npm ci` instead of `npm install`, secrets.env directory created with 600 permissions
+19. **update.sh created** — Safe update script with pre-update backup, build, health check, and automatic rollback on failure (`deploy/update.sh`)
+20. **Systemd hardened** — `RestartSec=10`, `StartLimitIntervalSec=300`, `StartLimitBurst=5`, `EnvironmentFile=-/etc/openclaw/secrets.env` for graceful handling of missing secrets
+21. **Unit tests** — 16 Vitest tests covering audit chain integrity, scrypt auth (including legacy SHA-256 fallback), Zod validation, install logs, and health endpoint schema (`tests/storage.test.ts`)
+22. **API documentation** — Full reference for all 21 endpoints with auth requirements, request/response examples (`docs/api.md`)
+23. **README auth section** — Documents the passphrase model, what it protects, rate limiting, production hardening recommendations, and passphrase reset procedure
+
+## Remaining Recommendations (Future Work)
+
+- [ ] External audit chain anchoring (append-only S3 or syslog) — all three models agree this is needed for true immutability
+- [ ] HTTPS enforcement from first boot (self-signed cert → Certbot upgrade)
 - [ ] Split `routes.ts` into modules; extract bash to `.sh.template` files
-- [ ] Auto-generate OpenAPI docs from drizzle-zod schemas
-- [ ] External audit chain anchoring (append-only S3 or syslog)
-- [ ] Add dedicated `/health` endpoint
+- [ ] Auto-generate OpenAPI docs from drizzle-zod schemas (Gemini recommendation)
+- [ ] Cloud-init YAML deduplication (fetch from API/build-time instead of hardcoding in React)
 - [ ] 20-language i18n system with runtime language switching
 - [ ] 90% test coverage with chaos monkey and scale testing
+- [ ] 3rd grade reading level documentation rewrite
+- [ ] Project rename (recommended: keep `openclaw-installer`)
 
 ## Individual Reviews
 
@@ -71,4 +93,4 @@ Based on the council's recommendations, the following fixes were implemented:
 
 ---
 
-*Review conducted against commit state as of 2026-04-15. Fixes applied in the same session.*
+*Review conducted against commit state as of 2026-04-15. Session 1 fixes applied same day. Session 2 fixes (all remaining P0/P1) applied 2026-04-15.*

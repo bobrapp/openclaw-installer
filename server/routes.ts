@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
 import { execFileSync } from "child_process";
 import * as fs from "fs";
@@ -14,7 +14,62 @@ import { z } from "zod";
 // Zod schema for PATCH state — all fields optional (partial update)
 const patchStateSchema = insertInstallStateSchema.partial();
 
+// ─── Owner auth middleware ───────────────────────────────────────────
+// All mutating endpoints require the owner passphrase in x-owner-passphrase header.
+// Read-only GET endpoints remain public (needed by the installer wizard).
+function requireOwner(req: Request, res: Response, next: NextFunction): void {
+  const passphrase = req.headers["x-owner-passphrase"] as string | undefined;
+  if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
+    res.status(401).json({ error: "Unauthorized — owner passphrase required" });
+    return;
+  }
+  next();
+}
+
+// ─── Rate limiter for brute-force protection ─────────────────────────
+// Simple in-memory sliding window: max 5 attempts per IP per 60 seconds.
+const verifyAttempts = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 5;
+
+function rateLimitVerify(req: Request, res: Response, next: NextFunction): void {
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  const attempts = (verifyAttempts.get(ip) || []).filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+  if (attempts.length >= RATE_LIMIT_MAX) {
+    res.status(429).json({ error: "Too many attempts. Try again in 60 seconds." });
+    return;
+  }
+  attempts.push(now);
+  verifyAttempts.set(ip, attempts);
+  next();
+}
+
+// Clean up stale rate-limit entries every 5 minutes
+setInterval(() => {
+  const cutoff = Date.now() - RATE_LIMIT_WINDOW_MS;
+  for (const [ip, attempts] of verifyAttempts) {
+    const fresh = attempts.filter(t => t > cutoff);
+    if (fresh.length === 0) verifyAttempts.delete(ip);
+    else verifyAttempts.set(ip, fresh);
+  }
+}, 5 * 60_000);
+
 export function registerRoutes(server: Server, app: Express) {
+  // ─── HEALTH CHECK ──────────────────────────────────────────────────
+  app.get("/health", (_req, res) => {
+    let dbStatus = "ok";
+    try { storage.getOrCreateState(); } catch { dbStatus = "error"; }
+    res.json({
+      status: "ok",
+      uptime: process.uptime(),
+      version: process.env.npm_package_version || "1.0.0",
+      memory: process.memoryUsage().rss,
+      db: dbStatus,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   // === LOGS ===
   app.get("/api/logs", (req, res) => {
     const host = req.query.host as string | undefined;
@@ -22,7 +77,7 @@ export function registerRoutes(server: Server, app: Express) {
     res.json(logs);
   });
 
-  app.post("/api/logs", (req, res) => {
+  app.post("/api/logs", requireOwner, (req, res) => {
     const parsed = insertInstallLogSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: "Invalid log data", details: parsed.error.flatten() });
@@ -31,9 +86,17 @@ export function registerRoutes(server: Server, app: Express) {
     res.json(log);
   });
 
-  app.delete("/api/logs", (_req, res) => {
+  // DELETE /api/logs removed — violates immutability.
+  // Audit-logged archive endpoint instead (requires owner auth).
+  app.post("/api/logs/archive", requireOwner, (_req, res) => {
+    const count = storage.getLogs().length;
+    storage.addAuditLog({
+      user: "owner",
+      prompt: "Archived install logs",
+      results: `${count} log entries archived by owner request`,
+    });
     storage.clearLogs();
-    res.json({ ok: true });
+    res.json({ ok: true, archived: count });
   });
 
   // === INSTALL STATE ===
@@ -42,7 +105,7 @@ export function registerRoutes(server: Server, app: Express) {
     res.json(state);
   });
 
-  app.patch("/api/state/:id", (req, res) => {
+  app.patch("/api/state/:id", requireOwner, (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
     const parsed = patchStateSchema.safeParse(req.body);
@@ -53,7 +116,12 @@ export function registerRoutes(server: Server, app: Express) {
     res.json(state);
   });
 
-  app.post("/api/state/reset", (_req, res) => {
+  app.post("/api/state/reset", requireOwner, (_req, res) => {
+    storage.addAuditLog({
+      user: "owner",
+      prompt: "Wizard state reset",
+      results: "Install state cleared by owner request",
+    });
     const state = storage.resetState();
     res.json(state);
   });
@@ -64,7 +132,7 @@ export function registerRoutes(server: Server, app: Express) {
     res.json(checks);
   });
 
-  app.patch("/api/hardening/toggle/:id", (req, res) => {
+  app.patch("/api/hardening/toggle/:id", requireOwner, (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
     const check = storage.toggleHardeningCheck(id);
@@ -119,11 +187,11 @@ export function registerRoutes(server: Server, app: Express) {
         clearInterval(interval);
         res.end();
 
-        // Write to immutable audit log
+        // Write to immutable audit log — marked as simulated (web preview, not real host checks)
         storage.addAuditLog({
           user: "installer",
-          prompt: `Preflight check executed for ${hostTarget}`,
-          results: `${passed} passed, ${warned} warnings, ${failed} failed — ${summaryResult}`,
+          prompt: `Preflight check executed for ${hostTarget} [SIMULATED — web preview, not real host checks]`,
+          results: `${passed} passed, ${warned} warnings, ${failed} failed — ${summaryResult} (simulated results)`,
         });
 
         // Also write each result to install logs
@@ -190,7 +258,7 @@ export function registerRoutes(server: Server, app: Express) {
     res.json({ ok: true });
   });
 
-  app.post("/api/owner/verify", (req, res) => {
+  app.post("/api/owner/verify", rateLimitVerify, (req, res) => {
     const { passphrase } = req.body;
     const valid = storage.verifyOwnerPassphrase(passphrase);
     res.json({ valid });
@@ -379,8 +447,9 @@ export function registerRoutes(server: Server, app: Express) {
       }
 
       res.json({ releases, governance: govChecks });
-    } catch (err: any) {
-      res.status(502).json({ error: "Failed to fetch release data", detail: String(err.message).slice(0, 500) });
+    } catch (err: unknown) {
+      console.error("Release data fetch failed:", err instanceof Error ? err.message : err);
+      res.status(502).json({ error: "Failed to fetch release data from GitHub" });
     }
   });
 }

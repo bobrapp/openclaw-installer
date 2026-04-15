@@ -313,6 +313,70 @@ Both workflows support `workflow_dispatch` for manual runs with configurable ser
 - **Destroy flag**: Manual dispatch includes a "destroy after" option for testing without ongoing costs
 - **Concurrency control**: Only one deploy per provider can run at a time
 
+## Authentication
+
+OpenClaw Installer uses a **single-owner passphrase** model. There are no user accounts or session tokens — one passphrase gates all write and sensitive-read access.
+
+### How it works
+
+The passphrase is set once via `POST /api/owner/set-passphrase`. The server stores a SHA-256 hash of the passphrase in the `owner_auth` table — the raw passphrase is never persisted. Once set, it cannot be changed through the API.
+
+### Setting the passphrase (first run)
+
+On first launch, `GET /api/owner/has-passphrase` returns `{ "hasPassphrase": false }`. Set your passphrase before the server is reachable from untrusted networks:
+
+```bash
+curl -X POST http://localhost:5000/api/owner/set-passphrase \
+  -H "Content-Type: application/json" \
+  -d '{"passphrase": "your-strong-passphrase"}'
+```
+
+### What it protects
+
+All **mutating endpoints** require the passphrase in the `x-owner-passphrase` header:
+
+- Adding and archiving install logs
+- Updating or resetting wizard state
+- Toggling hardening checklist items
+- Accessing and exporting the immutable audit log
+
+Read-only endpoints (host list, scripts, hardening checks, wizard UI, preflight SSE stream) are intentionally **public** — the wizard frontend needs them without a login step.
+
+### Sending the passphrase
+
+```bash
+curl http://localhost:5000/api/audit/logs \
+  -H "x-owner-passphrase: your-strong-passphrase"
+```
+
+### Rate limiting on verify
+
+`POST /api/owner/verify` is rate-limited to **5 attempts per minute per IP**. Excess attempts receive a `429 Too Many Requests` response. This endpoint is used by the UI to authenticate the session; brute-force from external IPs is blocked at this layer.
+
+### Resetting a forgotten passphrase
+
+There is no API route to reset the passphrase — this is intentional, to prevent an attacker who gains brief API access from locking you out or covering tracks. If you lose it, delete the row directly from SQLite:
+
+```bash
+sqlite3 /path/to/openclaw.db "DELETE FROM owner_auth;"
+```
+
+Afterwards, `GET /api/owner/has-passphrase` returns `false` and you can set a new passphrase via the API.
+
+### Production hardening
+
+The passphrase model is designed for a **trusted-operator** environment. For production deployments, apply additional layers:
+
+| Recommendation | How |
+|----------------|-----|
+| **HTTPS** | Provision a TLS certificate with [certbot](https://certbot.eff.org/) (Let's Encrypt) behind nginx or Caddy |
+| **Reverse proxy auth** | Add HTTP Basic Auth at the nginx layer as a second factor before requests reach the app |
+| **VPN-only access** | Use [Tailscale](https://tailscale.com/) so the server is never publicly reachable; bind Express to `127.0.0.1` |
+| **Firewall** | UFW: allow only ports 22 (SSH) and 443 (HTTPS); block 5000 externally |
+| **Secrets management** | On macOS, store the passphrase in Keychain rather than shell history or `.env` files |
+
+---
+
 ## Contributing
 
 Contributions welcome. Please open an issue or pull request.

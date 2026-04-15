@@ -1,10 +1,8 @@
 name: Deploy to Hetzner
 
 on:
-  # Auto-trigger on merge to master (with approval gate via environment)
-  push:
-    branches: [master]
-  # Manual trigger for ad-hoc deployments
+  # Manual trigger only — Vultr handles auto-deploy on push to master.
+  # Having both providers auto-deploy on every push doubles cloud costs.
   workflow_dispatch:
     inputs:
       server_type:
@@ -61,8 +59,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Validate Hetzner API token
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
         run: |
-          if [ -z "${{ secrets.HETZNER_API_TOKEN }}" ]; then
+          if [ -z "$HETZNER_TOKEN" ]; then
             echo "::error::HETZNER_API_TOKEN secret is not set. Add it in Settings → Secrets → Actions."
             exit 1
           fi
@@ -80,8 +80,10 @@ jobs:
 
       - name: Check for existing server
         id: existing
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
         run: |
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+          RESPONSE=$(curl -s -H "Authorization: Bearer $HETZNER_TOKEN" \
             "https://api.hetzner.cloud/v1/servers?name=${{ env.SERVER_NAME }}")
 
           SERVER_ID=$(echo "$RESPONSE" | jq -r '.servers[0].id // empty')
@@ -158,20 +160,22 @@ jobs:
       - name: Create new server
         id: create
         if: steps.existing.outputs.found == 'false'
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
+          SERVER_TYPE: ${{ inputs.server_type || 'cx22' }}
+          LOCATION: ${{ inputs.location || 'nbg1' }}
         run: |
-          SERVER_TYPE="${{ inputs.server_type || 'cx22' }}"
-          LOCATION="${{ inputs.location || 'nbg1' }}"
           CLOUD_INIT=$(echo "${{ steps.cloudinit.outputs.data }}" | base64 -d)
 
           echo "Creating $SERVER_TYPE in $LOCATION with cloud-init..."
 
           RESPONSE=$(curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+            -H "Authorization: Bearer $HETZNER_TOKEN" \
             -H "Content-Type: application/json" \
             -d "$(jq -n \
               --arg name "${{ env.SERVER_NAME }}" \
               --arg server_type "$SERVER_TYPE" \
-              --arg image "${{ env.IMAGE }}" \
+              --arg image "$IMAGE" \
               --arg location "$LOCATION" \
               --arg user_data "$CLOUD_INIT" \
               '{
