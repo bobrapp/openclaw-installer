@@ -1,4 +1,4 @@
-name: Release with PDF Artifact
+name: Release with PDF & SBOM
 
 on:
   push:
@@ -16,6 +16,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # full history for changelog
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          npx @cyclonedx/cyclonedx-npm --output-file "openclaw-sbom-${TAG}.json" --output-format JSON
+          npx @cyclonedx/cyclonedx-npm --output-file "openclaw-sbom-${TAG}.xml" --output-format XML
+
+          # Summary
+          echo "=== SBOM Generated ==="
+          COMP_COUNT=$(python3 -c "import json; d=json.load(open('openclaw-sbom-${TAG}.json')); print(len(d.get('components',[])))")
+          echo "Components: ${COMP_COUNT}"
+          ls -lh openclaw-sbom-${TAG}.*
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -73,6 +93,8 @@ jobs:
             echo "|------|-------------|"
             echo "| \`aigovops-audit-report-${TAG}.pdf\` | Signed PDF compliance report with full SHA-256 hash chain |"
             echo "| \`aigovops-wizard-${TAG}.html\` | Standalone offline installer wizard |"
+            echo "| \`openclaw-sbom-${TAG}.json\` | CycloneDX SBOM (JSON) — full dependency inventory |"
+            echo "| \`openclaw-sbom-${TAG}.xml\` | CycloneDX SBOM (XML) — for automated compliance tooling |"
             echo ""
             echo "## Co-Founders"
             echo ""
@@ -105,4 +127,6 @@ jobs:
             --notes-file release-notes.md \
             --verify-tag \
             "aigovops-audit-report-${TAG}.pdf#Signed PDF Compliance Report" \
-            "aigovops-wizard-${TAG}.html#Standalone Installer Wizard (offline)"
+            "aigovops-wizard-${TAG}.html#Standalone Installer Wizard (offline)" \
+            "openclaw-sbom-${TAG}.json#CycloneDX SBOM (JSON)" \
+            "openclaw-sbom-${TAG}.xml#CycloneDX SBOM (XML)"
