@@ -1,10 +1,18 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { storage } from "./storage";
+import {
+  insertInstallLogSchema,
+  insertInstallStateSchema,
+} from "@shared/schema";
+import { z } from "zod";
+
+// Zod schema for PATCH state — all fields optional (partial update)
+const patchStateSchema = insertInstallStateSchema.partial();
 
 export function registerRoutes(server: Server, app: Express) {
   // === LOGS ===
@@ -15,7 +23,11 @@ export function registerRoutes(server: Server, app: Express) {
   });
 
   app.post("/api/logs", (req, res) => {
-    const log = storage.addLog(req.body);
+    const parsed = insertInstallLogSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid log data", details: parsed.error.flatten() });
+    }
+    const log = storage.addLog(parsed.data);
     res.json(log);
   });
 
@@ -32,7 +44,12 @@ export function registerRoutes(server: Server, app: Express) {
 
   app.patch("/api/state/:id", (req, res) => {
     const id = parseInt(req.params.id);
-    const state = storage.updateState(id, req.body);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+    const parsed = patchStateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid state data", details: parsed.error.flatten() });
+    }
+    const state = storage.updateState(id, parsed.data);
     res.json(state);
   });
 
@@ -49,6 +66,7 @@ export function registerRoutes(server: Server, app: Express) {
 
   app.patch("/api/hardening/toggle/:id", (req, res) => {
     const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
     const check = storage.toggleHardeningCheck(id);
     res.json(check);
   });
@@ -191,7 +209,8 @@ export function registerRoutes(server: Server, app: Express) {
 
     try {
       const python = process.env.PYTHON_BIN ?? "python3";
-      execSync(`${python} "${scriptPath}" --db "${dbPath}" --output "${tmpPdf}"`, {
+      // Use execFileSync (not execSync) to avoid shell interpretation — prevents command injection
+      execFileSync(python, [scriptPath, "--db", dbPath, "--output", tmpPdf], {
         timeout: 60_000,
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -212,10 +231,12 @@ export function registerRoutes(server: Server, app: Express) {
       stream.pipe(res);
       stream.on("end", () => { try { fs.unlinkSync(tmpPdf); } catch (_) {} });
       stream.on("error", () => { try { fs.unlinkSync(tmpPdf); } catch (_) {} });
-    } catch (err: any) {
+    } catch (err: unknown) {
       try { if (fs.existsSync(tmpPdf)) fs.unlinkSync(tmpPdf); } catch (_) {}
       if (!res.headersSent) {
-        res.status(500).json({ error: "PDF generation failed", detail: String(err.message).slice(0, 500) });
+        // Don't leak internal paths or Python tracebacks to clients
+        console.error("PDF generation failed:", err instanceof Error ? err.message : err);
+        res.status(500).json({ error: "PDF generation failed" });
       }
     }
   });

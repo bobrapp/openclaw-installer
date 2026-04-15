@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { eq, desc } from "drizzle-orm";
-import { createHash } from "crypto";
+import { createHash, scryptSync, randomBytes, timingSafeEqual } from "crypto";
 import {
   installLogs,
   installState,
@@ -138,7 +138,7 @@ export class SqliteStorage implements IStorage {
   }
 
   verifyAuditChain(): { valid: boolean; brokenAt?: number } {
-    const allLogs = db.select().from(auditLogs).all(); // ascending by id
+    const allLogs = db.select().from(auditLogs).orderBy(auditLogs.id).all();
     for (let i = 0; i < allLogs.length; i++) {
       const entry = allLogs[i];
       const expectedPrev = i === 0 ? "0" : allLogs[i - 1].currentHash;
@@ -156,16 +156,26 @@ export class SqliteStorage implements IStorage {
   }
 
   // === OWNER AUTH ===
+  // Uses scrypt KDF with random salt — resistant to GPU brute-force and rainbow tables.
+  // Comparison uses timingSafeEqual to prevent timing side-channel attacks.
   setOwnerPassphrase(passphrase: string): void {
-    const hash = sha256(passphrase);
+    const salt = randomBytes(32).toString("hex");
+    const hash = scryptSync(passphrase, salt, 64).toString("hex");
     db.delete(ownerAuth).run();
-    db.insert(ownerAuth).values({ passphraseHash: hash }).run();
+    db.insert(ownerAuth).values({ passphraseHash: `${salt}:${hash}` }).run();
   }
 
   verifyOwnerPassphrase(passphrase: string): boolean {
     const record = db.select().from(ownerAuth).get();
     if (!record) return false;
-    return record.passphraseHash === sha256(passphrase);
+    const stored = record.passphraseHash;
+    // Support legacy bare SHA-256 hashes (no colon = old format)
+    if (!stored.includes(":")) {
+      return stored === sha256(passphrase);
+    }
+    const [salt, storedHash] = stored.split(":");
+    const derived = scryptSync(passphrase, salt, 64).toString("hex");
+    return timingSafeEqual(Buffer.from(storedHash, "hex"), Buffer.from(derived, "hex"));
   }
 
   hasOwnerPassphrase(): boolean {

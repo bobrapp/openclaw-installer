@@ -101,29 +101,57 @@ jobs:
       - name: Rebuild existing server
         id: rebuild
         if: steps.existing.outputs.found == 'true'
+        env:
+          HETZNER_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
         run: |
           echo "Rebuilding server ${{ steps.existing.outputs.server_id }}..."
+          CLOUD_INIT=$(echo "${{ steps.cloudinit.outputs.data }}" | base64 -d)
 
-          # Get image ID for ubuntu-22.04
-          IMAGE_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
-            "https://api.hetzner.cloud/v1/images?name=${{ env.IMAGE }}&type=system" \
-            | jq -r '.images[0].id')
+          # Delete existing server and recreate with cloud-init
+          # (Hetzner rebuild API doesn't support user_data, so we delete + create)
+          curl -s -X DELETE \
+            -H "Authorization: Bearer $HETZNER_TOKEN" \
+            "https://api.hetzner.cloud/v1/servers/${{ steps.existing.outputs.server_id }}"
 
+          echo "Waiting for server deletion..."
+          sleep 10
+
+          # Recreate with cloud-init
           RESPONSE=$(curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.HETZNER_API_TOKEN }}" \
+            -H "Authorization: Bearer $HETZNER_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"image\": \"$IMAGE_ID\"}" \
-            "https://api.hetzner.cloud/v1/servers/${{ steps.existing.outputs.server_id }}/actions/rebuild")
+            -d "$(jq -n \
+              --arg name "${{ env.SERVER_NAME }}" \
+              --arg server_type "${{ inputs.server_type || 'cx22' }}" \
+              --arg image "${{ env.IMAGE }}" \
+              --arg location "${{ inputs.location || 'nbg1' }}" \
+              --arg user_data "$CLOUD_INIT" \
+              '{
+                name: $name,
+                server_type: $server_type,
+                image: $image,
+                location: $location,
+                user_data: $user_data,
+                start_after_create: true,
+                labels: {
+                  project: "openclaw",
+                  managed_by: "github-actions",
+                  repo: "openclaw-installer"
+                }
+              }')" \
+            "https://api.hetzner.cloud/v1/servers")
 
-          ACTION_ID=$(echo "$RESPONSE" | jq -r '.action.id // empty')
-          if [ -z "$ACTION_ID" ]; then
+          SERVER_ID=$(echo "$RESPONSE" | jq -r '.server.id // empty')
+          SERVER_IP=$(echo "$RESPONSE" | jq -r '.server.public_net.ipv4.ip // empty')
+
+          if [ -z "$SERVER_ID" ]; then
             echo "::error::Rebuild failed: $(echo "$RESPONSE" | jq -r '.error.message // "unknown error"')"
             exit 1
           fi
 
-          echo "Rebuild action started: $ACTION_ID"
-          echo "server_ip=${{ steps.existing.outputs.server_ip }}" >> "$GITHUB_OUTPUT"
-          echo "server_id=${{ steps.existing.outputs.server_id }}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Server recreated: ID=$SERVER_ID, IP=$SERVER_IP"
+          echo "server_ip=$SERVER_IP" >> "$GITHUB_OUTPUT"
+          echo "server_id=$SERVER_ID" >> "$GITHUB_OUTPUT"
           echo "rebuilt=true" >> "$GITHUB_OUTPUT"
 
       # If no server exists, create a new one with cloud-init

@@ -90,10 +90,13 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
+  // Bind to localhost in production (nginx proxies from 80/443).
+  // Bind to 0.0.0.0 in development for external access.
+  const host = process.env.NODE_ENV === "production" ? "127.0.0.1" : "0.0.0.0";
   httpServer.listen(
     {
       port,
-      host: "0.0.0.0",
+      host,
       reusePort: true,
     },
     () => {

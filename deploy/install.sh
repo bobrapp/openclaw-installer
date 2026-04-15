@@ -106,6 +106,24 @@ systemctl daemon-reload
 systemctl enable --now openclaw
 ok "Systemd service running"
 
+# --- SQLite Backup (daily) ---
+info "Configuring daily database backup..."
+mkdir -p /opt/openclaw/backups
+chown openclaw:openclaw /opt/openclaw/backups
+cat > /etc/cron.daily/openclaw-backup << 'CRON'
+#!/bin/bash
+# Daily backup of OpenClaw SQLite database (immutable audit chain)
+BACKUP_DIR="/opt/openclaw/backups"
+DB_PATH="/opt/openclaw/app/openclaw.db"
+if [ -f "$DB_PATH" ]; then
+  sqlite3 "$DB_PATH" ".backup $BACKUP_DIR/openclaw-$(date +%Y%m%d-%H%M).db"
+  # Keep 30 days of backups
+  find "$BACKUP_DIR" -name "openclaw-*.db" -mtime +30 -delete
+fi
+CRON
+chmod +x /etc/cron.daily/openclaw-backup
+ok "Daily SQLite backup configured (30-day retention)"
+
 # --- Nginx ---
 info "Configuring nginx reverse proxy..."
 cat > /etc/nginx/sites-available/openclaw << 'NGINX'
