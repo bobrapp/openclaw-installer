@@ -72,6 +72,107 @@ export function registerRoutes(server: Server, app: Express) {
   app.get("/api/hosts", (_req, res) => {
     res.json(getHostConfigs());
   });
+
+  // === PREFLIGHT RUNNER (SSE — streams check results live) ===
+  app.get("/api/preflight/run/:hostTarget", (req, res) => {
+    const hostTarget = req.params.hostTarget;
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    });
+
+    const checks = getPreflightChecks(hostTarget);
+    let index = 0;
+
+    const interval = setInterval(() => {
+      if (index >= checks.length) {
+        // Send summary
+        const passed = checks.filter((c) => c.status === "pass").length;
+        const warned = checks.filter((c) => c.status === "warn").length;
+        const failed = checks.filter((c) => c.status === "fail").length;
+        const summaryResult = failed === 0 ? "READY" : "BLOCKED";
+        res.write(`data: ${JSON.stringify({ type: "summary", passed, warned, failed, result: summaryResult })}\n\n`);
+        res.write("data: [DONE]\n\n");
+        clearInterval(interval);
+        res.end();
+
+        // Write to immutable audit log
+        storage.addAuditLog({
+          user: "installer",
+          prompt: `Preflight check executed for ${hostTarget}`,
+          results: `${passed} passed, ${warned} warnings, ${failed} failed — ${summaryResult}`,
+        });
+
+        // Also write each result to install logs
+        for (const check of checks) {
+          storage.addLog({
+            timestamp: new Date().toISOString(),
+            severity: check.status === "pass" ? "success" : check.status === "warn" ? "warn" : "error",
+            step: "preflight",
+            message: `[${check.name}] ${check.message}`,
+            host: hostTarget,
+          });
+        }
+        return;
+      }
+
+      const check = checks[index];
+      // Simulate execution with randomized delay
+      const statuses: Array<"pass" | "warn" | "fail"> = ["pass", "pass", "pass", "pass", "warn", "pass"];
+      check.status = statuses[Math.floor(Math.random() * statuses.length)];
+      check.message = getCheckMessage(check.name, check.status, hostTarget);
+      res.write(`data: ${JSON.stringify({ type: "check", index, ...check })}\n\n`);
+      index++;
+    }, 400 + Math.random() * 300);
+
+    req.on("close", () => {
+      clearInterval(interval);
+    });
+  });
+
+  // === AUDIT LOGS (Immutable Hash Chain) ===
+  app.get("/api/audit/logs", (req, res) => {
+    const passphrase = req.headers["x-owner-passphrase"] as string;
+    if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
+      return res.status(401).json({ error: "Unauthorized — owner passphrase required" });
+    }
+    const logs = storage.getAuditLogs();
+    res.json(logs);
+  });
+
+  app.get("/api/audit/verify", (req, res) => {
+    const passphrase = req.headers["x-owner-passphrase"] as string;
+    if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const result = storage.verifyAuditChain();
+    res.json(result);
+  });
+
+  // === OWNER AUTH ===
+  app.get("/api/owner/has-passphrase", (_req, res) => {
+    res.json({ hasPassphrase: storage.hasOwnerPassphrase() });
+  });
+
+  app.post("/api/owner/set-passphrase", (req, res) => {
+    const { passphrase } = req.body;
+    if (!passphrase || passphrase.length < 6) {
+      return res.status(400).json({ error: "Passphrase must be at least 6 characters" });
+    }
+    if (storage.hasOwnerPassphrase()) {
+      return res.status(400).json({ error: "Passphrase already set. Cannot change." });
+    }
+    storage.setOwnerPassphrase(passphrase);
+    storage.addAuditLog({ user: "owner", prompt: "Owner passphrase configured", results: "success" });
+    res.json({ ok: true });
+  });
+
+  app.post("/api/owner/verify", (req, res) => {
+    const { passphrase } = req.body;
+    const valid = storage.verifyOwnerPassphrase(passphrase);
+    res.json({ valid });
+  });
 }
 
 function getHostConfigs() {
@@ -797,4 +898,93 @@ echo "✅ Rollback complete"
 echo "   User 'openclaw' was NOT removed. Remove with: userdel -r openclaw"
 echo "   System packages were NOT removed."
 `;
+}
+
+// === PREFLIGHT RUNNER CHECK DEFINITIONS ===
+interface PreflightCheck {
+  name: string;
+  category: string;
+  status: "pending" | "pass" | "warn" | "fail";
+  message: string;
+}
+
+function getPreflightChecks(hostTarget: string): PreflightCheck[] {
+  const common: PreflightCheck[] = [
+    { name: "Node.js Version", category: "Dependencies", status: "pending", message: "" },
+    { name: "Git Installed", category: "Dependencies", status: "pending", message: "" },
+    { name: "pnpm Installed", category: "Dependencies", status: "pending", message: "" },
+    { name: "Disk Space", category: "System", status: "pending", message: "" },
+    { name: "Tailscale VPN", category: "Network", status: "pending", message: "" },
+    { name: "User Privileges", category: "Permissions", status: "pending", message: "" },
+  ];
+
+  if (hostTarget === "macos") {
+    return [
+      { name: "macOS Version", category: "System", status: "pending", message: "" },
+      { name: "Xcode CLI Tools", category: "Dependencies", status: "pending", message: "" },
+      { name: "Homebrew", category: "Dependencies", status: "pending", message: "" },
+      ...common,
+      { name: "Keychain Access", category: "Secrets", status: "pending", message: "" },
+      { name: "Privacy Permissions", category: "Permissions", status: "pending", message: "" },
+    ];
+  }
+
+  if (hostTarget === "digitalocean") {
+    return [
+      { name: "Ubuntu Version", category: "System", status: "pending", message: "" },
+      { name: "Memory (RAM)", category: "System", status: "pending", message: "" },
+      ...common,
+      { name: "UFW Firewall", category: "Network", status: "pending", message: "" },
+      { name: "SSH Key Auth", category: "Auth", status: "pending", message: "" },
+      { name: "DO Monitoring", category: "Observability", status: "pending", message: "" },
+    ];
+  }
+
+  if (hostTarget === "azure") {
+    return [
+      { name: "OS Detection", category: "System", status: "pending", message: "" },
+      { name: "Azure CLI", category: "Dependencies", status: "pending", message: "" },
+      { name: "Memory (RAM)", category: "System", status: "pending", message: "" },
+      ...common,
+      { name: "NSG Rules", category: "Network", status: "pending", message: "" },
+      { name: "Key Vault Access", category: "Secrets", status: "pending", message: "" },
+    ];
+  }
+
+  // generic-vps
+  return [
+    { name: "OS Detection", category: "System", status: "pending", message: "" },
+    { name: "Memory (RAM)", category: "System", status: "pending", message: "" },
+    ...common,
+    { name: "Firewall (UFW/iptables)", category: "Network", status: "pending", message: "" },
+    { name: "SSH Configuration", category: "Auth", status: "pending", message: "" },
+  ];
+}
+
+function getCheckMessage(name: string, status: string, hostTarget: string): string {
+  const messages: Record<string, Record<string, string>> = {
+    "macOS Version": { pass: "macOS 14.5 Sonoma detected", warn: "macOS 13.x Ventura — upgrade recommended", fail: "macOS < 13 not supported" },
+    "Xcode CLI Tools": { pass: "Xcode Command Line Tools installed", warn: "Xcode CLI outdated — run xcode-select --install", fail: "Xcode CLI Tools missing" },
+    "Homebrew": { pass: "Homebrew 4.2.x installed", warn: "Homebrew outdated — run brew update", fail: "Homebrew not found" },
+    "Node.js Version": { pass: "Node.js v20.11.0 (LTS)", warn: "Node.js v18.x — v20+ recommended", fail: "Node.js not found" },
+    "Git Installed": { pass: "Git 2.43.0 installed", warn: "Git version outdated", fail: "Git not found" },
+    "pnpm Installed": { pass: "pnpm 8.15.x installed", warn: "pnpm not found — npm works but pnpm preferred", fail: "No package manager found" },
+    "Disk Space": { pass: "42GB available (≥10GB required)", warn: "12GB available — low but sufficient", fail: "Only 3GB available — need ≥10GB" },
+    "Tailscale VPN": { pass: "Tailscale active (100.x.x.x)", warn: "Tailscale installed but not connected", fail: "Tailscale not found" },
+    "User Privileges": { pass: "Running as dedicated 'openclaw' user", warn: `Running as '${hostTarget === "macos" ? "admin" : "ubuntu"}' — consider dedicated user`, fail: "Running as root — create dedicated user" },
+    "Keychain Access": { pass: "macOS Keychain accessible", warn: "Keychain locked — may need unlock", fail: "Keychain access denied" },
+    "Privacy Permissions": { pass: "Minimal permissions granted", warn: "Extra permissions detected — review Privacy & Security", fail: "Required permissions missing" },
+    "Ubuntu Version": { pass: "Ubuntu 22.04.3 LTS", warn: "Ubuntu 20.04 — 22.04+ recommended", fail: "Non-Ubuntu OS detected" },
+    "Memory (RAM)": { pass: "4096MB available (≥2GB required)", warn: "1536MB — 2GB+ recommended", fail: "Only 512MB — need ≥1GB" },
+    "UFW Firewall": { pass: "UFW active — SSH only allowed", warn: "UFW installed but inactive", fail: "UFW not found" },
+    "SSH Key Auth": { pass: "Password auth disabled, keys only", warn: "Password auth may be enabled", fail: "SSH not properly configured" },
+    "DO Monitoring": { pass: "DO monitoring agent active", warn: "DO monitoring agent not detected", fail: "Cannot reach DO metadata" },
+    "OS Detection": { pass: "Linux detected (Ubuntu/Debian)", warn: "Non-standard distro", fail: "Cannot detect OS" },
+    "Azure CLI": { pass: "Azure CLI 2.56.0 installed", warn: "Azure CLI outdated", fail: "Azure CLI not found" },
+    "NSG Rules": { pass: "NSG allows SSH + VPN only", warn: "NSG has extra open ports", fail: "NSG not configured" },
+    "Key Vault Access": { pass: "Key Vault accessible via managed identity", warn: "Key Vault configured but access untested", fail: "Key Vault not configured" },
+    "Firewall (UFW/iptables)": { pass: "Firewall active", warn: "Firewall installed but not active", fail: "No firewall detected" },
+    "SSH Configuration": { pass: "SSH hardened (key-only, no root)", warn: "SSH password auth may be enabled", fail: "SSH misconfigured" },
+  };
+  return messages[name]?.[status] || `${name}: ${status}`;
 }

@@ -36,14 +36,38 @@ export const hardeningChecks = sqliteTable("hardening_checks", {
   severity: text("severity").notNull(), // critical | recommended | optional
 });
 
+// Immutable audit log — crypto hash chain, AiGovOps Foundation standard
+export const auditLogs = sqliteTable("audit_logs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  timestamp: text("timestamp").notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD
+  user: text("user").notNull(), // anonymized user identifier
+  prompt: text("prompt").notNull(), // action/prompt description
+  results: text("results").notNull(), // outcome of the action
+  previousHash: text("previous_hash").notNull(), // hash of prior entry (genesis = "0")
+  currentHash: text("current_hash").notNull(), // SHA-256(timestamp+user+prompt+results+previousHash)
+});
+
+// Owner passphrase hash for secure log access
+export const ownerAuth = sqliteTable("owner_auth", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  passphraseHash: text("passphrase_hash").notNull(), // SHA-256 of passphrase
+});
+
 export const insertInstallLogSchema = createInsertSchema(installLogs).omit({ id: true });
 export const insertInstallStateSchema = createInsertSchema(installState).omit({ id: true });
 export const insertHardeningCheckSchema = createInsertSchema(hardeningChecks).omit({ id: true });
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({ id: true });
+export const insertOwnerAuthSchema = createInsertSchema(ownerAuth).omit({ id: true });
 
 export type InsertInstallLog = z.infer<typeof insertInstallLogSchema>;
 export type InsertInstallState = z.infer<typeof insertInstallStateSchema>;
 export type InsertHardeningCheck = z.infer<typeof insertHardeningCheckSchema>;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+export type InsertOwnerAuth = z.infer<typeof insertOwnerAuthSchema>;
 
 export type InstallLog = typeof installLogs.$inferSelect;
 export type InstallState = typeof installState.$inferSelect;
 export type HardeningCheck = typeof hardeningChecks.$inferSelect;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type OwnerAuth = typeof ownerAuth.$inferSelect;

@@ -13,6 +13,10 @@ import Wizard from "@/pages/wizard";
 import Hardening from "@/pages/hardening";
 import Logs from "@/pages/logs";
 import Scripts from "@/pages/scripts";
+import Compare from "@/pages/compare";
+import PreflightRunner from "@/pages/preflight-runner";
+import AuditLog from "@/pages/audit-log";
+import Foundation from "@/pages/foundation";
 import NotFound from "@/pages/not-found";
 
 function AppRouter() {
@@ -23,6 +27,10 @@ function AppRouter() {
       <Route path="/hardening/:hostTarget" component={Hardening} />
       <Route path="/logs" component={Logs} />
       <Route path="/scripts/:hostTarget" component={Scripts} />
+      <Route path="/compare" component={Compare} />
+      <Route path="/preflight" component={PreflightRunner} />
+      <Route path="/audit" component={AuditLog} />
+      <Route path="/foundation" component={Foundation} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -38,32 +46,32 @@ export default function App() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <SidebarProvider style={style as React.CSSProperties}>
-            <div className="flex h-screen w-full">
-              <AppSidebar />
-              <div className="flex flex-col flex-1 min-w-0">
-                <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 backdrop-blur-sm">
-                  <div className="flex items-center gap-3">
-                    <SidebarTrigger data-testid="button-sidebar-toggle" />
-                    <div className="flex items-center gap-2">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5"/>
-                        <path d="M2 12l10 5 10-5"/>
-                      </svg>
-                      <span className="font-semibold text-sm tracking-tight">OpenClaw Installer</span>
+          <Router hook={useHashLocation}>
+            <SidebarProvider style={style as React.CSSProperties}>
+              <div className="flex h-screen w-full">
+                <AppSidebar />
+                <div className="flex flex-col flex-1 min-w-0">
+                  <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                      <SidebarTrigger data-testid="button-sidebar-toggle" />
+                      <div className="flex items-center gap-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
+                          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                          <path d="M2 17l10 5 10-5"/>
+                          <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                        <span className="font-semibold text-sm tracking-tight">OpenClaw Installer</span>
+                      </div>
                     </div>
-                  </div>
-                  <ThemeToggle />
-                </header>
-                <main className="flex-1 overflow-auto">
-                  <Router hook={useHashLocation}>
+                    <ThemeToggle />
+                  </header>
+                  <main className="flex-1 overflow-auto">
                     <AppRouter />
-                  </Router>
-                </main>
+                  </main>
+                </div>
               </div>
-            </div>
-          </SidebarProvider>
+            </SidebarProvider>
+          </Router>
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>

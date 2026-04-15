@@ -1,4 +1,4 @@
-import { Home, Wand2, Shield, ScrollText, FileCode2 } from "lucide-react";
+import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -15,7 +15,11 @@ import {
 
 const navItems = [
   { title: "Host Selection", url: "/", icon: Home },
+  { title: "Compare Frameworks", url: "/compare", icon: GitCompareArrows },
+  { title: "Preflight Runner", url: "/preflight", icon: Play },
   { title: "Install Logs", url: "/logs", icon: ScrollText },
+  { title: "Audit Log", url: "/audit", icon: Lock },
+  { title: "AiGovOps Foundation", url: "/foundation", icon: Heart },
 ];
 
 const hostItems = [
@@ -105,9 +109,14 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="px-4 py-3 border-t border-sidebar-border">
-        <p className="text-xs text-muted-foreground">
-          OpenClaw/Moltbot Guided Setup
-        </p>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">
+            OpenClaw/Moltbot Guided Setup
+          </p>
+          <p className="text-xs text-muted-foreground/60">
+            A work of the AiGovOps Foundation
+          </p>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

@@ -1,21 +1,32 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { eq, desc } from "drizzle-orm";
+import { createHash } from "crypto";
 import {
   installLogs,
   installState,
   hardeningChecks,
+  auditLogs,
+  ownerAuth,
   type InsertInstallLog,
   type InsertInstallState,
   type InsertHardeningCheck,
+  type InsertAuditLog,
+  type InsertOwnerAuth,
   type InstallLog,
   type InstallState,
   type HardeningCheck,
+  type AuditLog,
+  type OwnerAuth,
 } from "@shared/schema";
 
 const sqlite = new Database("openclaw.db");
 sqlite.pragma("journal_mode = WAL");
 export const db = drizzle(sqlite);
+
+function sha256(data: string): string {
+  return createHash("sha256").update(data).digest("hex");
+}
 
 export interface IStorage {
   // Logs
@@ -32,6 +43,16 @@ export interface IStorage {
   getHardeningChecks(hostTarget: string): HardeningCheck[];
   toggleHardeningCheck(id: number): HardeningCheck;
   seedHardeningChecks(): void;
+
+  // Audit logs (immutable hash chain)
+  addAuditLog(entry: { user: string; prompt: string; results: string }): AuditLog;
+  getAuditLogs(): AuditLog[];
+  verifyAuditChain(): { valid: boolean; brokenAt?: number };
+
+  // Owner auth
+  setOwnerPassphrase(passphrase: string): void;
+  verifyOwnerPassphrase(passphrase: string): boolean;
+  hasOwnerPassphrase(): boolean;
 }
 
 export class SqliteStorage implements IStorage {
@@ -85,6 +106,71 @@ export class SqliteStorage implements IStorage {
       .where(eq(hardeningChecks.id, id))
       .returning()
       .get();
+  }
+
+  // === AUDIT LOGS (Immutable Hash Chain) ===
+  addAuditLog(entry: { user: string; prompt: string; results: string }): AuditLog {
+    const now = new Date();
+    const timestamp = now.toISOString();
+    const date = now.toISOString().split("T")[0];
+
+    // Get the last entry's hash, or "0" for genesis
+    const lastEntry = db.select().from(auditLogs).orderBy(desc(auditLogs.id)).get();
+    const previousHash = lastEntry ? lastEntry.currentHash : "0";
+
+    // SHA-256(timestamp + user + prompt + results + previousHash)
+    const payload = `${timestamp}|${entry.user}|${entry.prompt}|${entry.results}|${previousHash}`;
+    const currentHash = sha256(payload);
+
+    return db.insert(auditLogs).values({
+      timestamp,
+      date,
+      user: entry.user,
+      prompt: entry.prompt,
+      results: entry.results,
+      previousHash,
+      currentHash,
+    }).returning().get();
+  }
+
+  getAuditLogs(): AuditLog[] {
+    return db.select().from(auditLogs).orderBy(desc(auditLogs.id)).all();
+  }
+
+  verifyAuditChain(): { valid: boolean; brokenAt?: number } {
+    const allLogs = db.select().from(auditLogs).all(); // ascending by id
+    for (let i = 0; i < allLogs.length; i++) {
+      const entry = allLogs[i];
+      const expectedPrev = i === 0 ? "0" : allLogs[i - 1].currentHash;
+      if (entry.previousHash !== expectedPrev) {
+        return { valid: false, brokenAt: entry.id };
+      }
+      // Verify the hash itself
+      const payload = `${entry.timestamp}|${entry.user}|${entry.prompt}|${entry.results}|${entry.previousHash}`;
+      const expectedHash = sha256(payload);
+      if (entry.currentHash !== expectedHash) {
+        return { valid: false, brokenAt: entry.id };
+      }
+    }
+    return { valid: true };
+  }
+
+  // === OWNER AUTH ===
+  setOwnerPassphrase(passphrase: string): void {
+    const hash = sha256(passphrase);
+    db.delete(ownerAuth).run();
+    db.insert(ownerAuth).values({ passphraseHash: hash }).run();
+  }
+
+  verifyOwnerPassphrase(passphrase: string): boolean {
+    const record = db.select().from(ownerAuth).get();
+    if (!record) return false;
+    return record.passphraseHash === sha256(passphrase);
+  }
+
+  hasOwnerPassphrase(): boolean {
+    const record = db.select().from(ownerAuth).get();
+    return !!record;
   }
 
   seedHardeningChecks(): void {
