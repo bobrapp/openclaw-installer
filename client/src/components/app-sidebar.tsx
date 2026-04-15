@@ -1,4 +1,4 @@
-import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart, BookOpen, FileDown, Activity } from "lucide-react";
+import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart, BookOpen, FileDown, Activity, Server } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -22,6 +22,7 @@ const navItems = [
   { title: "AiGovOps Foundation", url: "/foundation", icon: Heart },
   { title: "How I Built This", url: "/how-i-built-this", icon: BookOpen },
   { title: "Release Dashboard", url: "/releases", icon: Activity },
+  { title: "Hosting Deals", url: "/hosting", icon: Server },
 ];
 
 const hostItems = [

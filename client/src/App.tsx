@@ -19,6 +19,7 @@ import AuditLog from "@/pages/audit-log";
 import Foundation from "@/pages/foundation";
 import HowIBuiltThis from "@/pages/how-i-built-this";
 import Releases from "@/pages/releases";
+import HostingDeals from "@/pages/hosting-deals";
 import NotFound from "@/pages/not-found";
 
 function AppRouter() {
@@ -35,6 +36,7 @@ function AppRouter() {
       <Route path="/foundation" component={Foundation} />
       <Route path="/how-i-built-this" component={HowIBuiltThis} />
       <Route path="/releases" component={Releases} />
+      <Route path="/hosting" component={HostingDeals} />
       <Route component={NotFound} />
     </Switch>
   );
