@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, languages } from "@/lib/i18n";
 import { playSound } from "@/lib/sound-engine";
 
 export function LanguagePicker() {
