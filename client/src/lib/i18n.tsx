@@ -77,6 +77,8 @@ export interface Translations {
   hostDigitalOcean: string;
   hostAzureVM: string;
   hostGenericVPS: string;
+  hostAWS: string;
+  hostGCP: string;
   hostHardening: string;
   hostScripts: string;
 

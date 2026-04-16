@@ -44,7 +44,7 @@ export default function Hardening() {
   });
 
   const categories = checks
-    ? [...new Set(checks.map((c) => c.category))]
+    ? Array.from(new Set(checks.map((c) => c.category)))
     : [];
 
   const completedCount = checks?.filter((c) => c.isCompleted).length || 0;

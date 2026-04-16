@@ -264,7 +264,7 @@ export default function AuditLogViewer() {
             onClick={async () => {
               try {
                 const res = await apiRequest("GET", `/api/audit/export-pdf?lang=${lang}`, undefined, {
-                  "x-owner-passphrase": storedPassphrase,
+                  "x-owner-passphrase": storedPassphrase || "",
                 });
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);

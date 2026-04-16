@@ -824,7 +824,7 @@ export default function MarketplaceManage() {
         </Card>
 
       </main>
-      <PageFooter />
+      <PageFooter text={t.marketplaceFooter || "All entries follow MCP standards. Configs are portable across any MCP-compatible host."} />
     </div>
   );
 }

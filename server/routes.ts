@@ -48,8 +48,8 @@ function rateLimitVerify(req: Request, res: Response, next: NextFunction): void 
 // Clean up stale rate-limit entries every 5 minutes
 setInterval(() => {
   const cutoff = Date.now() - RATE_LIMIT_WINDOW_MS;
-  for (const [ip, attempts] of verifyAttempts) {
-    const fresh = attempts.filter(t => t > cutoff);
+  for (const [ip, attempts] of Array.from(verifyAttempts)) {
+    const fresh = attempts.filter((t: number) => t > cutoff);
     if (fresh.length === 0) verifyAttempts.delete(ip);
     else verifyAttempts.set(ip, fresh);
   }
@@ -106,7 +106,7 @@ export function registerRoutes(server: Server, app: Express) {
   });
 
   app.patch("/api/state/:id", requireOwner, (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
     const parsed = patchStateSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -133,7 +133,7 @@ export function registerRoutes(server: Server, app: Express) {
   });
 
   app.patch("/api/hardening/toggle/:id", requireOwner, (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
     const check = storage.toggleHardeningCheck(id);
     res.json(check);
@@ -1213,7 +1213,7 @@ fi
 # --- Step 2: Clone & Setup ---
 echo ""
 echo "📥 Step 2: Clone OpenClaw"
-INSTALL_DIR="\\${HOME}/.openclaw"
+INSTALL_DIR="\${HOME}/.openclaw"
 run_or_dry "git clone https://github.com/openclaw/openclaw.git \\"$INSTALL_DIR\\""
 echo "rm -rf $INSTALL_DIR" >> "$ROLLBACK_LOG"
 
@@ -1222,7 +1222,7 @@ run_or_dry "cd \\"$INSTALL_DIR\\" && pnpm install"
 # --- Step 3: Configure LaunchAgent ---
 echo ""
 echo "⚙️  Step 3: LaunchAgent Setup"
-PLIST_PATH="\\${HOME}/Library/LaunchAgents/com.clawdbot.gateway.plist"
+PLIST_PATH="\${HOME}/Library/LaunchAgents/com.clawdbot.gateway.plist"
 
 if [ "$DRY_RUN" != "1" ]; then
 cat > "$PLIST_PATH" << PLIST
@@ -1235,7 +1235,7 @@ cat > "$PLIST_PATH" << PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/bin/node</string>
-    <string>\\${HOME}/.openclaw/gateway.js</string>
+    <string>\${HOME}/.openclaw/gateway.js</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
