@@ -36,11 +36,12 @@ jobs:
         run: |
           mkdir -p _site/app
 
-          # ── Root: standalone wizard as landing page ──
-          cp public/aigovops-wizard.html _site/index.html
-
-          # ── Conference handout ──
+          # ── Root: conference handout as hub landing page ──
+          cp public/aigovops-framework.html _site/index.html
           cp public/aigovops-framework.html _site/aigovops-framework.html
+
+          # ── Standalone wizard ──
+          cp public/aigovops-wizard.html _site/aigovops-wizard.html
 
           # ── PDFs ──
           cp public/openclaw-showcase.pdf _site/openclaw-showcase.pdf 2>/dev/null || true
