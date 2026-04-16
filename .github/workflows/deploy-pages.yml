@@ -29,6 +29,9 @@ jobs:
           cp public/aigovops-wizard.html _site/index.html
           # Copy conference handout
           cp public/aigovops-framework.html _site/aigovops-framework.html
+          # Copy PDFs
+          cp public/openclaw-showcase.pdf _site/openclaw-showcase.pdf 2>/dev/null || true
+          cp public/aigovops-compliance-report-v1.pdf _site/aigovops-compliance-report-v1.pdf 2>/dev/null || true
           # Copy any versioned wizard artifacts
           cp -f aigovops-wizard-v*.html _site/ 2>/dev/null || true
           # Include README as reference
