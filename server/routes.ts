@@ -271,6 +271,10 @@ export function registerRoutes(server: Server, app: Express) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
+    // Language param — validated against whitelist to prevent injection
+    const validLangs = ["en","fr","de","zh","pt","hi","es","ar","ru","tr","ur","ps","sw","chr","brl"];
+    const lang = validLangs.includes(req.query.lang as string) ? (req.query.lang as string) : "en";
+
     const scriptPath = path.resolve(__dirname, "../scripts/generate-audit-pdf.py");
     const dbPath = path.resolve(process.cwd(), "openclaw.db");
     const tmpPdf = path.join(os.tmpdir(), `aigovops-audit-${Date.now()}.pdf`);
@@ -278,7 +282,7 @@ export function registerRoutes(server: Server, app: Express) {
     try {
       const python = process.env.PYTHON_BIN ?? "python3";
       // Use execFileSync (not execSync) to avoid shell interpretation — prevents command injection
-      execFileSync(python, [scriptPath, "--db", dbPath, "--output", tmpPdf], {
+      execFileSync(python, [scriptPath, "--db", dbPath, "--output", tmpPdf, "--lang", lang], {
         timeout: 60_000,
         stdio: ["ignore", "pipe", "pipe"],
       });

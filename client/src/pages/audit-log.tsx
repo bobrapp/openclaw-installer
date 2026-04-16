@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { useI18n } from "@/lib/i18n";
 
 interface AuditLog {
   id: number;
@@ -40,6 +41,7 @@ export default function AuditLogViewer() {
   const [storedPassphrase, setStoredPassphrase] = useState("");
   const [setupPassphrase, setSetupPassphrase] = useState("");
   const [showHashes, setShowHashes] = useState(false);
+  const { lang } = useI18n();
 
   // Check if owner passphrase has been set
   const { data: ownerStatus, isLoading: isCheckingOwner } = useQuery<{ hasPassphrase: boolean }>({
@@ -259,7 +261,7 @@ export default function AuditLogViewer() {
             variant="outline"
             onClick={async () => {
               try {
-                const res = await apiRequest("GET", "/api/audit/export-pdf", undefined, {
+                const res = await apiRequest("GET", `/api/audit/export-pdf?lang=${lang}`, undefined, {
                   "x-owner-passphrase": storedPassphrase,
                 });
                 const blob = await res.blob();
