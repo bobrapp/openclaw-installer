@@ -1,66 +1,68 @@
 # Changelog
 
-All notable changes to the OpenClaw Guided Install project will be documented in this file.
+All notable changes to this project will be documented in this file.
 
-## [v1.1] — 2026-04-16
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### Added
-- **Buy Us a Coffee** — Persistent AiGovOps Foundation donation CTA in sidebar footer, visible from every page
-- **Standalone Wizard Smoke Tests** — Playwright E2E test suite validating full dry-run flow across all 4 host targets (macOS, DigitalOcean, Azure VM, Generic VPS) with SHA-256 chain verification
-- **Standalone Playwright Config** — Dedicated `playwright.standalone.config.ts` for wizard-only CI testing
+## [2.0.0] — 2026-04-16 — "Larry's World"
+
+### Added — Security & Protection
+- **Commons Clause license** — Apache 2.0 + Commons Clause for non-commercial open source; commercial use requires Foundation permission
+- **NOTICE file** — Formal copyright assertion, trademark notice, and IP declaration for AiGovOps Foundation, Ken Johnston & Bob Rapp
+- **Contributor License Agreement (CLA)** — All contributors must sign before PRs merge
+- **Developer Certificate of Origin (DCO)** — `Signed-off-by` required on all commits
+- **CODEOWNERS** — Co-founder review required on critical paths (LICENSE, SECURITY, scripts/, server/)
+- **CodeQL analysis** — Automated security scanning on every push and weekly schedule
+- **Dependency review** — Blocks PRs with high-severity or GPL-3.0/AGPL-3.0 dependencies
+- **Nightly backup workflow** — Git integrity verification, critical file checks, SBOM snapshot, 90-day artifact retention
+- **Content Security Policy (CSP)** — Meta headers on standalone wizard and conference handout
+- **PR template** — Security checklist, CLA agreement, and DCO sign-off required
+- **Disaster recovery documentation** — Mirror setup, backup verification, and restore procedures
+
+### Added — Features
+- **Unified Marketplace** — 80 entries across 5 tabs: Agents (38), Connectors (29), Hosting (9), 1-Click Deploy (4)
+- **1-Click Deploy Wizard** — 6-step pipeline: Select Bundle → Choose Host → Configure → Review → Deploy → Complete
+- **Manage Marketplace Entries** — Create agents, connectors, or hosting entries with live YAML export
+- **AWS EC2 & Google Cloud** host targets (added to existing macOS, DigitalOcean, Azure, Generic VPS)
+- **Conference handout as hub** — Landing page with 8 adventure cards linking to all project assets
 
 ### Changed
-- **Humanity Tagline** — Updated footer across all 15 languages to: "Made for Humans, by Humans — with AI, for the good of humanity"
-- **i18n Expansion** — Added `sidebarCoffee` and `sidebarCoffeeDesc` keys to all 15 locale files (en, fr, de, zh, pt, hi, es, ar, ru, tr, ur, ps, sw, chr, brl)
-- **Sidebar Footer** — Redesigned with coffee CTA card, humanity tagline, and link to Humans easter egg page
-- **CI Pipeline** — Enhanced with standalone wizard smoke test job (4 host targets, SHA-256 chain validation, JSON export verification)
+- **License** upgraded from Apache 2.0 to Apache 2.0 + Commons Clause
+- **Version** bumped from 1.0.0 to 2.0.0
+- **README** updated with license badge, CI badge, CodeQL badge, copyright notice, and trademark info
+- **CONTRIBUTING.md** updated with CLA and DCO requirements
+- **GitHub Pages workflow** — Landing page is now the conference handout hub
 
 ### Fixed
-- **Compliance PDF** — Replaced emoji glyphs (✅) with text labels (PASS/COMPLIANT) for font compatibility; fixed contrast on signature lines and cover stats
+- All 12 TypeScript compilation errors resolved
+- Explicit `app/index.html` paths in hub links (static hosting directory resolution)
+- Shell variable escaping in server route template literals
 
-## [v1.0] — 2026-04-15
+### Security
+- Branch protection enforced on master (require PR reviews, CI pass, block force-push/delete)
+- Secret scanning enabled
+- Dependabot configured for npm and GitHub Actions (weekly Monday)
+- Input validation on all marketplace entry fields
+- CSP headers block unauthorized script/style injection
 
-### Core Platform
-- 4-target guided installer (macOS, DigitalOcean, Azure VM, Generic VPS)
-- 7-step wizard with dry-run preflight, install simulation, and SHA-256 audit chain
-- Production hardening checklists per host (UFW, SSH, systemd, Keychain)
-- Shell script library with rollback support
-- Standalone HTML wizard (`aigovops-wizard.html`) — zero dependencies, offline-capable
+## [1.1] — 2026-04-14
 
-### Governance & Compliance
-- Immutable SHA-256 hash-chain audit logging with tamper detection
-- 38 YAML governance patterns (agent lifecycle, data access, human-in-the-loop)
-- Framework comparison: OpenClaw vs 8 alternatives across 8 dimensions
-- AiGovOps Foundation page with co-founder credits and 4-pillar assessment
-- Signed compliance PDF with QR code and co-founder attribution
+### Added
+- Standalone 7-step wizard (single HTML file, works offline)
+- 15-language support with RTL for Arabic, Urdu, Pashto
+- Conference handout (1-page framework overview)
+- 20-page visual showcase PDF
+- Compliance report v1 with SHA-256 hash chain
+- Model council consensus process (3-model review)
 
-### Multilingual
-- 15-language support: English, French, German, Simplified Chinese, Portuguese, Hindi, Spanish, Arabic, Russian, Turkish, Urdu, Pashto, Swahili, Cherokee, Braille
-- RTL layout support (Arabic, Urdu, Pashto)
-- Language picker in header with instant switching
+## [1.0.0] — 2026-04-12
 
-### Community & Marketplace
-- Skills Marketplace with categories, ratings, and install flow
-- Hosting Deals page with partner pricing
-- Release Dashboard with version history and Recharts visualizations
-- "How I Built This" engineering story page
-- Humans easter egg page with gratitude wall and confetti
-
-### Quality
-- 141 Vitest unit tests
-- 46 Playwright E2E tests
-- GitHub Actions CI pipeline (build, test, security audit, wizard validation)
-- Owner passphrase authentication with brute-force protection
-- Sound engine with ambient audio and interaction feedback
-
-### Infrastructure
-- Express + Vite + React + Tailwind CSS + shadcn/ui
-- Drizzle ORM + SQLite with encrypted passphrase
-- Dark/light theme toggle with system preference detection
-- GitHub Pages deployment at bobrapp.github.io/openclaw-installer
-
----
-
-**AiGovOps Foundation** — Made for Humans, by Humans — with AI, for the good of humanity.
-Co-founded by Bob Rapp and Ken Johnston.
-[www.aigovopsfoundation.org](https://www.aigovopsfoundation.org/)
+### Added
+- Initial release: 4-step guided installer wizard
+- 4 host targets: macOS, DigitalOcean, Azure VM, Generic VPS
+- Preflight runner with real-time SSE streaming
+- Production hardening checklist (40+ checks)
+- Framework comparison (8 frameworks)
+- Immutable audit logging with SHA-256 hash chain
+- CI/CD pipeline with Playwright E2E tests

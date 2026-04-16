@@ -1,0 +1,27 @@
+# ──────────────────────────────────────────────────────────────
+# CODEOWNERS — AiGovOps Foundation / OpenClaw Guided Install
+# ──────────────────────────────────────────────────────────────
+# These owners are automatically requested for PR review.
+# At least one approval from a code owner is required to merge.
+
+# Default: Co-Founders review everything
+*                          @bobrapp
+
+# Critical paths — require co-founder review
+LICENSE                    @bobrapp
+NOTICE                     @bobrapp
+SECURITY.md                @bobrapp
+CONTRIBUTING.md            @bobrapp
+CODE_OF_CONDUCT.md         @bobrapp
+.github/                   @bobrapp
+scripts/                   @bobrapp
+server/                    @bobrapp
+shared/                    @bobrapp
+
+# Shell scripts that execute on user machines — highest scrutiny
+scripts/*.sh               @bobrapp
+scripts/*.py               @bobrapp
+
+# Standalone artifacts — self-contained, high-value targets
+public/aigovops-wizard.html     @bobrapp
+public/aigovops-framework.html  @bobrapp

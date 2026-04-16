@@ -1,7 +1,7 @@
 {
   "name": "openclaw-installer",
-  "version": "1.0.0",
-  "license": "MIT",
+  "version": "2.0.0",
+  "license": "Apache-2.0 WITH Commons-Clause",
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",

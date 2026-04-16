@@ -88,6 +88,20 @@ Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature_request.md). D
 
 This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold these standards.
 
+## Contributor License Agreement (CLA)
+
+All contributors must agree to our [Contributor License Agreement](.github/CLA.md) before their first PR can be merged. This ensures the AiGovOps Foundation retains the rights needed to protect and maintain the project.
+
+To sign, include in your PR description or commit message:
+```
+I have read the CLA and agree to its terms.
+Signed-off-by: Your Name <your-email@example.com>
+```
+
+## Developer Certificate of Origin (DCO)
+
+All commits must include a `Signed-off-by` line certifying you have the right to submit the code. Use `git commit -s` to add this automatically.
+
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [Apache License 2.0](LICENSE).
+By contributing, you agree that your contributions will be licensed under the [Apache License 2.0 with Commons Clause](LICENSE). The Commons Clause restricts commercial use of the Software — for commercial licensing inquiries, contact legal@aigovopsfoundation.org.

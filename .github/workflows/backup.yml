@@ -1,0 +1,119 @@
+name: Nightly Backup & Integrity Check
+
+on:
+  schedule:
+    - cron: '0 4 * * *'  # Daily 4am UTC
+  workflow_dispatch:       # Manual trigger
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  backup:
+    name: Repository Backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify git integrity
+        run: |
+          echo "## Nightly Integrity Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Verify all objects
+          git fsck --full --no-dangling 2>&1 | tee /tmp/fsck-output.txt
+          if [ $? -eq 0 ]; then
+            echo "✅ **Git object integrity:** PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Git object integrity:** FAILED" >> $GITHUB_STEP_SUMMARY
+            cat /tmp/fsck-output.txt >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          # Count objects
+          OBJECTS=$(git count-objects -v)
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "$OBJECTS" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Verify critical files exist
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Critical File Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          CRITICAL_FILES=(
+            "LICENSE"
+            "NOTICE"
+            "SECURITY.md"
+            "README.md"
+            "CONTRIBUTING.md"
+            "CODE_OF_CONDUCT.md"
+            "package.json"
+            ".github/CODEOWNERS"
+            "public/aigovops-wizard.html"
+            "public/aigovops-framework.html"
+          )
+
+          ALL_OK=true
+          for f in "${CRITICAL_FILES[@]}"; do
+            if [ -f "$f" ]; then
+              HASH=$(sha256sum "$f" | cut -d' ' -f1)
+              echo "✅ \`$f\` — \`${HASH:0:16}…\`" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ \`$f\` — **MISSING**" >> $GITHUB_STEP_SUMMARY
+              ALL_OK=false
+            fi
+          done
+
+          if [ "$ALL_OK" = false ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Critical files are missing!**" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Generate SBOM snapshot
+        run: |
+          npx --yes @cyclonedx/cyclonedx-npm --output-file sbom-snapshot.json 2>/dev/null || true
+          if [ -f sbom-snapshot.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **SBOM snapshot generated** ($(wc -c < sbom-snapshot.json) bytes)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Create backup archive
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          ARCHIVE_NAME="openclaw-backup-${TIMESTAMP}.tar.gz"
+          git bundle create "openclaw-full-${TIMESTAMP}.bundle" --all
+          tar czf "${ARCHIVE_NAME}" \
+            "openclaw-full-${TIMESTAMP}.bundle" \
+            sbom-snapshot.json 2>/dev/null || \
+          tar czf "${ARCHIVE_NAME}" "openclaw-full-${TIMESTAMP}.bundle"
+
+          SHA=$(sha256sum "${ARCHIVE_NAME}" | cut -d' ' -f1)
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Backup Archive" >> $GITHUB_STEP_SUMMARY
+          echo "- **File:** \`${ARCHIVE_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **SHA-256:** \`${SHA}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Size:** $(du -h "${ARCHIVE_NAME}" | cut -f1)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4
+        with:
+          name: nightly-backup-${{ github.run_number }}
+          path: openclaw-backup-*.tar.gz
+          retention-days: 90
+
+      - name: Post summary footer
+        if: always()
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**AiGovOps Foundation** — Nightly Integrity & Backup" >> $GITHUB_STEP_SUMMARY
+          echo "© 2024-2026 Ken Johnston & Bob Rapp, Co-Founders" >> $GITHUB_STEP_SUMMARY

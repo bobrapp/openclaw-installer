@@ -1,0 +1,76 @@
+OpenClaw Guided Install by AiGovOps
+Copyright 2024-2026 AiGovOps Foundation
+
+This product was created and is maintained by:
+
+  Ken Johnston — Co-Founder, AiGovOps Foundation
+  Bob Rapp     — Co-Founder, AiGovOps Foundation
+
+All rights reserved by the AiGovOps Foundation except as explicitly
+granted under the Apache License 2.0 with Commons Clause.
+
+────────────────────────────────────────────────────────────────────
+
+TRADEMARK NOTICE
+
+"AiGovOps", "AiGovOps Foundation", "OpenClaw", "OpenClaw Guided Install",
+and the AiGovOps Foundation logo are trademarks or service marks of the
+AiGovOps Foundation. You may not use these marks in any manner that is
+likely to cause confusion, or in any manner that disparages or discredits
+the AiGovOps Foundation, without prior written consent.
+
+Use of these marks in the following contexts is permitted without written
+consent:
+  - Referring to the project by name in documentation, articles, or talks
+  - Stating that your project is "based on" or "compatible with" OpenClaw
+  - Including unmodified attribution notices as required by the License
+
+Use of these marks in the following contexts requires written consent:
+  - Incorporating the marks in your own product or service name
+  - Using the marks in advertising or promotional materials
+  - Modifying or creating derivative versions of the logos
+
+For trademark inquiries: legal@aigovopsfoundation.org
+
+────────────────────────────────────────────────────────────────────
+
+INTELLECTUAL PROPERTY ASSERTION
+
+The architecture, governance-as-code methodology, SHA-256 hash-chain
+audit system, preflight/install/rollback pipeline, and the multi-pillar
+compliance framework embodied in this software are original works of
+authorship by Ken Johnston and Bob Rapp, developed under the auspices
+of the AiGovOps Foundation.
+
+The Foundation asserts all intellectual property rights in and to these
+works, including but not limited to copyright, trade secret, and any
+patent rights that may apply.
+
+────────────────────────────────────────────────────────────────────
+
+THIRD-PARTY NOTICES
+
+This software includes the following third-party open-source components:
+
+  React (MIT License) — Copyright Meta Platforms, Inc.
+  Express (MIT License) — Copyright OpenJS Foundation
+  Vite (MIT License) — Copyright Evan You
+  Tailwind CSS (MIT License) — Copyright Tailwind Labs
+  shadcn/ui (MIT License) — Copyright shadcn
+  Drizzle ORM (Apache 2.0) — Copyright Drizzle Team
+  better-sqlite3 (MIT License) — Copyright Joshua Wise
+  Recharts (MIT License) — Copyright recharts team
+  Wouter (ISC License) — Copyright Alexey Taktarov
+  Tanstack Query (MIT License) — Copyright Tanner Linsley
+
+Full dependency list available via: npm ls --all
+SBOM available in each GitHub Release.
+
+────────────────────────────────────────────────────────────────────
+
+WEBSITE & CONTACT
+
+  Website:  https://www.aigovopsfoundation.org/
+  GitHub:   https://github.com/bobrapp/openclaw-installer
+  Security: security@aigovopsfoundation.org
+  Legal:    legal@aigovopsfoundation.org

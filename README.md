@@ -1,8 +1,16 @@
 # OpenClaw Guided Install by AiGovOps
 
+[![License: Apache 2.0 + Commons Clause](https://img.shields.io/badge/License-Apache%202.0%20%2B%20Commons%20Clause-blue.svg)](LICENSE)
+[![CI](https://github.com/bobrapp/openclaw-installer/actions/workflows/ci.yml/badge.svg)](https://github.com/bobrapp/openclaw-installer/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/bobrapp/openclaw-installer/actions/workflows/codeql.yml/badge.svg)](https://github.com/bobrapp/openclaw-installer/actions/workflows/codeql.yml)
+
 A guided macOS/cloud installer for **OpenClaw** that checks permissions, missing dependencies, low-privilege constraints, logging, and rollback steps before it changes anything. Packaged as a web UI plus shell scripts, with a production-hardening checklist and observability defaults.
 
 Built with **AiGovOps Foundation** immutable logging — every action is cryptographically secured in a SHA-256 hash chain.
+
+> **© 2024–2026 AiGovOps Foundation — Ken Johnston & Bob Rapp, Co-Founders**
+> Licensed under Apache 2.0 with Commons Clause. Free for non-commercial use.
+> "AiGovOps", "OpenClaw", and the AiGovOps Foundation logo are trademarks of the AiGovOps Foundation. See [NOTICE](NOTICE) for details.
 
 ## Features
 
