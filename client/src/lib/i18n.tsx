@@ -149,6 +149,48 @@ export interface Translations {
   mktSubmitSkill: string;
   mktSubmitSkillDesc: string;
 
+  // Unified Marketplace page
+  unifiedMarketplaceTitle?: string;
+  unifiedMarketplaceSubtitle?: string;
+  tabAll?: string;
+  tabAgents?: string;
+  tabConnectors?: string;
+  tabHosting?: string;
+  tabOneClick?: string;
+  mktDeployNow?: string;
+  mktEstCost?: string;
+  mktIncludes?: string;
+  mktSupportsHosts?: string;
+  mktViewDetails?: string;
+
+  // Marketplace manage page
+  navMarketplaceManage?: string;
+  manageTitle?: string;
+  manageSubtitle?: string;
+  manageAddEntry?: string;
+  manageExportYaml?: string;
+  manageCopyYaml?: string;
+  manageDownloadYaml?: string;
+  manageSubmitPr?: string;
+  managePreview?: string;
+
+  // 1-Click Deploy Wizard
+  navDeployWizard?: string;
+  deployWizardTitle?: string;
+  deployWizardSubtitle?: string;
+  deployStepBundle?: string;
+  deployStepHost?: string;
+  deployStepInputs?: string;
+  deployStepReview?: string;
+  deployStepPipeline?: string;
+  deployStepComplete?: string;
+  deployPermissionTitle?: string;
+  deployPermissionDesc?: string;
+  deployConfirmBtn?: string;
+  deploySkipped?: string;
+  deploySuccess?: string;
+  deployAnother?: string;
+
   // Pattern names and taglines
   patGreeterName: string;
   patGreeterTag: string;

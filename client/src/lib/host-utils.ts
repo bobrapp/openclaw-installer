@@ -17,6 +17,8 @@ export interface ScriptResponse {
 export const HOST_LABELS: Record<string, string> = {
   macos: "macOS",
   digitalocean: "DigitalOcean",
+  aws: "AWS EC2",
+  gcp: "Google Cloud",
   azure: "Azure VM",
   "generic-vps": "Generic VPS",
 };

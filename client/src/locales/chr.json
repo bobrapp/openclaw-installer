@@ -19,6 +19,8 @@
   "navResources": "ᏧᏂᎸᏫᏍᏓᏁᏗ",
   "hostMacOS": "macOS",
   "hostDigitalOcean": "DigitalOcean",
+  "hostAWS": "AWS EC2",
+  "hostGCP": "Google Cloud",
   "hostAzureVM": "Azure VM",
   "hostGenericVPS": "VPS",
   "hostHardening": "ᎠᎵᏍᏕᎸᏗ",

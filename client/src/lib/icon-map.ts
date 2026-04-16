@@ -56,6 +56,7 @@ import {
   Play,
   Plug,
   Ribbon,
+  Rocket,
   Scale,
   ScrollText,
   Search,
@@ -83,7 +84,7 @@ export const iconMap: Record<string, LucideIcon> = {
   FileCode2, FileText, Fish, Flame, Flower, Footprints, Gamepad2, Gem, GitBranch,
   GitCompareArrows, Globe, GraduationCap, Hammer, HandHeart, Handshake, HardDrive,
   Heart, Home, Layers, Lock, Mail, Map, MessageSquare, Mountain, Music, Network,
-  Palette, PartyPopper, Pen, Phone, Play, Plug, Ribbon, Scale, ScrollText, Search,
+  Palette, PartyPopper, Pen, Phone, Play, Plug, Ribbon, Rocket, Scale, ScrollText, Search,
   Server, Shield, ShieldCheck, Snowflake, Sparkles, Sprout, Store, Sunrise, Target,
   TicketCheck, Users, Wand2, Wheat, Wind, Wrench, Zap,
 };

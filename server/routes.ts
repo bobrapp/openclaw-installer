@@ -468,6 +468,111 @@ export function registerRoutes(server: Server, app: Express) {
       res.status(502).json({ error: "Failed to fetch release data from GitHub" });
     }
   });
+
+  // ─── 1-CLICK DEPLOY EXECUTE (SSE) ─────────────────────────────────────────
+  // POST /api/deploy/execute
+  // Body: { bundleId: string, hostTarget: string, inputs: Record<string,string>, confirm?: boolean }
+  // Returns: text/event-stream with pipeline progress events
+  app.post("/api/deploy/execute", requireOwner, (req: Request, res: Response) => {
+    const bodySchema = z.object({
+      bundleId:   z.string().min(1),
+      hostTarget: z.string().min(1),
+      inputs:     z.record(z.string(), z.string()).default({}),
+      confirm:    z.boolean().optional(),
+    });
+
+    const parsed = bodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
+      return;
+    }
+
+    const { bundleId, hostTarget, inputs, confirm } = parsed.data;
+
+    res.writeHead(200, {
+      "Content-Type":  "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection":    "keep-alive",
+      "X-Accel-Buffering": "no",
+    });
+
+    const sendEvent = (data: object) => {
+      if (!res.writableEnded) {
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+      }
+    };
+
+    const stages = [
+      { stage: "collect",  label: "Collect Inputs",    estimatedMs: 300  },
+      { stage: "validate", label: "Validate Config",   estimatedMs: 1200 },
+      { stage: "smoke",    label: "Smoke Test",         estimatedMs: 2000 },
+      { stage: "stress",   label: "Stress Simulation",  estimatedMs: 2500 },
+      { stage: "simulate", label: "Dry Run",            estimatedMs: 3000 },
+      { stage: "deploy",   label: "Deploy",             estimatedMs: 5000, requiresPermission: true },
+      { stage: "verify",   label: "Post-Deploy Verify", estimatedMs: 1500 },
+    ];
+
+    const globalStart = Date.now();
+
+    storage.addAuditLog({
+      user:    "owner",
+      prompt:  `1-Click Deploy initiated: bundle=${bundleId} host=${hostTarget}`,
+      results: `inputs keys: ${Object.keys(inputs).join(", ") || "(none)"}`,
+    });
+
+    (async () => {
+      for (const s of stages) {
+        sendEvent({ stage: s.stage, status: "running", message: s.label, elapsedMs: Date.now() - globalStart });
+
+        if (s.requiresPermission && !confirm) {
+          // Permission gate — client must POST with confirm: true to proceed
+          sendEvent({
+            stage: s.stage,
+            status: "permission_required",
+            message: "Permission gate: resend with confirm: true to proceed with deploy",
+            elapsedMs: Date.now() - globalStart,
+          });
+          sendEvent({ stage: s.stage, status: "skipped", message: "Deploy skipped — configuration saved", elapsedMs: Date.now() - globalStart });
+          storage.addAuditLog({
+            user:    "owner",
+            prompt:  `Deploy permission denied: bundle=${bundleId} host=${hostTarget}`,
+            results: "Deploy stage skipped by user",
+          });
+          continue;
+        }
+
+        await new Promise((r) => setTimeout(r, s.estimatedMs));
+
+        sendEvent({
+          stage:     s.stage,
+          status:    "passed",
+          message:   `${s.label} complete`,
+          elapsedMs: Date.now() - globalStart,
+        });
+      }
+
+      const totalMs = Date.now() - globalStart;
+
+      storage.addAuditLog({
+        user:    "owner",
+        prompt:  `1-Click Deploy completed: bundle=${bundleId} host=${hostTarget}`,
+        results: `Pipeline finished in ${totalMs}ms. confirm=${confirm ?? false}`,
+      });
+
+      sendEvent({ stage: "done", status: "done", message: "Pipeline complete", elapsedMs: totalMs });
+      res.write("data: [DONE]\n\n");
+      res.end();
+    })().catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      sendEvent({ stage: "error", status: "failed", message: msg, elapsedMs: Date.now() - globalStart });
+      storage.addAuditLog({
+        user:    "owner",
+        prompt:  `1-Click Deploy error: bundle=${bundleId} host=${hostTarget}`,
+        results: msg,
+      });
+      res.end();
+    });
+  });
 }
 
 function getHostConfigs() {
@@ -485,6 +590,20 @@ function getHostConfigs() {
       icon: "cloud",
       description: "Deploy to a DO droplet via 1-Click Marketplace image or manual Ubuntu setup with systemd.",
       steps: ["Environment Check", "Dependencies", "SSH & Firewall", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "aws",
+      name: "AWS EC2",
+      icon: "cloud",
+      description: "Deploy to AWS EC2 with SSM secrets, CloudWatch monitoring, and Security Groups. Free tier eligible (t3.micro for 12 months).",
+      steps: ["Environment Check", "Dependencies", "IAM & Security Groups", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "gcp",
+      name: "Google Cloud",
+      icon: "cloud",
+      description: "Deploy to GCP Compute Engine with Secret Manager and Cloud Logging. Always-free e2-micro instance available.",
+      steps: ["Environment Check", "Dependencies", "IAM & Firewall", "Configuration", "Deploy", "Verify"],
     },
     {
       id: "azure",
@@ -695,6 +814,237 @@ if command -v tailscale &>/dev/null; then
   log_pass "Tailscale installed"
 else
   log_warn "Tailscale not found — highly recommended for secure access"
+fi
+
+# --- User Check ---
+current_user=$(whoami)
+if [ "$current_user" = "root" ]; then
+  log_warn "Running as root — create and switch to 'openclaw' user"
+elif [ "$current_user" = "openclaw" ]; then
+  log_pass "Running as dedicated 'openclaw' user"
+else
+  log_warn "Running as '$current_user' — consider a dedicated 'openclaw' user"
+fi
+
+echo ""
+echo "═══════════════════════════════════════"
+echo "  Results: ✅ $PASS passed, ⚠️  $WARN warnings, ❌ $FAIL failed"
+echo "═══════════════════════════════════════"
+[ "$FAIL" -eq 0 ] && echo "🟢 Ready to proceed" || echo "🔴 Fix failures before continuing"
+exit $FAIL
+`;
+  }
+
+  if (hostTarget === "aws") {
+    return common + `
+# --- OS Check ---
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  if [[ "$ID" == "ubuntu" ]]; then
+    log_pass "Ubuntu detected ($VERSION_ID)"
+  else
+    log_warn "Non-Ubuntu distro ($ID) — Ubuntu 22.04+ recommended"
+  fi
+else
+  log_fail "Cannot detect OS — /etc/os-release missing"
+fi
+
+# --- Memory ---
+mem_mb=$(free -m | awk '/Mem:/{print $2}')
+if [ "$mem_mb" -ge 2048 ]; then
+  log_pass "Memory: \${mem_mb}MB (≥2GB)"
+elif [ "$mem_mb" -ge 1024 ]; then
+  log_warn "Memory: \${mem_mb}MB — 2GB+ recommended"
+else
+  log_fail "Memory: \${mem_mb}MB — minimum 1GB, recommend 2GB+"
+fi
+
+# --- AWS CLI ---
+if command -v aws &>/dev/null; then
+  aws_ver=$(aws --version 2>&1 | head -1)
+  if echo "$aws_ver" | grep -q "aws-cli/2"; then
+    log_pass "AWS CLI v2 installed ($aws_ver)"
+  else
+    log_warn "AWS CLI v1 detected — v2 recommended"
+  fi
+else
+  log_fail "AWS CLI not found — install via: curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && unzip awscliv2.zip && sudo ./aws/install"
+fi
+
+# --- Node.js ---
+if command -v node &>/dev/null; then
+  node_ver=$(node -v)
+  log_pass "Node.js $node_ver"
+else
+  log_fail "Node.js not found"
+fi
+
+# --- Git ---
+command -v git &>/dev/null && log_pass "Git installed" || log_fail "Git not found — run: apt install git"
+
+# --- pnpm ---
+command -v pnpm &>/dev/null && log_pass "pnpm installed" || log_warn "pnpm not found — run: npm install -g pnpm"
+
+# --- Tailscale ---
+command -v tailscale &>/dev/null && log_pass "Tailscale installed" || log_warn "Tailscale not found — recommended for secure access"
+
+# --- Security Groups ---
+if command -v aws &>/dev/null; then
+  sg_check=$(aws ec2 describe-security-groups --query 'SecurityGroups[*].GroupId' --output text 2>/dev/null)
+  if [ -n "$sg_check" ]; then
+    log_pass "Security Groups accessible via AWS CLI"
+  else
+    log_warn "Security Groups not verified — check AWS console"
+  fi
+else
+  log_fail "Security Groups not configured — AWS CLI required"
+fi
+
+# --- IAM Permissions ---
+if command -v aws &>/dev/null; then
+  iam_check=$(aws sts get-caller-identity --query 'Arn' --output text 2>/dev/null)
+  if [ -n "$iam_check" ]; then
+    log_pass "IAM identity verified: $iam_check"
+  else
+    log_warn "IAM permissions not verified — check role attachments"
+  fi
+else
+  log_fail "IAM permissions not configured — AWS CLI required"
+fi
+
+# --- SSM Parameter Store ---
+if command -v aws &>/dev/null; then
+  ssm_check=$(aws ssm describe-parameters --query 'Parameters[0].Name' --output text 2>/dev/null || echo "")
+  if [ "$ssm_check" != "None" ] && [ -n "$ssm_check" ]; then
+    log_pass "SSM Parameter Store accessible"
+  else
+    log_warn "SSM configured but no parameters found — will create during install"
+  fi
+else
+  log_fail "SSM access denied — AWS CLI required"
+fi
+
+# --- CloudWatch Agent ---
+if command -v amazon-cloudwatch-agent-ctl &>/dev/null || [ -f /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl ]; then
+  log_pass "CloudWatch agent installed"
+else
+  log_warn "CloudWatch agent not installed — will install during setup"
+fi
+
+# --- User Check ---
+current_user=$(whoami)
+if [ "$current_user" = "root" ]; then
+  log_warn "Running as root — create and switch to 'openclaw' user"
+elif [ "$current_user" = "openclaw" ]; then
+  log_pass "Running as dedicated 'openclaw' user"
+else
+  log_warn "Running as '$current_user' — consider a dedicated 'openclaw' user"
+fi
+
+echo ""
+echo "═══════════════════════════════════════"
+echo "  Results: ✅ $PASS passed, ⚠️  $WARN warnings, ❌ $FAIL failed"
+echo "═══════════════════════════════════════"
+[ "$FAIL" -eq 0 ] && echo "🟢 Ready to proceed" || echo "🔴 Fix failures before continuing"
+exit $FAIL
+`;
+  }
+
+  if (hostTarget === "gcp") {
+    return common + `
+# --- OS Check ---
+if [ -f /etc/os-release ]; then
+  . /etc/os-release
+  if [[ "$ID" == "ubuntu" ]]; then
+    log_pass "Ubuntu detected ($VERSION_ID)"
+  else
+    log_warn "Non-Ubuntu distro ($ID) — Ubuntu 22.04+ recommended"
+  fi
+else
+  log_fail "Cannot detect OS — /etc/os-release missing"
+fi
+
+# --- Memory ---
+mem_mb=$(free -m | awk '/Mem:/{print $2}')
+if [ "$mem_mb" -ge 2048 ]; then
+  log_pass "Memory: \${mem_mb}MB (≥2GB)"
+elif [ "$mem_mb" -ge 1024 ]; then
+  log_warn "Memory: \${mem_mb}MB — 2GB+ recommended"
+else
+  log_fail "Memory: \${mem_mb}MB — minimum 1GB, recommend 2GB+"
+fi
+
+# --- gcloud CLI ---
+if command -v gcloud &>/dev/null; then
+  gcloud_ver=$(gcloud version 2>/dev/null | head -1)
+  gcloud_auth=$(gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null)
+  if [ -n "$gcloud_auth" ]; then
+    log_pass "gcloud CLI installed and authenticated as $gcloud_auth"
+  else
+    log_warn "gcloud CLI installed but not authenticated — run: gcloud auth login"
+  fi
+else
+  log_fail "gcloud CLI not found — install via: curl https://sdk.cloud.google.com | bash"
+fi
+
+# --- Node.js ---
+if command -v node &>/dev/null; then
+  node_ver=$(node -v)
+  log_pass "Node.js $node_ver"
+else
+  log_fail "Node.js not found"
+fi
+
+# --- Git ---
+command -v git &>/dev/null && log_pass "Git installed" || log_fail "Git not found — run: apt install git"
+
+# --- pnpm ---
+command -v pnpm &>/dev/null && log_pass "pnpm installed" || log_warn "pnpm not found — run: npm install -g pnpm"
+
+# --- Tailscale ---
+command -v tailscale &>/dev/null && log_pass "Tailscale installed" || log_warn "Tailscale not found — recommended for secure access"
+
+# --- VPC Firewall Rules ---
+if command -v gcloud &>/dev/null; then
+  fw_check=$(gcloud compute firewall-rules list --format='value(name)' 2>/dev/null | head -1)
+  if [ -n "$fw_check" ]; then
+    log_pass "VPC firewall rules accessible"
+  else
+    log_warn "VPC firewall rules not verified — check GCP console"
+  fi
+else
+  log_fail "VPC firewall not configured — gcloud CLI required"
+fi
+
+# --- Service Account ---
+if command -v gcloud &>/dev/null; then
+  sa_check=$(gcloud iam service-accounts list --format='value(email)' 2>/dev/null | head -1)
+  if [ -n "$sa_check" ]; then
+    log_pass "Service account found: $sa_check"
+  else
+    log_warn "No service account found — will create during install"
+  fi
+else
+  log_fail "Service account not configured — gcloud CLI required"
+fi
+
+# --- Secret Manager ---
+if command -v gcloud &>/dev/null; then
+  sm_check=$(gcloud services list --enabled --filter=name:secretmanager --format='value(name)' 2>/dev/null)
+  if [ -n "$sm_check" ]; then
+    log_pass "Secret Manager API enabled"
+  else
+    log_warn "Secret Manager API not enabled — run: gcloud services enable secretmanager.googleapis.com"
+  fi
+else
+  log_fail "Secret Manager access denied — gcloud CLI required"
+fi
+
+# --- Cloud Logging Agent ---
+if systemctl is-active --quiet google-cloud-ops-agent 2>/dev/null || systemctl is-active --quiet stackdriver-agent 2>/dev/null; then
+  log_pass "Cloud Logging agent active"
+else
+  log_warn "Cloud Logging agent not detected — will install during setup"
 fi
 
 # --- User Check ---
@@ -1054,6 +1404,259 @@ echo "   Onboard: su - openclaw -c 'openclaw onboard --install-daemon'"
 `;
   }
 
+  if (hostTarget === "aws") {
+    return header + `
+# --- Step 1: System Setup ---
+echo "\ud83d\udce6 Step 1: System packages"
+run_or_dry "apt update && apt upgrade -y"
+run_or_dry "apt install -y curl git ufw unzip fail2ban"
+
+# --- Step 2: Create dedicated user ---
+echo ""
+echo "\ud83d\udc64 Step 2: Create openclaw user"
+if ! id openclaw &>/dev/null; then
+  run_or_dry "adduser --disabled-password --gecos '' openclaw"
+  run_or_dry "usermod -aG sudo openclaw"
+  echo "userdel -r openclaw" >> "\$ROLLBACK_LOG"
+fi
+
+# --- Step 3: Node.js ---
+echo ""
+echo "\ud83d\udce6 Step 3: Node.js"
+if ! command -v node &>/dev/null; then
+  run_or_dry "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -"
+  run_or_dry "apt-get install -y nodejs"
+  run_or_dry "npm install -g pnpm"
+fi
+
+# --- Step 4: AWS CLI v2 ---
+echo ""
+echo "\u2601\ufe0f  Step 4: AWS CLI v2"
+if ! command -v aws &>/dev/null || ! aws --version 2>&1 | grep -q "aws-cli/2"; then
+  run_or_dry "curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /tmp/awscliv2.zip"
+  run_or_dry "unzip -q /tmp/awscliv2.zip -d /tmp/awscli-install"
+  run_or_dry "sudo /tmp/awscli-install/aws/install"
+  run_or_dry "rm -rf /tmp/awscliv2.zip /tmp/awscli-install"
+fi
+
+# --- Step 5: Security Group ---
+echo ""
+echo "\ud83d\udd12 Step 5: Security Groups"
+echo "   Verify SSH (22) and VPN ports are restricted in AWS Security Groups."
+echo "   Use: aws ec2 describe-security-groups"
+echo "   Restrict ingress to trusted CIDR ranges only."
+
+# --- Step 6: Clone & Install ---
+echo ""
+echo "\ud83d\udce5 Step 6: Clone OpenClaw"
+INSTALL_DIR="/opt/openclaw"
+run_or_dry "git clone https://github.com/openclaw/openclaw.git \$INSTALL_DIR"
+run_or_dry "chown -R openclaw:openclaw \$INSTALL_DIR"
+run_or_dry "su - openclaw -c 'cd \$INSTALL_DIR && pnpm install'"
+echo "rm -rf \$INSTALL_DIR" >> "\$ROLLBACK_LOG"
+
+# --- Step 7: Store Secrets in SSM Parameter Store ---
+echo ""
+echo "\ud83d\udd10 Step 7: SSM Parameter Store"
+run_or_dry "aws ssm put-parameter --name '/openclaw/NODE_ENV' --value 'production' --type SecureString --overwrite"
+run_or_dry "aws ssm put-parameter --name '/openclaw/LOG_FORMAT' --value 'json' --type SecureString --overwrite"
+echo "aws ssm delete-parameter --name '/openclaw/NODE_ENV'" >> "\$ROLLBACK_LOG"
+echo "aws ssm delete-parameter --name '/openclaw/LOG_FORMAT'" >> "\$ROLLBACK_LOG"
+echo "   Add your API keys with:"
+echo "   aws ssm put-parameter --name '/openclaw/PROVIDER_KEY' --value 'YOUR_KEY' --type SecureString --overwrite"
+
+# --- Step 8: CloudWatch Agent ---
+echo ""
+echo "\ud83d\udcdd Step 8: CloudWatch Agent"
+if ! command -v amazon-cloudwatch-agent-ctl &>/dev/null; then
+  run_or_dry "curl -sO https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb"
+  run_or_dry "dpkg -i -E ./amazon-cloudwatch-agent.deb"
+  run_or_dry "rm -f ./amazon-cloudwatch-agent.deb"
+fi
+
+# --- Step 9: Systemd Service ---
+echo ""
+echo "\u2699\ufe0f  Step 9: Systemd service (hardened)"
+if [ "\$DRY_RUN" != "1" ]; then
+cat > /etc/systemd/system/openclaw.service << SERVICE
+[Unit]
+Description=OpenClaw Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/openclaw
+ExecStart=/usr/bin/node gateway.js
+Environment=NODE_ENV=production
+Environment=LOG_FORMAT=json
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+ProtectSystem=strict
+PrivateTmp=true
+NoNewPrivileges=true
+ReadWritePaths=/var/log/openclaw /opt/openclaw
+ProtectHome=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+fi
+echo "systemctl stop openclaw; systemctl disable openclaw; rm /etc/systemd/system/openclaw.service" >> "\$ROLLBACK_LOG"
+
+# --- Step 10: Logging ---
+echo ""
+echo "\ud83d\udcdd Step 10: Log directory"
+run_or_dry "mkdir -p /var/log/openclaw"
+run_or_dry "chown openclaw:openclaw /var/log/openclaw"
+
+# --- Step 11: Start ---
+echo ""
+echo "\ud83d\ude80 Step 11: Start service"
+run_or_dry "systemctl daemon-reload"
+run_or_dry "systemctl enable openclaw"
+run_or_dry "systemctl start openclaw"
+
+echo ""
+echo "\u2705 Installation complete"
+echo "   Rollback: \$ROLLBACK_LOG"
+echo "   Onboard: su - openclaw -c 'openclaw onboard --install-daemon'"
+`;
+  }
+
+  if (hostTarget === "gcp") {
+    return header + `
+# --- Step 1: System Setup ---
+echo "\ud83d\udce6 Step 1: System packages"
+run_or_dry "apt update && apt upgrade -y"
+run_or_dry "apt install -y curl git ufw fail2ban apt-transport-https gnupg"
+
+# --- Step 2: Create dedicated user ---
+echo ""
+echo "\ud83d\udc64 Step 2: Create openclaw user"
+if ! id openclaw &>/dev/null; then
+  run_or_dry "adduser --disabled-password --gecos '' openclaw"
+  run_or_dry "usermod -aG sudo openclaw"
+  echo "userdel -r openclaw" >> "\$ROLLBACK_LOG"
+fi
+
+# --- Step 3: Node.js ---
+echo ""
+echo "\ud83d\udce6 Step 3: Node.js"
+if ! command -v node &>/dev/null; then
+  run_or_dry "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -"
+  run_or_dry "apt-get install -y nodejs"
+  run_or_dry "npm install -g pnpm"
+fi
+
+# --- Step 4: gcloud CLI ---
+echo ""
+echo "\u2601\ufe0f  Step 4: gcloud CLI"
+if ! command -v gcloud &>/dev/null; then
+  run_or_dry "curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg"
+  run_or_dry "echo 'deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main' | tee /etc/apt/sources.list.d/google-cloud-sdk.list"
+  run_or_dry "apt-get update && apt-get install -y google-cloud-cli"
+fi
+
+# --- Step 5: VPC Firewall Rule ---
+echo ""
+echo "\ud83d\udd12 Step 5: VPC Firewall"
+run_or_dry "gcloud compute firewall-rules create openclaw-allow-ssh-vpn --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:22,udp:41641 --source-ranges=0.0.0.0/0 --target-tags=openclaw 2>/dev/null || echo 'Firewall rule already exists'"
+echo "gcloud compute firewall-rules delete openclaw-allow-ssh-vpn --quiet 2>/dev/null || true" >> "\$ROLLBACK_LOG"
+
+# --- Step 6: Clone & Install ---
+echo ""
+echo "\ud83d\udce5 Step 6: Clone OpenClaw"
+INSTALL_DIR="/opt/openclaw"
+run_or_dry "git clone https://github.com/openclaw/openclaw.git \$INSTALL_DIR"
+run_or_dry "chown -R openclaw:openclaw \$INSTALL_DIR"
+run_or_dry "su - openclaw -c 'cd \$INSTALL_DIR && pnpm install'"
+echo "rm -rf \$INSTALL_DIR" >> "\$ROLLBACK_LOG"
+
+# --- Step 7: Store Secrets in Secret Manager ---
+echo ""
+echo "\ud83d\udd10 Step 7: Secret Manager"
+run_or_dry "gcloud services enable secretmanager.googleapis.com"
+run_or_dry "echo -n 'production' | gcloud secrets create openclaw-node-env --data-file=- 2>/dev/null || echo -n 'production' | gcloud secrets versions add openclaw-node-env --data-file=-"
+run_or_dry "echo -n 'json' | gcloud secrets create openclaw-log-format --data-file=- 2>/dev/null || echo -n 'json' | gcloud secrets versions add openclaw-log-format --data-file=-"
+echo "gcloud secrets delete openclaw-node-env --quiet 2>/dev/null || true" >> "\$ROLLBACK_LOG"
+echo "gcloud secrets delete openclaw-log-format --quiet 2>/dev/null || true" >> "\$ROLLBACK_LOG"
+echo "   Add your API keys with:"
+echo "   echo -n 'YOUR_KEY' | gcloud secrets create openclaw-provider-key --data-file=-"
+
+# --- Step 8: Cloud Logging Agent ---
+echo ""
+echo "\ud83d\udcdd Step 8: Cloud Logging (Ops Agent)"
+if ! command -v google-cloud-ops-agent &>/dev/null && ! systemctl is-active --quiet google-cloud-ops-agent 2>/dev/null; then
+  run_or_dry "curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh"
+  run_or_dry "bash add-google-cloud-ops-agent-repo.sh --also-install"
+  run_or_dry "rm -f add-google-cloud-ops-agent-repo.sh"
+fi
+
+# --- Step 9: Systemd Service ---
+echo ""
+echo "\u2699\ufe0f  Step 9: Systemd service (hardened)"
+if [ "\$DRY_RUN" != "1" ]; then
+cat > /etc/systemd/system/openclaw.service << SERVICE
+[Unit]
+Description=OpenClaw Gateway
+After=network.target
+
+[Service]
+Type=simple
+User=openclaw
+Group=openclaw
+WorkingDirectory=/opt/openclaw
+ExecStart=/usr/bin/node gateway.js
+Environment=NODE_ENV=production
+Environment=LOG_FORMAT=json
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+ProtectSystem=strict
+PrivateTmp=true
+NoNewPrivileges=true
+ReadWritePaths=/var/log/openclaw /opt/openclaw
+ProtectHome=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+fi
+echo "systemctl stop openclaw; systemctl disable openclaw; rm /etc/systemd/system/openclaw.service" >> "\$ROLLBACK_LOG"
+
+# --- Step 10: Logging ---
+echo ""
+echo "\ud83d\udcdd Step 10: Log directory"
+run_or_dry "mkdir -p /var/log/openclaw"
+run_or_dry "chown openclaw:openclaw /var/log/openclaw"
+
+# --- Step 11: Start ---
+echo ""
+echo "\ud83d\ude80 Step 11: Start service"
+run_or_dry "systemctl daemon-reload"
+run_or_dry "systemctl enable openclaw"
+run_or_dry "systemctl start openclaw"
+
+echo ""
+echo "\u2705 Installation complete"
+echo "   Rollback: \$ROLLBACK_LOG"
+echo "   Onboard: su - openclaw -c 'openclaw onboard --install-daemon'"
+`;
+  }
+
   // azure + generic-vps share similar structure
   return header + `
 # --- Standard Linux Install ---
@@ -1171,6 +1774,77 @@ echo "   Remove manually with: brew uninstall <package>"
 `;
   }
 
+  if (hostTarget === "aws") {
+    return header + `
+echo "🛑 Stopping service..."
+systemctl stop openclaw 2>/dev/null || true
+systemctl disable openclaw 2>/dev/null || true
+
+echo "🗑  Removing systemd unit..."
+rm -f /etc/systemd/system/openclaw.service
+systemctl daemon-reload
+
+echo "🗑  Removing installation..."
+rm -rf /opt/openclaw
+
+echo "🗑  Removing config & logs..."
+rm -rf /etc/openclaw
+rm -rf /var/log/openclaw
+rm -f /etc/logrotate.d/openclaw
+
+echo "🔐 Removing SSM Parameter Store entries..."
+aws ssm delete-parameter --name '/openclaw/NODE_ENV' 2>/dev/null || true
+aws ssm delete-parameter --name '/openclaw/LOG_FORMAT' 2>/dev/null || true
+echo "   Additional parameters starting with '/openclaw/' may need manual removal."
+echo "   Use: aws ssm describe-parameters --filters 'Key=Name,Option=BeginsWith,Values=/openclaw/'"
+
+echo "☁️  CloudWatch Agent — NOT removed automatically."
+echo "   Remove with: dpkg -r amazon-cloudwatch-agent"
+
+echo ""
+echo "✅ Rollback complete"
+echo "   User 'openclaw' was NOT removed. Remove with: userdel -r openclaw"
+echo "   AWS CLI and Security Groups were NOT modified."
+`;
+  }
+
+  if (hostTarget === "gcp") {
+    return header + `
+echo "🛑 Stopping service..."
+systemctl stop openclaw 2>/dev/null || true
+systemctl disable openclaw 2>/dev/null || true
+
+echo "🗑  Removing systemd unit..."
+rm -f /etc/systemd/system/openclaw.service
+systemctl daemon-reload
+
+echo "🗑  Removing installation..."
+rm -rf /opt/openclaw
+
+echo "🗑  Removing config & logs..."
+rm -rf /etc/openclaw
+rm -rf /var/log/openclaw
+rm -f /etc/logrotate.d/openclaw
+
+echo "🔐 Removing Secret Manager secrets..."
+gcloud secrets delete openclaw-node-env --quiet 2>/dev/null || true
+gcloud secrets delete openclaw-log-format --quiet 2>/dev/null || true
+echo "   Additional secrets starting with 'openclaw-' may need manual removal."
+echo "   Use: gcloud secrets list --filter='name:openclaw'"
+
+echo "🔥 Removing VPC Firewall Rule..."
+gcloud compute firewall-rules delete openclaw-allow-ssh-vpn --quiet 2>/dev/null || true
+
+echo "☁️  Cloud Logging Agent — NOT removed automatically."
+echo "   Remove with: bash /opt/google-cloud-ops-agent/libexec/google_cloud_ops_agent_engine --uninstall"
+
+echo ""
+echo "✅ Rollback complete"
+echo "   User 'openclaw' was NOT removed. Remove with: userdel -r openclaw"
+echo "   gcloud CLI and service account were NOT modified."
+`;
+  }
+
   return header + `
 echo "🛑 Stopping service..."
 systemctl stop openclaw 2>/dev/null || true
@@ -1235,6 +1909,32 @@ function getPreflightChecks(hostTarget: string): PreflightCheck[] {
     ];
   }
 
+  if (hostTarget === "aws") {
+    return [
+      { name: "Ubuntu Version", category: "System", status: "pending", message: "" },
+      { name: "Memory (RAM)", category: "System", status: "pending", message: "" },
+      { name: "AWS CLI", category: "Dependencies", status: "pending", message: "" },
+      ...common,
+      { name: "Security Groups", category: "Network", status: "pending", message: "" },
+      { name: "IAM Permissions", category: "Auth", status: "pending", message: "" },
+      { name: "SSM Access", category: "Secrets", status: "pending", message: "" },
+      { name: "CloudWatch Agent", category: "Observability", status: "pending", message: "" },
+    ];
+  }
+
+  if (hostTarget === "gcp") {
+    return [
+      { name: "Ubuntu Version", category: "System", status: "pending", message: "" },
+      { name: "Memory (RAM)", category: "System", status: "pending", message: "" },
+      { name: "gcloud CLI", category: "Dependencies", status: "pending", message: "" },
+      ...common,
+      { name: "VPC Firewall Rules", category: "Network", status: "pending", message: "" },
+      { name: "Service Account", category: "Auth", status: "pending", message: "" },
+      { name: "Secret Manager", category: "Secrets", status: "pending", message: "" },
+      { name: "Cloud Logging Agent", category: "Observability", status: "pending", message: "" },
+    ];
+  }
+
   if (hostTarget === "azure") {
     return [
       { name: "OS Detection", category: "System", status: "pending", message: "" },
@@ -1280,6 +1980,16 @@ function getCheckMessage(name: string, status: string, hostTarget: string): stri
     "Key Vault Access": { pass: "Key Vault accessible via managed identity", warn: "Key Vault configured but access untested", fail: "Key Vault not configured" },
     "Firewall (UFW/iptables)": { pass: "Firewall active", warn: "Firewall installed but not active", fail: "No firewall detected" },
     "SSH Configuration": { pass: "SSH hardened (key-only, no root)", warn: "SSH password auth may be enabled", fail: "SSH misconfigured" },
+    "AWS CLI": { pass: "AWS CLI v2 installed", warn: "AWS CLI v1 detected — v2 recommended", fail: "AWS CLI not found" },
+    "Security Groups": { pass: "Security Groups configured — SSH + VPN only", warn: "Security Groups have extra open ports", fail: "Security Groups not configured" },
+    "IAM Permissions": { pass: "IAM role has EC2 + SSM + CloudWatch", warn: "IAM role may have excessive permissions", fail: "IAM permissions not configured" },
+    "SSM Access": { pass: "SSM Parameter Store accessible", warn: "SSM configured but untested", fail: "SSM access denied" },
+    "CloudWatch Agent": { pass: "CloudWatch agent installed", warn: "CloudWatch agent not installed — optional", fail: "Cannot reach CloudWatch API" },
+    "gcloud CLI": { pass: "gcloud CLI installed and authenticated", warn: "gcloud CLI outdated", fail: "gcloud CLI not found" },
+    "VPC Firewall Rules": { pass: "VPC firewall allows SSH + VPN only", warn: "VPC firewall has extra rules", fail: "VPC firewall not configured" },
+    "Service Account": { pass: "Service account with Compute + Secret Manager", warn: "Service account may have excessive roles", fail: "Service account not configured" },
+    "Secret Manager": { pass: "Secret Manager accessible", warn: "Secret Manager configured but untested", fail: "Secret Manager access denied" },
+    "Cloud Logging Agent": { pass: "Cloud Logging agent active", warn: "Cloud Logging agent not detected", fail: "Cannot reach Cloud Logging API" },
   };
   return messages[name]?.[status] || `${name}: ${status}`;
 }

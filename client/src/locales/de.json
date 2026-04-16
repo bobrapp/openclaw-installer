@@ -15,6 +15,8 @@
   "navAgentPatterns": "Agent-Muster",
   "hostMacOS": "macOS",
   "hostDigitalOcean": "DigitalOcean",
+  "hostAWS": "AWS EC2",
+  "hostGCP": "Google Cloud",
   "hostAzureVM": "Azure VM",
   "hostGenericVPS": "Generischer VPS",
   "hostHardening": "Härtung",

@@ -39,6 +39,8 @@ function getHostItems(t: Translations) {
   return [
     { title: t.hostMacOS, hostId: "macos" },
     { title: t.hostDigitalOcean, hostId: "digitalocean" },
+    { title: t.hostAWS || "AWS EC2", hostId: "aws" },
+    { title: t.hostGCP || "Google Cloud", hostId: "gcp" },
     { title: t.hostAzureVM, hostId: "azure" },
     { title: t.hostGenericVPS, hostId: "generic-vps" },
   ];

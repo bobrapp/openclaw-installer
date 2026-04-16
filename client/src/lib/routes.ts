@@ -38,6 +38,13 @@ export const allRoutes: RouteEntry[] = [
 
   // ── Hosts (parametric) ──
   {
+    path: "/deploy",
+    label: (t) => t.navDeployWizard || "1-Click Deploy",
+    icon: "Rocket",
+    group: "setup",
+    lazy: () => import("@/pages/deploy-wizard"),
+  },
+  {
     path: "/wizard/:hostTarget",
     label: (t) => t.navWizard || "Wizard",
     icon: "Wand2",
@@ -77,18 +84,18 @@ export const allRoutes: RouteEntry[] = [
 
   // ── Community ──
   {
-    path: "/patterns",
-    label: (t) => t.navAgentPatterns || "Agent Patterns",
-    icon: "Sparkles",
-    group: "community",
-    lazy: () => import("@/pages/patterns"),
-  },
-  {
     path: "/marketplace",
-    label: (t) => t.navMarketplace || "Skills Marketplace",
+    label: (t) => t.unifiedMarketplaceTitle || "Marketplace",
     icon: "Store",
     group: "community",
-    lazy: () => import("@/pages/marketplace"),
+    lazy: () => import("@/pages/marketplace-unified"),
+  },
+  {
+    path: "/marketplace/manage",
+    label: (t) => t.navMarketplaceManage || "Manage Entries",
+    icon: "Settings",
+    group: "community",
+    lazy: () => import("@/pages/marketplace-manage"),
   },
 
   // ── Resources ──
@@ -106,13 +113,7 @@ export const allRoutes: RouteEntry[] = [
     group: "resources",
     lazy: () => import("@/pages/releases"),
   },
-  {
-    path: "/hosting",
-    label: (t) => t.navHostingDeals || "Hosting Deals",
-    icon: "Server",
-    group: "resources",
-    lazy: () => import("@/pages/hosting-deals"),
-  },
+
   {
     path: "/how-i-built-this",
     label: (t) => t.navHowIBuiltThis || "How I Built This",
