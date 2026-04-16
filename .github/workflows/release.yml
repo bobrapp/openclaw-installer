@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   release:
@@ -185,3 +186,114 @@ jobs:
             --notes-file release-notes.md \
             --verify-tag \
             "${ARTIFACTS[@]}"
+
+  # ─── npm Publish ──────────────────────────────────────────────────────────
+  npm-publish:
+    name: Publish to npm
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: |
+          npm run build
+          cp public/aigovops-wizard.html dist/public/
+          cp -r scripts dist/
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Post npm summary
+        if: always()
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          echo "## npm Publish" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Package: \`openclaw-installer@${TAG#v}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Registry: [npmjs.com/package/openclaw-installer](https://www.npmjs.com/package/openclaw-installer)" >> $GITHUB_STEP_SUMMARY
+          echo "- Install: \`npx openclaw-installer\`" >> $GITHUB_STEP_SUMMARY
+
+  # ─── Docker Hub Publish ──────────────────────────────────────────────────
+  docker-publish:
+    name: Build & Push to Docker Hub
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract version metadata
+        id: meta
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"  # Strip leading 'v'
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f1-2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            bobrapp/openclaw-installer:latest
+            bobrapp/openclaw-installer:${{ steps.meta.outputs.version }}
+            bobrapp/openclaw-installer:${{ steps.meta.outputs.minor }}
+            bobrapp/openclaw-installer:${{ steps.meta.outputs.major }}
+          labels: |
+            org.opencontainers.image.title=OpenClaw Guided Install
+            org.opencontainers.image.description=AI Governance guided installer — AiGovOps Foundation
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+            org.opencontainers.image.source=https://github.com/bobrapp/openclaw-installer
+            org.opencontainers.image.licenses=Apache-2.0 WITH Commons-Clause
+            org.opencontainers.image.vendor=AiGovOps Foundation
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Post Docker summary
+        if: always()
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          echo "## Docker Hub Publish" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: \`bobrapp/openclaw-installer:${VERSION}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Tags: \`latest\`, \`${VERSION}\`, \`$(echo $VERSION | cut -d. -f1-2)\`, \`$(echo $VERSION | cut -d. -f1)\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Platforms: \`linux/amd64\`, \`linux/arm64\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Pull: \`docker pull bobrapp/openclaw-installer\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Quick Start" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo 'docker run -p 5000:5000 -v openclaw-data:/data bobrapp/openclaw-installer' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

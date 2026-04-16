@@ -40,7 +40,7 @@ jobs:
           cp public/aigovops-wizard.html dist/public/
           cp -r scripts dist/
 
-      - name: Run unit tests (Vitest)
+      - name: Run unit + integration tests (Vitest)
         run: npm run test
 
       - name: Install Playwright browsers

@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] — 2026-04-16 — "Green Board"
+
+All 349 tests passing in CI with live server integration. Release pipeline now auto-publishes to npm and Docker Hub.
+
+### Added — Test Infrastructure
+- **Vitest globalSetup** (`tests/global-setup.ts`): automatically starts Express server before all tests, tears it down after; sets owner passphrase and seeds audit log entries for chain verification
+- All 11 hash-chain integration tests now run against the live server — **349/349 tests green**
+
+### Added — CI Publish Pipelines
+- **npm publish job** in `release.yml`: triggered on tag push, builds production bundle, publishes to npm registry (`npx openclaw-installer`). Requires `NPM_TOKEN` secret.
+- **Docker Hub push job** in `release.yml`: triggered on tag push, multi-platform build (amd64 + arm64), pushes with `latest`, semver, minor, and major tags. Requires `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` secrets.
+- Both jobs run after the existing release job (PDF + SBOM generation)
+- CI workflow test step renamed to reflect unit + integration coverage
+
+### Secrets Required
+| Secret | Purpose |
+|--------|---------|
+| `NPM_TOKEN` | npm publish authentication |
+| `DOCKERHUB_USERNAME` | Docker Hub login |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+
+---
+
 ## [2.3.0] — 2026-04-16 — "Council Complete"
 
 All 20 Model Council improvements implemented. Three-model review (Claude Opus 4.6, GPT-5.4, Gemini 3.1 Pro) is now 20/20 complete.
