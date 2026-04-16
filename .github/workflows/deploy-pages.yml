@@ -2,6 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
+    branches: [master]
     tags:
       - 'v*'
 
@@ -26,6 +27,8 @@ jobs:
           mkdir -p _site
           # Copy standalone wizard as the index page
           cp public/aigovops-wizard.html _site/index.html
+          # Copy conference handout
+          cp public/aigovops-framework.html _site/aigovops-framework.html
           # Copy any versioned wizard artifacts
           cp -f aigovops-wizard-v*.html _site/ 2>/dev/null || true
           # Include README as reference
