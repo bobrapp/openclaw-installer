@@ -36,11 +36,14 @@ jobs:
         run: |
           mkdir -p _site/app
 
+          # Disable Jekyll processing (allows files starting with _)
+          touch _site/.nojekyll
+
           # ── Root: conference handout as hub landing page ──
           cp public/aigovops-framework.html _site/index.html
           cp public/aigovops-framework.html _site/aigovops-framework.html
 
-          # ── Standalone wizard ──
+          # ── Standalone wizard (15-language locale switcher) ──
           cp public/aigovops-wizard.html _site/aigovops-wizard.html
 
           # ── PDFs ──
@@ -50,16 +53,20 @@ jobs:
           # ── Full React app under /app/ ──
           cp dist/public/index.html _site/app/index.html
           cp -r dist/public/assets _site/app/assets
-          cp public/aigovops-wizard.html _site/app/aigovops-wizard.html 2>/dev/null || true
 
-          # ── Versioned wizard artifacts ──
-          cp -f aigovops-wizard-v*.html _site/ 2>/dev/null || true
+          # ── Shell scripts (preflight/install/rollback generators) ──
+          cp -r scripts _site/scripts 2>/dev/null || true
+
+          # ── 404 fallback for SPA hash routing ──
+          cp _site/app/index.html _site/app/404.html
 
           # ── README ──
           cp README.md _site/ 2>/dev/null || true
 
           echo "=== Pages artifact contents ==="
-          find _site -type f | head -40
+          find _site -type f | sort | head -50
+          echo "..."
+          echo "Total files: $(find _site -type f | wc -l)"
           du -sh _site/
 
       - name: Upload Pages artifact
