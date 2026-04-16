@@ -1,0 +1,12 @@
+# ClawXXX Skill: Mistral AI
+skill: mistral-skill
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/mistral/v1
+  transport: stdio
+  auth:
+    type: api_key
+    env: MISTRAL_API_KEY
+models:
+  - mistral-large
+  - mistral-medium

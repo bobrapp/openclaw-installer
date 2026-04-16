@@ -1,0 +1,10 @@
+# ClawXXX Skill: Web Reader
+skill: web-reader
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/web-reader/v1
+  transport: stdio
+actions:
+  - fetch_page
+  - extract_data
+  - html_to_markdown

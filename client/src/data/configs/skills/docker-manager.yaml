@@ -1,0 +1,14 @@
+# ClawXXX Skill: Docker Manager
+skill: docker-manager
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/docker/v1
+  transport: stdio
+  auth:
+    type: socket
+    path: /var/run/docker.sock
+actions:
+  - run_container
+  - build_image
+  - list_containers
+  - compose_up

@@ -1,0 +1,12 @@
+# ClawXXX Skill: Google Gemini
+skill: gemini-skill
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/gemini/v1
+  transport: stdio
+  auth:
+    type: api_key
+    env: GOOGLE_AI_KEY
+models:
+  - gemini-2.5-pro
+  - gemini-2.5-flash

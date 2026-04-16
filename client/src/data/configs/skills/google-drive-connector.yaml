@@ -1,0 +1,14 @@
+# ClawXXX Skill: Google Drive
+skill: google-drive-connector
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/gdrive/v1
+  transport: stdio
+  auth:
+    type: oauth2
+    provider: google
+actions:
+  - list_files
+  - upload_file
+  - share_file
+  - create_folder

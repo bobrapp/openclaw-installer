@@ -1,0 +1,17 @@
+# ClawXXX Skill: Slack Connector
+skill: slack-connector
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/slack/v1
+  transport: stdio
+  auth:
+    type: oauth2
+    scopes:
+      - channels:read
+      - chat:write
+      - reactions:write
+actions:
+  - send_message
+  - list_channels
+  - add_reaction
+  - create_thread

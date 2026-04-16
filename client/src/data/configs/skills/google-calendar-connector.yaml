@@ -1,0 +1,16 @@
+# ClawXXX Skill: Google Calendar
+skill: google-calendar-connector
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/gcal/v1
+  transport: stdio
+  auth:
+    type: oauth2
+    provider: google
+    scopes:
+      - calendar.events
+actions:
+  - create_event
+  - list_events
+  - check_availability
+  - delete_event

@@ -1,3 +1,5 @@
+import { getSkillConfig } from "./config-loader";
+
 /**
  * ClawXXX Skills Marketplace — Connections, AI Skills & Community Packages
  * Each skill is an MCP-compatible package that ClawXXX can install and invoke.
@@ -42,23 +44,7 @@ const connections: MarketplaceSkill[] = [
     tags: ["messaging", "teams", "notifications"],
     compatibility: ["Claude", "OpenAI", "Gemini", "Llama"],
     featured: true,
-    configSnippet: `# ClawXXX Skill: Slack Connector
-skill: slack-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/slack/v1
-  transport: stdio
-  auth:
-    type: oauth2
-    scopes:
-      - channels:read
-      - chat:write
-      - reactions:write
-actions:
-  - send_message
-  - list_channels
-  - add_reaction
-  - create_thread`,
+    configSnippet: getSkillConfig("slack-connector"),
   },
   {
     id: "github-connector",
@@ -72,21 +58,7 @@ actions:
     tags: ["code", "ci-cd", "version-control"],
     compatibility: ["Claude", "OpenAI", "Gemini", "NVIDIA"],
     featured: true,
-    configSnippet: `# ClawXXX Skill: GitHub Connector
-skill: github-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/github/v1
-  transport: stdio
-  auth:
-    type: pat
-    env: GITHUB_TOKEN
-actions:
-  - create_issue
-  - open_pr
-  - merge_pr
-  - list_repos
-  - trigger_workflow`,
+    configSnippet: getSkillConfig("github-connector"),
   },
   {
     id: "gmail-connector",
@@ -99,23 +71,7 @@ actions:
     installCmd: "claw mcp install gmail-connector",
     tags: ["email", "productivity", "google"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Gmail Connector
-skill: gmail-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/gmail/v1
-  transport: stdio
-  auth:
-    type: oauth2
-    provider: google
-    scopes:
-      - gmail.readonly
-      - gmail.send
-actions:
-  - search_email
-  - send_email
-  - create_draft
-  - list_labels`,
+    configSnippet: getSkillConfig("gmail-connector"),
   },
   {
     id: "google-drive-connector",
@@ -128,20 +84,7 @@ actions:
     installCmd: "claw mcp install google-drive-connector",
     tags: ["files", "storage", "google"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Google Drive
-skill: google-drive-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/gdrive/v1
-  transport: stdio
-  auth:
-    type: oauth2
-    provider: google
-actions:
-  - list_files
-  - upload_file
-  - share_file
-  - create_folder`,
+    configSnippet: getSkillConfig("google-drive-connector"),
   },
   {
     id: "notion-connector",
@@ -154,20 +97,7 @@ actions:
     installCmd: "claw mcp install notion-connector",
     tags: ["wiki", "knowledge-base", "productivity"],
     compatibility: ["Claude", "OpenAI", "Gemini", "Llama"],
-    configSnippet: `# ClawXXX Skill: Notion
-skill: notion-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/notion/v1
-  transport: stdio
-  auth:
-    type: bearer
-    env: NOTION_TOKEN
-actions:
-  - query_database
-  - create_page
-  - update_block
-  - search`,
+    configSnippet: getSkillConfig("notion-connector"),
   },
   {
     id: "jira-connector",
@@ -180,20 +110,7 @@ actions:
     installCmd: "claw mcp install jira-connector",
     tags: ["project-management", "agile", "atlassian"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Jira
-skill: jira-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/jira/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: JIRA_API_TOKEN
-actions:
-  - create_issue
-  - transition_issue
-  - search_jql
-  - add_comment`,
+    configSnippet: getSkillConfig("jira-connector"),
   },
   {
     id: "linear-connector",
@@ -206,20 +123,7 @@ actions:
     installCmd: "claw mcp install linear-connector",
     tags: ["project-management", "issues", "modern"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Linear
-skill: linear-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/linear/v1
-  transport: stdio
-  auth:
-    type: bearer
-    env: LINEAR_API_KEY
-actions:
-  - create_issue
-  - update_status
-  - list_projects
-  - search_issues`,
+    configSnippet: getSkillConfig("linear-connector"),
   },
   {
     id: "salesforce-connector",
@@ -232,20 +136,7 @@ actions:
     installCmd: "claw mcp install salesforce-connector",
     tags: ["crm", "sales", "enterprise"],
     compatibility: ["Claude", "OpenAI", "NVIDIA"],
-    configSnippet: `# ClawXXX Skill: Salesforce
-skill: salesforce-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/salesforce/v1
-  transport: stdio
-  auth:
-    type: oauth2
-    provider: salesforce
-actions:
-  - query_soql
-  - create_record
-  - update_record
-  - list_objects`,
+    configSnippet: getSkillConfig("salesforce-connector"),
   },
   {
     id: "hubspot-connector",
@@ -258,20 +149,7 @@ actions:
     installCmd: "claw mcp install hubspot-connector",
     tags: ["crm", "marketing", "sales"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: HubSpot
-skill: hubspot-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/hubspot/v1
-  transport: stdio
-  auth:
-    type: bearer
-    env: HUBSPOT_TOKEN
-actions:
-  - create_contact
-  - create_deal
-  - search_contacts
-  - enroll_workflow`,
+    configSnippet: getSkillConfig("hubspot-connector"),
   },
   {
     id: "stripe-connector",
@@ -284,20 +162,7 @@ actions:
     installCmd: "claw mcp install stripe-connector",
     tags: ["payments", "billing", "commerce"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Stripe
-skill: stripe-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/stripe/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: STRIPE_SECRET_KEY
-actions:
-  - create_payment_link
-  - list_subscriptions
-  - create_invoice
-  - check_balance`,
+    configSnippet: getSkillConfig("stripe-connector"),
   },
   {
     id: "discord-connector",
@@ -310,20 +175,7 @@ actions:
     installCmd: "claw mcp install discord-connector",
     tags: ["messaging", "community", "gaming"],
     compatibility: ["Claude", "OpenAI", "Llama"],
-    configSnippet: `# ClawXXX Skill: Discord
-skill: discord-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/discord/v1
-  transport: stdio
-  auth:
-    type: bot_token
-    env: DISCORD_BOT_TOKEN
-actions:
-  - send_message
-  - create_channel
-  - list_members
-  - add_reaction`,
+    configSnippet: getSkillConfig("discord-connector"),
   },
   {
     id: "twilio-connector",
@@ -336,20 +188,7 @@ actions:
     installCmd: "claw mcp install twilio-connector",
     tags: ["sms", "voice", "communications"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Twilio
-skill: twilio-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/twilio/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: TWILIO_AUTH_TOKEN
-actions:
-  - send_sms
-  - make_call
-  - send_whatsapp
-  - check_status`,
+    configSnippet: getSkillConfig("twilio-connector"),
   },
   {
     id: "google-calendar-connector",
@@ -362,22 +201,7 @@ actions:
     installCmd: "claw mcp install google-calendar-connector",
     tags: ["calendar", "scheduling", "google"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Google Calendar
-skill: google-calendar-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/gcal/v1
-  transport: stdio
-  auth:
-    type: oauth2
-    provider: google
-    scopes:
-      - calendar.events
-actions:
-  - create_event
-  - list_events
-  - check_availability
-  - delete_event`,
+    configSnippet: getSkillConfig("google-calendar-connector"),
   },
   {
     id: "postgres-connector",
@@ -390,21 +214,7 @@ actions:
     installCmd: "claw mcp install postgres-connector",
     tags: ["database", "sql", "analytics"],
     compatibility: ["Claude", "OpenAI", "Gemini", "NVIDIA"],
-    configSnippet: `# ClawXXX Skill: PostgreSQL
-skill: postgres-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/postgres/v1
-  transport: stdio
-  auth:
-    type: connection_string
-    env: DATABASE_URL
-  read_only: true
-actions:
-  - run_query
-  - list_tables
-  - describe_table
-  - export_csv`,
+    configSnippet: getSkillConfig("postgres-connector"),
   },
   {
     id: "snowflake-connector",
@@ -417,20 +227,7 @@ actions:
     installCmd: "claw mcp install snowflake-connector",
     tags: ["data-warehouse", "analytics", "cloud"],
     compatibility: ["Claude", "OpenAI", "NVIDIA"],
-    configSnippet: `# ClawXXX Skill: Snowflake
-skill: snowflake-connector
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/snowflake/v1
-  transport: stdio
-  auth:
-    type: keypair
-    env: SNOWFLAKE_PRIVATE_KEY
-actions:
-  - run_query
-  - list_schemas
-  - describe_table
-  - export_results`,
+    configSnippet: getSkillConfig("snowflake-connector"),
   },
 ];
 
@@ -450,22 +247,7 @@ const aiProviders: MarketplaceSkill[] = [
     tags: ["reasoning", "coding", "analysis"],
     compatibility: ["Claude"],
     featured: true,
-    configSnippet: `# ClawXXX Skill: Claude (Anthropic)
-skill: claude-skill
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/claude/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: ANTHROPIC_API_KEY
-models:
-  - claude-sonnet-4
-  - claude-opus-4
-capabilities:
-  - tool_use
-  - long_context
-  - vision`,
+    configSnippet: getSkillConfig("claude-skill"),
   },
   {
     id: "openai-skill",
@@ -479,23 +261,7 @@ capabilities:
     tags: ["gpt", "assistants", "dall-e"],
     compatibility: ["OpenAI"],
     featured: true,
-    configSnippet: `# ClawXXX Skill: OpenAI
-skill: openai-skill
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/openai/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: OPENAI_API_KEY
-models:
-  - gpt-5
-  - gpt-5-mini
-  - dall-e-3
-capabilities:
-  - function_calling
-  - code_interpreter
-  - vision`,
+    configSnippet: getSkillConfig("openai-skill"),
   },
   {
     id: "nvidia-skill",
@@ -509,19 +275,7 @@ capabilities:
     tags: ["gpu", "inference", "guardrails"],
     compatibility: ["NVIDIA"],
     featured: true,
-    configSnippet: `# ClawXXX Skill: NVIDIA NIM
-skill: nvidia-skill
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/nvidia/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: NVIDIA_API_KEY
-services:
-  - nim_inference
-  - nemo_guardrails
-  - triton_server`,
+    configSnippet: getSkillConfig("nvidia-skill"),
   },
   {
     id: "gemini-skill",
@@ -534,18 +288,7 @@ services:
     installCmd: "claw mcp install gemini-skill",
     tags: ["multi-modal", "long-context", "google"],
     compatibility: ["Gemini"],
-    configSnippet: `# ClawXXX Skill: Google Gemini
-skill: gemini-skill
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/gemini/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: GOOGLE_AI_KEY
-models:
-  - gemini-2.5-pro
-  - gemini-2.5-flash`,
+    configSnippet: getSkillConfig("gemini-skill"),
   },
   {
     id: "llama-skill",
@@ -558,20 +301,7 @@ models:
     installCmd: "claw mcp install llama-skill",
     tags: ["open-source", "local", "fine-tuning"],
     compatibility: ["Llama"],
-    configSnippet: `# ClawXXX Skill: Meta Llama
-skill: llama-skill
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/llama/v1
-  transport: stdio
-  auth:
-    type: none
-models:
-  - llama-4-scout
-  - llama-4-maverick
-deployment:
-  - local_ollama
-  - cloud_hosted`,
+    configSnippet: getSkillConfig("llama-skill"),
   },
   {
     id: "mistral-skill",
@@ -584,18 +314,7 @@ deployment:
     installCmd: "claw mcp install mistral-skill",
     tags: ["european", "efficient", "multilingual"],
     compatibility: ["Mistral"],
-    configSnippet: `# ClawXXX Skill: Mistral AI
-skill: mistral-skill
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/mistral/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: MISTRAL_API_KEY
-models:
-  - mistral-large
-  - mistral-medium`,
+    configSnippet: getSkillConfig("mistral-skill"),
   },
   {
     id: "cohere-skill",
@@ -608,19 +327,7 @@ models:
     installCmd: "claw mcp install cohere-skill",
     tags: ["rag", "embeddings", "search"],
     compatibility: ["Cohere"],
-    configSnippet: `# ClawXXX Skill: Cohere
-skill: cohere-skill
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/cohere/v1
-  transport: stdio
-  auth:
-    type: api_key
-    env: COHERE_API_KEY
-services:
-  - command_generate
-  - embed
-  - rerank`,
+    configSnippet: getSkillConfig("cohere-skill"),
   },
 ];
 
@@ -639,16 +346,7 @@ const communitySkills: MarketplaceSkill[] = [
     installCmd: "claw mcp install web-reader",
     tags: ["web", "extraction", "parsing"],
     compatibility: ["Claude", "OpenAI", "Gemini", "Llama"],
-    configSnippet: `# ClawXXX Skill: Web Reader
-skill: web-reader
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/web-reader/v1
-  transport: stdio
-actions:
-  - fetch_page
-  - extract_data
-  - html_to_markdown`,
+    configSnippet: getSkillConfig("web-scraper"),
   },
   {
     id: "pdf-toolkit",
@@ -661,17 +359,7 @@ actions:
     installCmd: "claw mcp install pdf-toolkit",
     tags: ["pdf", "reports", "documents"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: PDF Toolkit
-skill: pdf-toolkit
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/pdf-toolkit/v1
-  transport: stdio
-actions:
-  - generate_pdf
-  - merge_pdfs
-  - extract_text
-  - fill_template`,
+    configSnippet: getSkillConfig("pdf-toolkit"),
   },
   {
     id: "cron-scheduler",
@@ -684,17 +372,7 @@ actions:
     installCmd: "claw mcp install task-scheduler",
     tags: ["automation", "scheduling", "cron"],
     compatibility: ["Claude", "OpenAI", "Gemini", "Llama"],
-    configSnippet: `# ClawXXX Skill: Task Scheduler
-skill: task-scheduler
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/scheduler/v1
-  transport: stdio
-actions:
-  - create_schedule
-  - list_schedules
-  - run_once
-  - delete_schedule`,
+    configSnippet: getSkillConfig("cron-scheduler"),
   },
   {
     id: "governance-auditor",
@@ -708,20 +386,7 @@ actions:
     tags: ["compliance", "audit", "governance"],
     compatibility: ["Claude", "OpenAI", "Gemini", "NVIDIA"],
     featured: true,
-    configSnippet: `# ClawXXX Skill: Governance Auditor
-skill: governance-auditor
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/governance/v1
-  transport: stdio
-standards:
-  - aigovops_v1
-  - four_way_test
-actions:
-  - run_audit
-  - generate_sbom
-  - verify_hash_chain
-  - export_report`,
+    configSnippet: getSkillConfig("governance-auditor"),
   },
   {
     id: "memory-store",
@@ -734,18 +399,7 @@ actions:
     installCmd: "claw mcp install memory-store",
     tags: ["memory", "context", "persistence"],
     compatibility: ["Claude", "OpenAI", "Gemini", "Llama"],
-    configSnippet: `# ClawXXX Skill: Memory Store
-skill: memory-store
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/memory/v1
-  transport: stdio
-  storage: sqlite
-actions:
-  - store_fact
-  - search_memory
-  - list_facts
-  - forget`,
+    configSnippet: getSkillConfig("memory-store"),
   },
   {
     id: "docker-manager",
@@ -758,20 +412,7 @@ actions:
     installCmd: "claw mcp install docker-manager",
     tags: ["containers", "devops", "infrastructure"],
     compatibility: ["Claude", "OpenAI", "Gemini"],
-    configSnippet: `# ClawXXX Skill: Docker Manager
-skill: docker-manager
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/docker/v1
-  transport: stdio
-  auth:
-    type: socket
-    path: /var/run/docker.sock
-actions:
-  - run_container
-  - build_image
-  - list_containers
-  - compose_up`,
+    configSnippet: getSkillConfig("docker-manager"),
   },
   {
     id: "kubernetes-pilot",
@@ -784,20 +425,7 @@ actions:
     installCmd: "claw mcp install kubernetes-pilot",
     tags: ["kubernetes", "orchestration", "devops"],
     compatibility: ["Claude", "OpenAI", "NVIDIA"],
-    configSnippet: `# ClawXXX Skill: Kubernetes Pilot
-skill: kubernetes-pilot
-version: "1.0"
-mcp:
-  server: mcp://clawxxx.skills/k8s/v1
-  transport: stdio
-  auth:
-    type: kubeconfig
-    path: ~/.kube/config
-actions:
-  - apply_manifest
-  - get_pods
-  - scale_deployment
-  - read_logs`,
+    configSnippet: getSkillConfig("kubernetes-pilot"),
   },
 ];
 

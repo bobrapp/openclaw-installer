@@ -1,59 +1,32 @@
 /**
  * ClawXXX Skills Marketplace
  * Browse, preview, and install MCP-compatible skills, connections, and AI provider packages.
- * Includes donation support and community curator contacts.
+ * Uses shared ConfigCard, centralized icon-map, useCopyToClipboard, and full i18n.
  */
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import type { LucideIcon } from "lucide-react";
 import {
-  BookOpen,
-  Brain,
-  Calendar,
   Check,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Cloud,
-  Container,
   Copy,
-  Cpu,
-  CreditCard,
-  Database,
-  Download,
   ExternalLink,
-  FileText,
-  Gamepad2,
-  Gem,
-  GitBranch,
   Globe,
-  HardDrive,
   Heart,
-  Layers,
-  Mail,
-  MessageSquare,
-  Mountain,
-  Network,
-  Phone,
   Plug,
   Search,
-  Server,
   Shield,
-  ShieldCheck,
-  Snowflake,
   Sparkles,
   Store,
-  TicketCheck,
   Users,
-  Wind,
-  Zap,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+import { resolveIcon } from "@/lib/icon-map";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
+import { ConfigCard } from "@/components/config-card";
 import { celebrate } from "@/lib/celebrations";
 import { playSound } from "@/lib/sound-engine";
-import { useI18n } from "@/lib/i18n";
 import {
   allMarketplaceSkills,
   skillCategories,
@@ -62,14 +35,6 @@ import {
   type MarketplaceSkill,
   type SkillCategory,
 } from "@/data/marketplace-skills";
-
-/* ─── Icon map ─── */
-const iconMap: Record<string, LucideIcon> = {
-  BookOpen, Brain, Calendar, Clock, Cloud, Container, Cpu, CreditCard, Database,
-  FileText, Gamepad2, Gem, GitBranch, Globe, HardDrive, Layers, Mail, MessageSquare,
-  Mountain, Network, Phone, Plug, Search, Server, Shield, ShieldCheck, Snowflake,
-  Sparkles, Store, TicketCheck, Users, Wind, Zap,
-};
 
 /* ─── Compatibility badge colors ─── */
 const compatColors: Record<string, string> = {
@@ -82,188 +47,76 @@ const compatColors: Record<string, string> = {
   Cohere: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20",
 };
 
-/* ─── Skill Card ─── */
+/* ─── Skill Card (wraps ConfigCard with marketplace-specific extras) ─── */
 function SkillCard({ skill }: { skill: MarketplaceSkill }) {
-  const [showConfig, setShowConfig] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [cmdCopied, setCmdCopied] = useState(false);
-  const Icon = iconMap[skill.icon] || Plug;
-
-  const copyConfig = async () => {
-    try {
-      await navigator.clipboard.writeText(skill.configSnippet);
-      setCopied(true);
-      playSound("click");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback: download
-      const blob = new Blob([skill.configSnippet], { type: "text/yaml" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `claw-${skill.id}.yaml`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-    celebrate("Config copied", "subtle");
-  };
-
-  const copyInstallCmd = async () => {
-    try {
-      await navigator.clipboard.writeText(skill.installCmd);
-      setCmdCopied(true);
-      playSound("click");
-      setTimeout(() => setCmdCopied(false), 2000);
-    } catch {
-      // Silently fail in sandbox
-    }
-  };
+  const { t } = useI18n();
+  const { copy, copied } = useCopyToClipboard({ fallbackFilename: `claw-${skill.id}-cmd` });
 
   return (
-    <Card
-      className={`group hover:border-primary/30 transition-all duration-300 hover:shadow-md ${
-        skill.featured ? "ring-1 ring-primary/20" : ""
-      }`}
-      data-testid={`card-skill-${skill.id}`}
-    >
-      <CardHeader className="pb-3">
-        <div className="flex items-start gap-3">
-          <div className="h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-            <Icon className="h-5 w-5" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-base truncate">{skill.name}</CardTitle>
-              {skill.featured && (
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] shrink-0">
-                  Featured
-                </Badge>
-              )}
-            </div>
-            <CardDescription className="text-xs mt-0.5">
-              by {skill.provider}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-foreground/80 leading-relaxed">{skill.description}</p>
-
-        {/* Compatibility badges */}
-        <div className="flex flex-wrap gap-1.5">
-          {skill.compatibility.map((c) => (
-            <Badge
-              key={c}
-              variant="outline"
-              className={`text-[10px] font-medium ${compatColors[c] || ""}`}
-            >
-              {c}
-            </Badge>
-          ))}
-        </div>
-
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1">
-          {skill.tags.map((tag) => (
-            <span
-              key={tag}
-              className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* MCP Install command */}
-        <div className="bg-muted/50 rounded-lg p-2.5 border border-border/50 font-mono text-xs flex items-center justify-between gap-2">
-          <code className="text-primary truncate">{skill.installCmd}</code>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 w-6 p-0 shrink-0"
-            onClick={copyInstallCmd}
-            data-testid={`button-copy-cmd-${skill.id}`}
-          >
-            {cmdCopied ? (
-              <Check className="h-3 w-3 text-emerald-500" />
-            ) : (
-              <Copy className="h-3 w-3" />
-            )}
-          </Button>
-        </div>
-
-        {/* MCP Endpoint */}
-        <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-          <Plug className="h-3 w-3" />
-          <span className="font-mono">{skill.mcpEndpoint}</span>
-        </div>
-
-        {/* Config toggle */}
-        <div>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-xs w-full justify-between"
-            onClick={() => setShowConfig(!showConfig)}
-          >
-            <span>View YAML Config</span>
-            {showConfig ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-          </Button>
-          {showConfig && (
-            <div className="mt-2 relative">
-              <pre className="p-3 bg-card border border-border rounded-md text-xs font-mono overflow-auto max-h-56 text-muted-foreground">
-                {skill.configSnippet}
-              </pre>
-              <Button
-                size="sm"
+    <ConfigCard
+      id={skill.id}
+      name={skill.name}
+      subtitle={`${t.mktByProvider || "by"} ${skill.provider}`}
+      icon={skill.icon}
+      description={skill.description}
+      config={skill.configSnippet}
+      featured={skill.featured}
+      testIdPrefix="card-skill"
+      badges={
+        <>
+          {/* Compatibility badges */}
+          <div className="flex flex-wrap gap-1.5">
+            {skill.compatibility.map((c) => (
+              <Badge
+                key={c}
                 variant="outline"
-                className="absolute top-2 right-2 h-7 text-[10px]"
-                onClick={copyConfig}
-                data-testid={`button-copy-config-${skill.id}`}
+                className={`text-[10px] font-medium ${compatColors[c] || ""}`}
               >
-                {copied ? (
-                  <>
-                    <Check className="h-3 w-3 mr-1 text-emerald-500" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3 w-3 mr-1" />
-                    Copy
-                  </>
-                )}
-              </Button>
-            </div>
+                {c}
+              </Badge>
+            ))}
+          </div>
+          {/* Tags */}
+          <div className="flex flex-wrap gap-1">
+            {skill.tags.map((tag) => (
+              <span
+                key={tag}
+                className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </>
+      }
+    >
+      {/* MCP Install command */}
+      <div className="bg-muted/50 rounded-lg p-2.5 border border-border/50 font-mono text-xs flex items-center justify-between gap-2">
+        <code className="text-primary truncate">{skill.installCmd}</code>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 w-6 p-0 shrink-0"
+          onClick={() => {
+            copy(skill.installCmd);
+            playSound("click");
+          }}
+          data-testid={`button-copy-cmd-${skill.id}`}
+        >
+          {copied ? (
+            <Check className="h-3 w-3 text-emerald-500" />
+          ) : (
+            <Copy className="h-3 w-3" />
           )}
-        </div>
+        </Button>
+      </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 pt-1">
-          <Button
-            size="sm"
-            className="flex-1 text-xs"
-            onClick={() => {
-              copyInstallCmd();
-              celebrate("Ready to install", "subtle");
-            }}
-            data-testid={`button-install-${skill.id}`}
-          >
-            <Download className="h-3 w-3 mr-1.5" />
-            Install
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs"
-            onClick={copyConfig}
-            data-testid={`button-download-config-${skill.id}`}
-          >
-            <FileText className="h-3 w-3 mr-1.5" />
-            Config
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      {/* MCP Endpoint */}
+      <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+        <Plug className="h-3 w-3" />
+        <span className="font-mono">{skill.mcpEndpoint}</span>
+      </div>
+    </ConfigCard>
   );
 }
 
@@ -275,7 +128,7 @@ function CategorySection({
   category: (typeof skillCategories)[number];
   skills: MarketplaceSkill[];
 }) {
-  const Icon = iconMap[category.icon] || Plug;
+  const Icon = resolveIcon(category.icon);
   if (skills.length === 0) return null;
 
   return (
@@ -301,6 +154,7 @@ function CategorySection({
 
 /* ─── Donation Section ─── */
 function DonationSection() {
+  const { t } = useI18n();
   return (
     <section className="space-y-4">
       <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6">
@@ -308,13 +162,12 @@ function DonationSection() {
           <div className="flex items-center justify-center gap-2">
             <Heart className="h-5 w-5 text-primary" />
             <h2 className="text-lg font-semibold tracking-tight">
-              Buy the Foundation a Drink
+              {t.mktDonationTitle || "Buy the Foundation a Drink"}
             </h2>
             <Heart className="h-5 w-5 text-primary" />
           </div>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Every skill in this marketplace is free and open-source. If ClawXXX helps your team,
-            consider supporting the AiGovOps Foundation with a small donation — pick your local favorite.
+            {t.mktDonationDesc || "Every skill in this marketplace is free and open-source. If ClawXXX helps your team, consider supporting the AiGovOps Foundation with a small donation — pick your local favorite."}
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -339,7 +192,7 @@ function DonationSection() {
           ))}
         </div>
         <p className="text-[10px] text-center text-muted-foreground mt-4">
-          Powered by Stripe. All donations go directly to the AiGovOps Foundation, a 501(c)(3) equivalent.
+          {t.mktDonationPowered || "Powered by Stripe. All donations go directly to the AiGovOps Foundation, a 501(c)(3) equivalent."}
         </p>
       </div>
     </section>
@@ -348,14 +201,17 @@ function DonationSection() {
 
 /* ─── Curator Section ─── */
 function CuratorSection() {
+  const { t } = useI18n();
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3 pb-2 border-b border-border">
         <Shield className="h-5 w-5 text-primary" />
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Community Curators</h2>
+          <h2 className="text-lg font-semibold tracking-tight">
+            {t.mktCuratorsTitle || "Community Curators"}
+          </h2>
           <p className="text-xs text-muted-foreground">
-            Have a skill to share? Reach out to our curators or submit directly.
+            {t.mktCuratorsDesc || "Have a skill to share? Reach out to our curators or submit directly."}
           </p>
         </div>
       </div>
@@ -388,8 +244,10 @@ function CuratorSection() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">Submit a Skill</p>
-              <p className="text-xs text-muted-foreground">Share your MCP package with the community</p>
+              <p className="text-sm font-medium">{t.mktSubmitSkill || "Submit a Skill"}</p>
+              <p className="text-xs text-muted-foreground">
+                {t.mktSubmitSkillDesc || "Share your MCP package with the community"}
+              </p>
               <a
                 href="mailto:skills@aigovops.community?subject=ClawXXX%20Skill%20Submission"
                 className="text-xs text-primary hover:underline"
@@ -410,28 +268,32 @@ export default function Marketplace() {
   const [activeCategory, setActiveCategory] = useState<SkillCategory | "all">("all");
   const { t } = useI18n();
 
-  const filtered = allMarketplaceSkills.filter((skill) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      skill.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      skill.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      skill.provider.toLowerCase().includes(searchQuery.toLowerCase());
+  const filtered = useMemo(() => {
+    return allMarketplaceSkills.filter((skill) => {
+      const matchesSearch =
+        searchQuery === "" ||
+        skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        skill.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        skill.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        skill.provider.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesCategory =
-      activeCategory === "all" || skill.category === activeCategory;
+      const matchesCategory =
+        activeCategory === "all" || skill.category === activeCategory;
 
-    return matchesSearch && matchesCategory;
-  });
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, activeCategory]);
 
-  const categoryFilters: { id: SkillCategory | "all"; label: string; count: number }[] = [
-    { id: "all", label: "All Skills", count: allMarketplaceSkills.length },
-    ...skillCategories.map((cat) => ({
-      id: cat.id,
-      label: cat.title,
-      count: allMarketplaceSkills.filter((s) => s.category === cat.id).length,
-    })),
-  ];
+  const categoryFilters = useMemo(() => {
+    return [
+      { id: "all" as const, label: t.mktAllSkills || "All Skills", count: allMarketplaceSkills.length },
+      ...skillCategories.map((cat) => ({
+        id: cat.id,
+        label: cat.title,
+        count: allMarketplaceSkills.filter((s) => s.category === cat.id).length,
+      })),
+    ];
+  }, [t]);
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-10">
@@ -521,8 +383,8 @@ export default function Marketplace() {
           {filtered.length === 0 && (
             <div className="col-span-2 text-center py-12 text-muted-foreground">
               <Search className="h-8 w-8 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">No skills match your search.</p>
-              <p className="text-xs mt-1">Try a different query or browse all categories.</p>
+              <p className="text-sm">{t.mktNoResults || "No skills match your search."}</p>
+              <p className="text-xs mt-1">{t.mktNoResultsHint || "Try a different query or browse all categories."}</p>
             </div>
           )}
         </div>
@@ -540,7 +402,7 @@ export default function Marketplace() {
           {t.marketplaceFooter || "All skills follow MCP (Model Context Protocol) standards. Configs are portable across any MCP-compatible host."}
         </p>
         <p className="text-xs text-muted-foreground/60 mt-1">
-          Curated by the{" "}
+          {t.mktCuratedBy || "Curated by the"}{" "}
           <a
             href="https://www.aigovopsfoundation.org/"
             target="_blank"

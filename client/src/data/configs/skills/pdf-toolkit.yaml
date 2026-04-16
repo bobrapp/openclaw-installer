@@ -1,0 +1,11 @@
+# ClawXXX Skill: PDF Toolkit
+skill: pdf-toolkit
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/pdf-toolkit/v1
+  transport: stdio
+actions:
+  - generate_pdf
+  - merge_pdfs
+  - extract_text
+  - fill_template

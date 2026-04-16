@@ -1,0 +1,13 @@
+# ClawXXX Skill: Cohere
+skill: cohere-skill
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/cohere/v1
+  transport: stdio
+  auth:
+    type: api_key
+    env: COHERE_API_KEY
+services:
+  - command_generate
+  - embed
+  - rerank

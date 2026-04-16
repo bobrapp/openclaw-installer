@@ -1,0 +1,11 @@
+# ClawXXX Skill: Task Scheduler
+skill: task-scheduler
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/scheduler/v1
+  transport: stdio
+actions:
+  - create_schedule
+  - list_schedules
+  - run_once
+  - delete_schedule

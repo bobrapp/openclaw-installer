@@ -1,0 +1,17 @@
+# ClawXXX Skill: Gmail Connector
+skill: gmail-connector
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/gmail/v1
+  transport: stdio
+  auth:
+    type: oauth2
+    provider: google
+    scopes:
+      - gmail.readonly
+      - gmail.send
+actions:
+  - search_email
+  - send_email
+  - create_draft
+  - list_labels

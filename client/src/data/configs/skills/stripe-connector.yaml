@@ -1,0 +1,14 @@
+# ClawXXX Skill: Stripe
+skill: stripe-connector
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/stripe/v1
+  transport: stdio
+  auth:
+    type: api_key
+    env: STRIPE_SECRET_KEY
+actions:
+  - create_payment_link
+  - list_subscriptions
+  - create_invoice
+  - check_balance

@@ -1,0 +1,15 @@
+# ClawXXX Skill: GitHub Connector
+skill: github-connector
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/github/v1
+  transport: stdio
+  auth:
+    type: pat
+    env: GITHUB_TOKEN
+actions:
+  - create_issue
+  - open_pr
+  - merge_pr
+  - list_repos
+  - trigger_workflow

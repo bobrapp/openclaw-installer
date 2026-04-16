@@ -1,0 +1,12 @@
+# ClawXXX Skill: Memory Store
+skill: memory-store
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/memory/v1
+  transport: stdio
+  storage: sqlite
+actions:
+  - store_fact
+  - search_memory
+  - list_facts
+  - forget

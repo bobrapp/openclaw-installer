@@ -1,0 +1,15 @@
+# ClawXXX Skill: PostgreSQL
+skill: postgres-connector
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/postgres/v1
+  transport: stdio
+  auth:
+    type: connection_string
+    env: DATABASE_URL
+  read_only: true
+actions:
+  - run_query
+  - list_tables
+  - describe_table
+  - export_csv

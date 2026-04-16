@@ -1,0 +1,17 @@
+# ClawXXX Skill: OpenAI
+skill: openai-skill
+version: "1.0"
+mcp:
+  server: mcp://clawxxx.skills/openai/v1
+  transport: stdio
+  auth:
+    type: api_key
+    env: OPENAI_API_KEY
+models:
+  - gpt-5
+  - gpt-5-mini
+  - dall-e-3
+capabilities:
+  - function_calling
+  - code_interpreter
+  - vision
