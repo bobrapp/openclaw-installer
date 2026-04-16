@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "generated": "2026-04-16T21:10:49Z",
+    "host": "e2b.local",
+    "tool": "openclaw-canary-check"
+  },
+  "checksums": {
+  "LICENSE": "bd81f7d3d3fcea08591db0c09b83b82e2d5ac63cbdbb61667c30977452482a17",
+  "NOTICE": "0e1cbb108660c5a4fd11d76bb48bea8569921ac9cc0cdeb2773e1b40f6c0d596",
+  "GOVERNANCE.md": "85842a11fb2f8ce725b90542e052a1ae1a048aaa9cf14794c355a47c190252a0",
+  "CODEOWNERS": "514fbf8e97775972b5f5f4fbb28a0d4914dccff1f13bc276e6873481d0f8606f",
+  ".github/workflows/backup.yml": "9d3eae52269f0caf38eff425e996d93dffa4ae1215f8048df1608931f8470396",
+  ".github/workflows/ci.yml": "518042bcbc4c67cdae0d2380c121feba67f9e6c89246a216b106a09d3d00407f",
+  ".github/workflows/codeql.yml": "623eebfcb1114e685d04910d982f5cb2d123ee41f3b27447d8eae35f64a0b5f8",
+  ".github/workflows/critical-file-monitor.yml": "76b4d6df64a495788734fa12115369ee06e37a80b74637c5c584914bd49a3946",
+  ".github/workflows/dependency-review.yml": "644b8ac17512dc0c553157459b2a1c2f9f26217e827c3f655c9c1e9f07e5fb5a",
+  ".github/workflows/deploy-hetzner.yml": "0e900e96227ef624d6406f3564d21db8243cf056df94d90e023ae6e7a72fcf54",
+  ".github/workflows/deploy-pages.yml": "85a618728b29b2e4b6bdbf4f3161683ef4a8d46595ef518f0443866b16474683",
+  ".github/workflows/deploy-validate.yml": "e9ef226e2d701fc409fe7a6ba25f89d27ee67d6c8c4f13d47fc93ae11ee87a93",
+  ".github/workflows/deploy-vultr.yml": "e6579e690b7c789fb2f133cf9de36ed51bc5ba3096bdb89e8a6ca8f38e61f54b",
+  ".github/workflows/e2e-validate.yml": "565d1e290704fbcaa168ed4c1ec36117f6cf5803a92ea9c5d7f0a5848cf295cd",
+  ".github/workflows/preflight.yml": "5bb34340af21b923c4bcc66c0b76666ea140b64d25a6a200cf96bcdec2babaf4",
+  ".github/workflows/release-signing.yml": "b7edb399a38767f942c96015fc59145008a0ba0c6998de8cf69cb15e8a9b22da",
+  ".github/workflows/release.yml": "7c11b9263cc7943a2599debc6104734499bf8416d3c7257c5e3c465a65d808a8",
+  "package.json": "167fefac1bd478d1d641836fa0d249d5db647ec1052147f2555ad1dd6f1389f3",
+  "server/routes.ts": "ebd9ac46396a395096f6ac961558d56a7de61300b97d469763afd7d073b4993e",
+  "shared/schema.ts": "56204c459097d85b69dddece8d937478f95e57726c0b77aeb6327913f84f8987",
+  ".github/workflows/canary-check.yml": "bf091c05fe1bb1421666bfde3ea6390365a949fa1ab6cc61b60d8cf9100db691"
+  }
+}

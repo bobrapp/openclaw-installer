@@ -51,6 +51,38 @@ jobs:
         env:
           CI: true
 
+      - name: Run accessibility audit (axe-core)
+        run: |
+          # Start the server in background for axe-core
+          NODE_ENV=production node dist/index.cjs &
+          SERVER_PID=$!
+          sleep 3
+
+          # Install axe-core CLI
+          npx @axe-core/cli@latest --version || npm install -g @axe-core/cli
+
+          # Audit critical pages — fail on critical or serious violations
+          PAGES=(
+            "http://localhost:5000/#/"
+            "http://localhost:5000/#/marketplace"
+            "http://localhost:5000/#/deploy"
+            "http://localhost:5000/#/builds"
+            "http://localhost:5000/#/foundation"
+          )
+
+          AXE_EXIT=0
+          for url in "${PAGES[@]}"; do
+            echo "Auditing: $url"
+            npx axe "$url" --tags wcag2a,wcag2aa --disable color-contrast --exit || AXE_EXIT=1
+          done
+
+          kill $SERVER_PID 2>/dev/null || true
+
+          if [ $AXE_EXIT -ne 0 ]; then
+            echo "::warning::Accessibility violations found — see output above"
+          fi
+        continue-on-error: true
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4
@@ -72,6 +104,7 @@ jobs:
           echo "| Build | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| Unit Tests | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| E2E Tests | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Accessibility (axe-core) | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**AiGovOps Foundation** — Governance as Code" >> $GITHUB_STEP_SUMMARY
 

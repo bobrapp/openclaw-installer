@@ -1,10 +1,14 @@
 # OpenClaw Guided Install by AiGovOps
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](CHANGELOG.md)
 [![License: Apache 2.0 + Commons Clause](https://img.shields.io/badge/License-Apache%202.0%20%2B%20Commons%20Clause-blue.svg)](LICENSE)
 [![CI](https://github.com/bobrapp/openclaw-installer/actions/workflows/ci.yml/badge.svg)](https://github.com/bobrapp/openclaw-installer/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/bobrapp/openclaw-installer/actions/workflows/codeql.yml/badge.svg)](https://github.com/bobrapp/openclaw-installer/actions/workflows/codeql.yml)
-[![Docker Ready](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)](deploy/)
+[![Canary Check](https://github.com/bobrapp/openclaw-installer/actions/workflows/canary-check.yml/badge.svg)](https://github.com/bobrapp/openclaw-installer/actions/workflows/canary-check.yml)
+[![npm version](https://img.shields.io/npm/v/openclaw-installer?color=cb3837&logo=npm)](https://www.npmjs.com/package/openclaw-installer)
+[![Docker Pulls](https://img.shields.io/docker/pulls/bobrapp/openclaw-installer?logo=docker&color=2496ED)](https://hub.docker.com/r/bobrapp/openclaw-installer)
+[![Tests](https://img.shields.io/badge/tests-349%20passing-brightgreen.svg)](tests/)
+[![Languages](https://img.shields.io/badge/i18n-15%20languages-teal.svg)](client/src/locales/)
 
 A guided, production-hardened installer for **OpenClaw** — the open-source AI agent framework — with a 7-step wizard, 16 host targets, 87 marketplace entries, 15 languages, and cryptographically immutable audit logging.
 

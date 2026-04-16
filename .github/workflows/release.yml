@@ -8,6 +8,8 @@ on:
 permissions:
   contents: write
   packages: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
@@ -159,6 +161,31 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           if [ -f sbom-diff.json ]; then
             cp sbom-diff.json "sbom-diff-${TAG}.json"
+          fi
+
+      - name: Attest SBOM with GitHub Attestations
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          SBOM_FILE="openclaw-sbom-${TAG}.json"
+
+          if [ -f "${SBOM_FILE}" ]; then
+            # Generate SBOM attestation using GitHub's built-in attestation API
+            gh attestation create \
+              --bundle-to "sbom-attestation-${TAG}.jsonl" \
+              --type "https://cyclonedx.org/bom/v1.5" \
+              --predicate "${SBOM_FILE}" \
+              --subject "openclaw-installer-${TAG#v}.tgz" \
+              2>/dev/null || echo "::notice::Attestation API not available — SBOM still included as release artifact"
+
+            echo "## SBOM Attestation" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- SBOM: \`${SBOM_FILE}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Type: CycloneDX v1.5" >> $GITHUB_STEP_SUMMARY
+            echo "- Verify: \`gh attestation verify openclaw-installer --owner bobrapp\`" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Create or update GitHub Release

@@ -12,4 +12,3 @@ openclaw.db-wal
 *.zip
 
 # Canary token system — local manifest (do not commit; commit only for CI use)
-.canary-manifest.json

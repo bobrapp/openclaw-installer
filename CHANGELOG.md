@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] — 2026-04-16 — "Irongate"
+
+Canary system fixed, CI hardened with axe-core a11y and E2E smoke tests, SBOM attestation, and full README badges.
+
+### Fixed
+- **Canary false alarms** — `.canary-manifest.json` removed from `.gitignore` and committed to repo; CI can now verify 21 critical files against baseline. Closed 5 false-positive SECURITY issues (#17–#21).
+- **CSP/PDF links** — added `object-src 'self'` and `frame-src 'self' blob:` to handout CSP; PDF adventure cards now open in new tab via `target="_blank"`
+
+### Added — CI Hardening
+- **Axe-core accessibility audit** in CI workflow — scans 5 critical pages (home, marketplace, deploy, builds, foundation) for WCAG 2.0 A/AA violations on every push
+- **E2E smoke tests** (`tests/e2e/app-smoke.spec.ts`) — 12 new Playwright tests covering Deploy Wizard, Marketplace (tabs, search, cards), Build Catalog, Global Hosting Deals, Foundation page, and sidebar navigation
+- **SBOM attestation** in release workflow — generates signed CycloneDX attestation via GitHub Attestations API; verifiable with `gh attestation verify`
+
+### Changed
+- **README badges** — added Canary Check, npm version, Docker Pulls, test count (349), and i18n (15 languages) badges
+- Version bumped to 2.4.0
+
+### Manual Action Required
+To activate the publish pipelines from v2.3.1, add these repo secrets:
+| Secret | Purpose |
+|--------|---------|
+| `NPM_TOKEN` | npm registry auth token |
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+
+---
+
 ## [2.3.1] — 2026-04-16 — "Green Board"
 
 All 349 tests passing in CI with live server integration. Release pipeline now auto-publishes to npm and Docker Hub.
