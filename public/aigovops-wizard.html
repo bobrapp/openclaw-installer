@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AiGovOps Foundation Framework — April 2026 v2</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self' https://*.perplexity.ai https://*.pplx.app;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self'; frame-ancestors 'self' https://*.perplexity.ai https://*.pplx.app;">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Cherokee&family=Noto+Sans+Arabic&display=swap">
 <style>
 /* ── Reset & Tokens ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -596,6 +597,61 @@ body {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+
+/* ── RTL & i18n font support ── */
+[dir="rtl"] { direction: rtl; text-align: right; }
+[dir="rtl"] .btn-row { flex-direction: row-reverse; }
+[dir="rtl"] .header-brand { flex-direction: row-reverse; }
+[dir="rtl"] .step-pill { flex-direction: row-reverse; }
+[dir="rtl"] .step-label { margin-left: 0; margin-right: 6px; }
+[dir="rtl"] .radio-card { text-align: right; }
+[dir="rtl"] .radio-name { flex-direction: row-reverse; }
+[dir="rtl"] .config-field label,
+[dir="rtl"] .form-label { text-align: right; }
+[dir="rtl"] .check-item { flex-direction: row-reverse; }
+[dir="rtl"] .check-item > div { text-align: right; }
+[dir="rtl"] .check-row { flex-direction: row-reverse; }
+[dir="rtl"] .install-row { flex-direction: row-reverse; }
+[dir="rtl"] .step-desc { padding-left: 0; padding-right: 50px; }
+[dir="rtl"] .step-heading { flex-direction: row-reverse; }
+[dir="rtl"] .step-heading .step-title { text-align: right; }
+[dir="rtl"] .review-table th,
+[dir="rtl"] .review-table td { text-align: right; }
+[dir="rtl"] .alert { flex-direction: row-reverse; }
+[dir="rtl"] .dry-run-summary { flex-direction: row-reverse; }
+[dir="rtl"] .header-controls { flex-direction: row-reverse; }
+
+/* Script-specific font fallbacks */
+[lang="chr"] { font-family: 'Noto Sans Cherokee', var(--font); }
+[lang="ar"], [lang="ur"], [lang="ps"] { font-family: 'Noto Sans Arabic', var(--font); }
+
+/* Locale switcher */
+.locale-switcher {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.2);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: background var(--transition);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='white' stroke-width='1.5' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+}
+.locale-switcher:hover { background-color: rgba(255,255,255,.2); }
+.locale-switcher option { color: #1a1a1a; background: #fff; }
+[dir="rtl"] .locale-switcher {
+  background-position: left 8px center;
+  padding-right: 10px;
+  padding-left: 24px;
+}
+
 /* ── Mobile tweaks ── */
 @media (max-width: 600px) {
   .card { padding: 20px 16px; }
@@ -619,13 +675,30 @@ body {
       <text x="18" y="23" text-anchor="middle" font-family="system-ui,sans-serif" font-size="8" font-weight="800" fill="white">AI</text>
     </svg>
     <div>
-      <div class="header-title">AiGovOps Foundation Framework</div>
-      <div class="header-subtitle">April 2026 v1 — OpenClaw Guided Install by AiGovOps</div>
+      <div class="header-title" id="headerTitle">AiGovOps Foundation Framework</div>
+      <div class="header-subtitle" id="headerSubtitle">April 2026 v1 — OpenClaw Guided Install by AiGovOps</div>
     </div>
   </div>
   <div class="header-controls">
+    <select class="locale-switcher" id="localeSwitcher" onchange="switchLocale(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="es">Español</option>
+        <option value="pt">Português</option>
+        <option value="zh">简体中文</option>
+        <option value="hi">हिन्दी</option>
+        <option value="ar">العربية</option>
+        <option value="ru">Русский</option>
+        <option value="tr">Türkçe</option>
+        <option value="ur">اردو</option>
+        <option value="ps">پښتو</option>
+        <option value="sw">Kiswahili</option>
+        <option value="chr">ᏣᎳᎩ</option>
+        <option value="brl">⠃⠗⠇</option>
+    </select>
     <button class="dark-toggle" onclick="toggleTheme()" id="themeBtn">
-      <span id="themeIcon">🌙</span> Dark
+      <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
     </button>
   </div>
 </header>
@@ -650,12 +723,2473 @@ body {
 
 <!-- FOOTER -->
 <footer class="site-footer">
-  AiGovOps Foundation &mdash;
+  <span id="footerText">AiGovOps Foundation</span> &mdash;
   <a href="https://www.aigovopsfoundation.org">www.aigovopsfoundation.org</a>
-  &mdash; A work of Bob Rapp and Ken Johnston
+  &mdash; <span id="footerAttribution">A work of Bob Rapp and Ken Johnston</span>
 </footer>
 
 <script>
+
+/* ═══════════════════════════════════════════════════════════════
+   I18N — LOCALE SWITCHING
+   ═══════════════════════════════════════════════════════════════ */
+const WIZARD_I18N = {
+  "en": {
+    "headerTitle": "AiGovOps Foundation Framework",
+    "headerSubtitle": "April 2026 v1 — OpenClaw Guided Install by AiGovOps",
+    "darkMode": "Dark",
+    "lightMode": "Light",
+    "languageLabel": "Language",
+    "stepWelcome": "Welcome",
+    "stepConfiguration": "Configuration",
+    "stepSecurity": "Security",
+    "stepReview": "Review",
+    "stepDryRun": "Dry Run",
+    "stepInstall": "Install",
+    "stepAuditLog": "Audit Log",
+    "stepXofY": "Step {x} of {y}",
+    "btnContinue": "Continue",
+    "btnBack": "Back",
+    "btnConfirmContinue": "Confirm & Continue",
+    "btnRunPreflight": "Run Preflight Checks",
+    "btnProceedInstall": "Proceed to Install",
+    "btnBeginInstall": "Begin Installation",
+    "btnInstallBlocked": "Install (blocked — failures detected)",
+    "btnViewAuditLog": "View Audit Log",
+    "btnStartNewSession": "Start New Session",
+    "btnExportJson": "Export as JSON",
+    "s1Title": "Welcome & Host Selection",
+    "s1Desc": "This wizard installs the <strong>OpenClaw AI Gateway</strong> — a privacy-first, locally-hosted AI proxy for the AiGovOps Foundation Framework (April 2026 v1). It will guide you through configuration, security hardening, preflight checks, and the install process, generating a tamper-evident audit log at every step.",
+    "s1SelectHost": "Select your target host platform to begin:",
+    "s1PrivacyNote": "All data entered in this wizard stays in your browser's memory only. No data is sent to any server. No localStorage or cookies are used.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "Generic VPS",
+    "hostMacosDesc": "Local development or production on macOS. Uses LaunchAgent, Keychain, and Homebrew.",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet. Uses systemd, ufw firewall, and env-based secrets.",
+    "hostAzureDesc": "Microsoft Azure Virtual Machine. Uses systemd, Azure NSG, and env-based secrets.",
+    "hostVpsDesc": "Any Linux VPS. Uses systemd and environment file for secrets.",
+    "s2Title": "Configuration",
+    "s2Desc": "Pre-filled defaults for <strong>{host}</strong>. Edit any field — defaults are sensible and security-reviewed.",
+    "s2InstallDir": "Install Directory",
+    "s2InstallDirHint": "Where the OpenClaw gateway files will be installed.",
+    "s2ServiceName": "Service Name",
+    "s2ServiceHintMac": "macOS LaunchAgent label (reverse-DNS format recommended).",
+    "s2ServiceHintLinux": "systemd service name.",
+    "s2BindAddress": "Bind Address",
+    "s2BindHint": "Gateway listening address. Leave as 127.0.0.1 for local-only.",
+    "s2BindWarn": "⚠ Warning: Changing bind address from 127.0.0.1 exposes the gateway externally. Only do this if you understand the risk and use a firewall.",
+    "s2LogDir": "Log Directory",
+    "s2LogDirHint": "Directory for gateway logs. Ensure writable by the service user.",
+    "s2NodeVersion": "Node.js Version Requirement",
+    "s2NodeVersionHint": "Minimum Node.js version required by the gateway.",
+    "s2SecretMethod": "Secret Storage Method",
+    "s2SecretMethodHint": "How API keys and tokens will be stored. This field is excluded from all logs.",
+    "s2ApiKey": "API Key / Token (optional — set post-install)",
+    "s2ApiKeyPlaceholder": "Leave blank to configure after install",
+    "s2ApiKeyHint": "If provided, stored securely in {method}. Never written to disk in plaintext.",
+    "s2SecretTag": "Secret — will not be logged",
+    "s2ModifiedTag": "⚠ Modified from default",
+    "s3Title": "Security & Hardening",
+    "s3Desc": "Review and confirm the security controls for this installation. Critical items should remain checked. Unchecking a critical item will display a warning.",
+    "s3Critical": "Critical",
+    "s3UncheckWarn": "⚠ Unchecking this critical control reduces security",
+    "sec_localhost_label": "Bind to localhost only (127.0.0.1)",
+    "sec_localhost_sub": "Prevents external access to the gateway port.",
+    "sec_tailscale_label": "Enable Tailscale VPN for remote access",
+    "sec_tailscale_sub": "Use Tailscale instead of exposing ports directly.",
+    "sec_user_label": "Run under dedicated user account",
+    "sec_user_sub": "Principle of least privilege — never run as root.",
+    "sec_secrets_label": "Store secrets in Keychain / secure env vars",
+    "sec_secrets_sub": "No plaintext secrets in config files or logs.",
+    "sec_audit_label": "Enable immutable audit logging",
+    "sec_audit_sub": "Cryptographic hash chain for tamper-evident logs.",
+    "sec_logrotate_label": "Configure log rotation",
+    "sec_logrotate_sub": "Prevents disk exhaustion; uses logrotate or journald.",
+    "sec_nopii_label": "No PII in logs",
+    "sec_nopii_sub": "Redact API keys, tokens, and user identifiers from all log output.",
+    "sec_health_label": "Enable health check endpoint",
+    "sec_health_sub": "GET /health returns status without leaking internals.",
+    "s4Title": "Review Configuration",
+    "s4Desc": "Review all settings before proceeding. Values shown in <span style=\"color:var(--amber);font-weight:700;\">amber</span> differ from defaults. Secrets are masked.",
+    "s4SectionHost": "▸ Host & Platform",
+    "s4SectionConfig": "▸ Configuration",
+    "s4SectionSecurity": "▸ Security Controls",
+    "s4TargetHost": "Target Host",
+    "s4InstallDir": "Install Directory",
+    "s4ServiceName": "Service Name",
+    "s4BindAddress": "Bind Address",
+    "s4LogDir": "Log Directory",
+    "s4NodeVersion": "Node.js Version",
+    "s4SecretMethod": "Secret Method",
+    "s4ApiKey": "API Key",
+    "s4NotConfigured": "(not configured)",
+    "s4Enabled": "✓ Enabled",
+    "s4Disabled": "✗ Disabled",
+    "s4SecretNote": "Secret values (API keys, secret storage method) are masked and will never appear in the audit log.",
+    "s5Title": "Dry Run (Preflight)",
+    "s5Desc": "Simulating preflight checks for <strong>{host}</strong>. Each check validates your environment before installation.",
+    "s5Passed": "passed",
+    "s5Warnings": "warnings",
+    "s5Failed": "failed",
+    "statusPass": "PASS",
+    "statusWarn": "WARN",
+    "statusFail": "FAIL",
+    "statusInfo": "INFO",
+    "dc_node": "Node.js version ≥ 20",
+    "dc_node_msg": "Node 20.x detected (simulated)",
+    "dc_npm": "npm / package manager",
+    "dc_npm_msg": "npm 10.x present",
+    "dc_git": "git available",
+    "dc_git_msg": "git 2.44 detected",
+    "dc_port": "Port 3000 availability",
+    "dc_port_msg": "Port 3000 is free",
+    "dc_bind": "Bind address is localhost",
+    "dc_bind_ok": "Bind address is 127.0.0.1 — ✓ secure",
+    "dc_bind_warn": "Bind address is {addr} — external exposure risk",
+    "dc_installdir": "Install directory writable",
+    "dc_installdir_msg": "{dir} writable",
+    "dc_logdir": "Log directory accessible",
+    "dc_logdir_msg": "{dir} accessible",
+    "dc_nopii": "No PII in configuration",
+    "dc_nopii_msg": "Configuration values passed PII scan",
+    "dc_keychain": "macOS Keychain access",
+    "dc_keychain_msg": "Keychain API accessible",
+    "dc_launch": "LaunchAgent directory",
+    "dc_launch_msg": "~/Library/LaunchAgents exists",
+    "dc_brew": "Homebrew present",
+    "dc_brew_msg": "Homebrew not detected — manual install may be needed",
+    "dc_systemd": "systemd available",
+    "dc_systemd_msg252": "systemd v252 detected",
+    "dc_systemd_msg251": "systemd v251 detected",
+    "dc_ufw": "ufw firewall active",
+    "dc_ufw_msg": "ufw enabled, port 22 allowed",
+    "dc_nonroot": "Non-root user",
+    "dc_nonroot_msg": "Running as non-root user",
+    "dc_nsg": "Azure NSG check",
+    "dc_nsg_msg": "No inbound rules for port 3000",
+    "dc_iptables": "iptables / firewall",
+    "dc_iptables_msg": "No firewall detected — consider ufw or iptables",
+    "s6Title": "Execute Install",
+    "s6Desc": "Installing OpenClaw on <strong>{host}</strong>. Each step completes before the next begins.",
+    "s6Complete": "Installation Complete!",
+    "s6CompleteMsg": "OpenClaw AI Gateway is installed and running on {host}.",
+    "s6Rollback": "Rollback:",
+    "s6RollbackMsg": "If needed, rollback scripts are available in the <code style=\"font-size:12px;\">scripts/</code> directory of your install path.",
+    "is_validate": "Validate configuration",
+    "is_npm": "Install Node.js dependencies (npm install)",
+    "is_clone": "Clone OpenClaw repository",
+    "is_harden": "Apply security hardening patches",
+    "is_auditinit": "Initialize audit log chain",
+    "is_health": "Run post-install health check",
+    "is_manifest": "Write install manifest",
+    "is_launchagent": "Register macOS LaunchAgent plist",
+    "is_keychain": "Store secrets in Keychain",
+    "is_logrotate_mac": "Configure log rotation",
+    "is_start_mac": "Start gateway service",
+    "is_systemd_create": "Create systemd unit file",
+    "is_secrets_env": "Store secrets in secrets.env",
+    "is_logrotate": "Configure logrotate",
+    "is_nsg_rules": "Configure Azure NSG rules",
+    "is_enable_start": "Enable and start openclaw.service",
+    "s7Title": "Version Log & Audit Trail",
+    "s7Desc": "Cryptographically chained audit log of all actions taken during this wizard session. Each entry includes a SHA-256 hash computed over its content plus the previous entry's hash (tamper-evident chain). Secrets and PII are never included.",
+    "s7NoEntries": "No audit entries yet.",
+    "s7Result": "Result:",
+    "s7Prev": "Prev:",
+    "s7Entries": "{n} entries — hash chain verifiable client-side",
+    "s7FooterNote": "This audit trail was generated in-browser using the Web Crypto API (SubtleCrypto SHA-256). Each entry's hash is computed as SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)). No data was transmitted to any server during this session.",
+    "s7Attribution": "A work of <strong>Bob Rapp</strong> and <strong>Ken Johnston</strong>",
+    "act_sessionStarted": "Wizard session started",
+    "act_initialized": "Initialized",
+    "act_configSaved": "Configuration saved",
+    "act_success": "Success",
+    "act_secretNote": "Secret fields excluded from log",
+    "act_securityConfirmed": "Security checklist confirmed",
+    "act_reviewConfirmed": "Configuration review confirmed",
+    "act_dryRunDone": "Dry run completed",
+    "act_installStep": "Install step: {name}",
+    "act_completed": "Completed",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "A work of Bob Rapp and Ken Johnston"
+  },
+  "fr": {
+    "headerTitle": "AiGovOps Foundation Framework",
+    "headerSubtitle": "Avril 2026 v1 — Installation guidée OpenClaw par AiGovOps",
+    "darkMode": "Sombre",
+    "lightMode": "Clair",
+    "languageLabel": "Langue",
+    "stepWelcome": "Accueil",
+    "stepConfiguration": "Configuration",
+    "stepSecurity": "Sécurité",
+    "stepReview": "Vérifier",
+    "stepDryRun": "Simulation",
+    "stepInstall": "Installer",
+    "stepAuditLog": "Journal d'audit",
+    "stepXofY": "Étape {x} sur {y}",
+    "btnContinue": "Continuer",
+    "btnBack": "Retour",
+    "btnConfirmContinue": "Confirmer et continuer",
+    "btnRunPreflight": "Lancer les vérifications",
+    "btnProceedInstall": "Passer à l'installation",
+    "btnBeginInstall": "Commencer l'installation",
+    "btnInstallBlocked": "Installation (bloquée — échecs détectés)",
+    "btnViewAuditLog": "Voir le journal d'audit",
+    "btnStartNewSession": "Démarrer une nouvelle session",
+    "btnExportJson": "Exporter en JSON",
+    "s1Title": "Bienvenue et sélection de l'hôte",
+    "s1Desc": "Cet assistant installe la <strong>passerelle IA OpenClaw</strong> — un proxy IA local axé sur la confidentialité pour l'AiGovOps Foundation Framework (Avril 2026 v1). Il vous guidera à travers la configuration, le renforcement de la sécurité, les vérifications préalables et le processus d'installation, en générant un journal d'audit infalsifiable à chaque étape.",
+    "s1SelectHost": "Sélectionnez votre plateforme hôte cible pour commencer :",
+    "s1PrivacyNote": "Toutes les données saisies dans cet assistant restent uniquement en mémoire de votre navigateur. Aucune donnée n'est envoyée à un serveur. Aucun localStorage ni cookie n'est utilisé.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "VPS Générique",
+    "hostMacosDesc": "Développement local ou production sur macOS. Utilise LaunchAgent, Keychain et Homebrew.",
+    "hostDigitaloceanDesc": "Droplet DigitalOcean. Utilise systemd, le pare-feu ufw et des secrets basés sur l'environnement.",
+    "hostAzureDesc": "Machine virtuelle Microsoft Azure. Utilise systemd, Azure NSG et des secrets basés sur l'environnement.",
+    "hostVpsDesc": "Tout VPS Linux. Utilise systemd et un fichier d'environnement pour les secrets.",
+    "s2Title": "Configuration",
+    "s2Desc": "Valeurs par défaut pré-remplies pour <strong>{host}</strong>. Modifiez n'importe quel champ — les valeurs par défaut sont sensées et sécurisées.",
+    "s2InstallDir": "Répertoire d'installation",
+    "s2InstallDirHint": "Emplacement où les fichiers de la passerelle OpenClaw seront installés.",
+    "s2ServiceName": "Nom du service",
+    "s2ServiceHintMac": "Étiquette LaunchAgent macOS (format DNS inversé recommandé).",
+    "s2ServiceHintLinux": "Nom du service systemd.",
+    "s2BindAddress": "Adresse d'écoute",
+    "s2BindHint": "Adresse d'écoute de la passerelle. Laissez 127.0.0.1 pour local uniquement.",
+    "s2BindWarn": "⚠ Attention : modifier l'adresse d'écoute depuis 127.0.0.1 expose la passerelle à l'extérieur. À ne faire qu'en connaissance de cause et avec un pare-feu.",
+    "s2LogDir": "Répertoire des journaux",
+    "s2LogDirHint": "Répertoire pour les journaux de la passerelle. Assurez-vous qu'il est accessible en écriture par l'utilisateur du service.",
+    "s2NodeVersion": "Version Node.js requise",
+    "s2NodeVersionHint": "Version minimale de Node.js requise par la passerelle.",
+    "s2SecretMethod": "Méthode de stockage des secrets",
+    "s2SecretMethodHint": "Comment les clés API et les jetons seront stockés. Ce champ est exclu de tous les journaux.",
+    "s2ApiKey": "Clé API / Jeton (optionnel — à définir après l'installation)",
+    "s2ApiKeyPlaceholder": "Laisser vide pour configurer après l'installation",
+    "s2ApiKeyHint": "Si fournie, stockée en toute sécurité dans {method}. Jamais écrite en clair sur le disque.",
+    "s2SecretTag": "Secret — ne sera pas journalisé",
+    "s2ModifiedTag": "⚠ Modifié par rapport à la valeur par défaut",
+    "s3Title": "Sécurité et renforcement",
+    "s3Desc": "Examinez et confirmez les contrôles de sécurité pour cette installation. Les éléments critiques doivent rester cochés. Décocher un élément critique affichera un avertissement.",
+    "s3Critical": "Critique",
+    "s3UncheckWarn": "⚠ Décocher ce contrôle critique réduit la sécurité",
+    "sec_localhost_label": "Lier à localhost uniquement (127.0.0.1)",
+    "sec_localhost_sub": "Empêche l'accès externe au port de la passerelle.",
+    "sec_tailscale_label": "Activer Tailscale VPN pour l'accès distant",
+    "sec_tailscale_sub": "Utilisez Tailscale plutôt que d'exposer directement des ports.",
+    "sec_user_label": "Exécuter sous un compte utilisateur dédié",
+    "sec_user_sub": "Principe du moindre privilège — ne jamais exécuter en root.",
+    "sec_secrets_label": "Stocker les secrets dans Keychain / variables d'environnement sécurisées",
+    "sec_secrets_sub": "Aucun secret en clair dans les fichiers de config ou les journaux.",
+    "sec_audit_label": "Activer la journalisation d'audit immuable",
+    "sec_audit_sub": "Chaîne de hachage cryptographique pour des journaux infalsifiables.",
+    "sec_logrotate_label": "Configurer la rotation des journaux",
+    "sec_logrotate_sub": "Évite l'épuisement du disque ; utilise logrotate ou journald.",
+    "sec_nopii_label": "Aucune PII dans les journaux",
+    "sec_nopii_sub": "Masquer les clés API, jetons et identifiants utilisateurs de toute sortie de journal.",
+    "sec_health_label": "Activer le point de santé (health check)",
+    "sec_health_sub": "GET /health retourne un statut sans divulguer d'informations internes.",
+    "s4Title": "Vérifier la configuration",
+    "s4Desc": "Vérifiez tous les paramètres avant de continuer. Les valeurs en <span style=\"color:var(--amber);font-weight:700;\">ambre</span> diffèrent des valeurs par défaut. Les secrets sont masqués.",
+    "s4SectionHost": "▸ Hôte et plateforme",
+    "s4SectionConfig": "▸ Configuration",
+    "s4SectionSecurity": "▸ Contrôles de sécurité",
+    "s4TargetHost": "Hôte cible",
+    "s4InstallDir": "Répertoire d'installation",
+    "s4ServiceName": "Nom du service",
+    "s4BindAddress": "Adresse d'écoute",
+    "s4LogDir": "Répertoire des journaux",
+    "s4NodeVersion": "Version Node.js",
+    "s4SecretMethod": "Méthode des secrets",
+    "s4ApiKey": "Clé API",
+    "s4NotConfigured": "(non configurée)",
+    "s4Enabled": "✓ Activé",
+    "s4Disabled": "✗ Désactivé",
+    "s4SecretNote": "Les valeurs secrètes (clés API, méthode de stockage des secrets) sont masquées et n'apparaîtront jamais dans le journal d'audit.",
+    "s5Title": "Simulation (préflight)",
+    "s5Desc": "Simulation des vérifications préalables pour <strong>{host}</strong>. Chaque vérification valide votre environnement avant l'installation.",
+    "s5Passed": "réussies",
+    "s5Warnings": "avertissements",
+    "s5Failed": "échecs",
+    "statusPass": "RÉUSSI",
+    "statusWarn": "AVERT.",
+    "statusFail": "ÉCHEC",
+    "statusInfo": "INFO",
+    "dc_node": "Node.js version ≥ 20",
+    "dc_node_msg": "Node 20.x détecté (simulé)",
+    "dc_npm": "npm / gestionnaire de paquets",
+    "dc_npm_msg": "npm 10.x présent",
+    "dc_git": "git disponible",
+    "dc_git_msg": "git 2.44 détecté",
+    "dc_port": "Disponibilité du port 3000",
+    "dc_port_msg": "Le port 3000 est libre",
+    "dc_bind": "Adresse d'écoute est localhost",
+    "dc_bind_ok": "Adresse d'écoute 127.0.0.1 — ✓ sécurisé",
+    "dc_bind_warn": "Adresse d'écoute {addr} — risque d'exposition externe",
+    "dc_installdir": "Répertoire d'installation accessible en écriture",
+    "dc_installdir_msg": "{dir} accessible en écriture",
+    "dc_logdir": "Répertoire des journaux accessible",
+    "dc_logdir_msg": "{dir} accessible",
+    "dc_nopii": "Aucune PII dans la configuration",
+    "dc_nopii_msg": "Valeurs de configuration ayant passé l'analyse PII",
+    "dc_keychain": "Accès au Keychain macOS",
+    "dc_keychain_msg": "API Keychain accessible",
+    "dc_launch": "Répertoire LaunchAgent",
+    "dc_launch_msg": "~/Library/LaunchAgents existe",
+    "dc_brew": "Homebrew présent",
+    "dc_brew_msg": "Homebrew non détecté — installation manuelle peut être nécessaire",
+    "dc_systemd": "systemd disponible",
+    "dc_systemd_msg252": "systemd v252 détecté",
+    "dc_systemd_msg251": "systemd v251 détecté",
+    "dc_ufw": "pare-feu ufw actif",
+    "dc_ufw_msg": "ufw activé, port 22 autorisé",
+    "dc_nonroot": "Utilisateur non-root",
+    "dc_nonroot_msg": "Exécution en tant qu'utilisateur non-root",
+    "dc_nsg": "Vérification Azure NSG",
+    "dc_nsg_msg": "Aucune règle entrante pour le port 3000",
+    "dc_iptables": "iptables / pare-feu",
+    "dc_iptables_msg": "Aucun pare-feu détecté — envisagez ufw ou iptables",
+    "s6Title": "Exécuter l'installation",
+    "s6Desc": "Installation d'OpenClaw sur <strong>{host}</strong>. Chaque étape se termine avant le début de la suivante.",
+    "s6Complete": "Installation terminée !",
+    "s6CompleteMsg": "La passerelle IA OpenClaw est installée et en cours d'exécution sur {host}.",
+    "s6Rollback": "Rollback :",
+    "s6RollbackMsg": "Si nécessaire, les scripts de rollback sont disponibles dans le répertoire <code style=\"font-size:12px;\">scripts/</code> de votre chemin d'installation.",
+    "is_validate": "Valider la configuration",
+    "is_npm": "Installer les dépendances Node.js (npm install)",
+    "is_clone": "Cloner le dépôt OpenClaw",
+    "is_harden": "Appliquer les correctifs de renforcement de sécurité",
+    "is_auditinit": "Initialiser la chaîne du journal d'audit",
+    "is_health": "Lancer la vérification de santé post-installation",
+    "is_manifest": "Écrire le manifeste d'installation",
+    "is_launchagent": "Enregistrer le plist LaunchAgent macOS",
+    "is_keychain": "Stocker les secrets dans Keychain",
+    "is_logrotate_mac": "Configurer la rotation des journaux",
+    "is_start_mac": "Démarrer le service de la passerelle",
+    "is_systemd_create": "Créer le fichier d'unité systemd",
+    "is_secrets_env": "Stocker les secrets dans secrets.env",
+    "is_logrotate": "Configurer logrotate",
+    "is_nsg_rules": "Configurer les règles Azure NSG",
+    "is_enable_start": "Activer et démarrer openclaw.service",
+    "s7Title": "Journal de version et piste d'audit",
+    "s7Desc": "Journal d'audit cryptographiquement chaîné de toutes les actions effectuées pendant cette session. Chaque entrée inclut un hachage SHA-256 calculé sur son contenu plus le hachage de l'entrée précédente (chaîne infalsifiable). Les secrets et les PII ne sont jamais inclus.",
+    "s7NoEntries": "Aucune entrée d'audit pour l'instant.",
+    "s7Result": "Résultat :",
+    "s7Prev": "Préc. :",
+    "s7Entries": "{n} entrées — chaîne de hachage vérifiable côté client",
+    "s7FooterNote": "Cette piste d'audit a été générée dans le navigateur à l'aide de l'API Web Crypto (SubtleCrypto SHA-256). Le hachage de chaque entrée est calculé comme SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)). Aucune donnée n'a été transmise à un serveur pendant cette session.",
+    "s7Attribution": "Une œuvre de <strong>Bob Rapp</strong> et <strong>Ken Johnston</strong>",
+    "act_sessionStarted": "Session de l'assistant démarrée",
+    "act_initialized": "Initialisée",
+    "act_configSaved": "Configuration enregistrée",
+    "act_success": "Succès",
+    "act_secretNote": "Champs secrets exclus du journal",
+    "act_securityConfirmed": "Liste de sécurité confirmée",
+    "act_reviewConfirmed": "Vérification de la configuration confirmée",
+    "act_dryRunDone": "Simulation terminée",
+    "act_installStep": "Étape d'installation : {name}",
+    "act_completed": "Terminée",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Une œuvre de Bob Rapp et Ken Johnston"
+  },
+  "de": {
+    "headerTitle": "AiGovOps Foundation Framework",
+    "headerSubtitle": "April 2026 v1 — Geführte OpenClaw-Installation von AiGovOps",
+    "darkMode": "Dunkel",
+    "lightMode": "Hell",
+    "languageLabel": "Sprache",
+    "stepWelcome": "Willkommen",
+    "stepConfiguration": "Konfiguration",
+    "stepSecurity": "Sicherheit",
+    "stepReview": "Überprüfen",
+    "stepDryRun": "Probelauf",
+    "stepInstall": "Installieren",
+    "stepAuditLog": "Audit-Protokoll",
+    "stepXofY": "Schritt {x} von {y}",
+    "btnContinue": "Weiter",
+    "btnBack": "Zurück",
+    "btnConfirmContinue": "Bestätigen und weiter",
+    "btnRunPreflight": "Preflight-Prüfungen starten",
+    "btnProceedInstall": "Zur Installation fortfahren",
+    "btnBeginInstall": "Installation starten",
+    "btnInstallBlocked": "Installation (blockiert — Fehler erkannt)",
+    "btnViewAuditLog": "Audit-Protokoll anzeigen",
+    "btnStartNewSession": "Neue Sitzung starten",
+    "btnExportJson": "Als JSON exportieren",
+    "s1Title": "Willkommen & Host-Auswahl",
+    "s1Desc": "Dieser Assistent installiert das <strong>OpenClaw AI Gateway</strong> — einen datenschutzorientierten, lokal gehosteten KI-Proxy für das AiGovOps Foundation Framework (April 2026 v1). Er führt Sie durch Konfiguration, Sicherheits-Hardening, Preflight-Prüfungen und den Installationsprozess und erzeugt bei jedem Schritt ein manipulationssicheres Audit-Protokoll.",
+    "s1SelectHost": "Wählen Sie Ihre Ziel-Hostplattform, um zu beginnen:",
+    "s1PrivacyNote": "Alle in diesem Assistenten eingegebenen Daten bleiben ausschließlich im Speicher Ihres Browsers. Es werden keine Daten an einen Server gesendet. Es werden weder localStorage noch Cookies verwendet.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "Generischer VPS",
+    "hostMacosDesc": "Lokale Entwicklung oder Produktion auf macOS. Verwendet LaunchAgent, Keychain und Homebrew.",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet. Verwendet systemd, ufw-Firewall und umgebungsbasierte Secrets.",
+    "hostAzureDesc": "Microsoft Azure Virtual Machine. Verwendet systemd, Azure NSG und umgebungsbasierte Secrets.",
+    "hostVpsDesc": "Beliebiger Linux-VPS. Verwendet systemd und Umgebungsdatei für Secrets.",
+    "s2Title": "Konfiguration",
+    "s2Desc": "Vorausgefüllte Standardwerte für <strong>{host}</strong>. Bearbeiten Sie jedes Feld — die Standardwerte sind sinnvoll und sicherheitsgeprüft.",
+    "s2InstallDir": "Installationsverzeichnis",
+    "s2InstallDirHint": "Wo die OpenClaw-Gateway-Dateien installiert werden.",
+    "s2ServiceName": "Dienstname",
+    "s2ServiceHintMac": "macOS LaunchAgent-Label (Reverse-DNS-Format empfohlen).",
+    "s2ServiceHintLinux": "systemd-Dienstname.",
+    "s2BindAddress": "Bind-Adresse",
+    "s2BindHint": "Lauschadresse des Gateways. Lassen Sie 127.0.0.1 für lokal-only.",
+    "s2BindWarn": "⚠ Warnung: Das Ändern der Bind-Adresse von 127.0.0.1 legt das Gateway extern offen. Nur mit Risikobewusstsein und Firewall durchführen.",
+    "s2LogDir": "Log-Verzeichnis",
+    "s2LogDirHint": "Verzeichnis für Gateway-Logs. Stellen Sie sicher, dass der Dienstbenutzer Schreibzugriff hat.",
+    "s2NodeVersion": "Node.js-Versionsanforderung",
+    "s2NodeVersionHint": "Minimale Node.js-Version, die vom Gateway benötigt wird.",
+    "s2SecretMethod": "Secret-Speichermethode",
+    "s2SecretMethodHint": "Wie API-Schlüssel und Tokens gespeichert werden. Dieses Feld wird aus allen Logs ausgeschlossen.",
+    "s2ApiKey": "API-Schlüssel / Token (optional — nach der Installation setzen)",
+    "s2ApiKeyPlaceholder": "Leer lassen, um nach der Installation zu konfigurieren",
+    "s2ApiKeyHint": "Wenn angegeben, sicher in {method} gespeichert. Niemals im Klartext auf die Festplatte geschrieben.",
+    "s2SecretTag": "Secret — wird nicht protokolliert",
+    "s2ModifiedTag": "⚠ Vom Standard abweichend",
+    "s3Title": "Sicherheit & Hardening",
+    "s3Desc": "Überprüfen und bestätigen Sie die Sicherheitskontrollen für diese Installation. Kritische Elemente sollten angehakt bleiben. Das Abwählen eines kritischen Elements zeigt eine Warnung an.",
+    "s3Critical": "Kritisch",
+    "s3UncheckWarn": "⚠ Das Abwählen dieser kritischen Kontrolle verringert die Sicherheit",
+    "sec_localhost_label": "Nur an localhost binden (127.0.0.1)",
+    "sec_localhost_sub": "Verhindert externen Zugriff auf den Gateway-Port.",
+    "sec_tailscale_label": "Tailscale VPN für Fernzugriff aktivieren",
+    "sec_tailscale_sub": "Verwenden Sie Tailscale, anstatt Ports direkt freizugeben.",
+    "sec_user_label": "Unter dediziertem Benutzerkonto ausführen",
+    "sec_user_sub": "Prinzip der geringsten Rechte — niemals als root ausführen.",
+    "sec_secrets_label": "Secrets in Keychain / sicheren Umgebungsvariablen speichern",
+    "sec_secrets_sub": "Keine Klartext-Secrets in Konfigurationsdateien oder Logs.",
+    "sec_audit_label": "Unveränderliches Audit-Logging aktivieren",
+    "sec_audit_sub": "Kryptografische Hash-Kette für manipulationssichere Logs.",
+    "sec_logrotate_label": "Log-Rotation konfigurieren",
+    "sec_logrotate_sub": "Verhindert Festplattenüberlauf; verwendet logrotate oder journald.",
+    "sec_nopii_label": "Keine PII in Logs",
+    "sec_nopii_sub": "API-Schlüssel, Tokens und Benutzerkennungen aus allen Log-Ausgaben redaktionieren.",
+    "sec_health_label": "Health-Check-Endpunkt aktivieren",
+    "sec_health_sub": "GET /health liefert Status zurück, ohne Interna preiszugeben.",
+    "s4Title": "Konfiguration überprüfen",
+    "s4Desc": "Überprüfen Sie alle Einstellungen, bevor Sie fortfahren. Werte in <span style=\"color:var(--amber);font-weight:700;\">bernsteinfarben</span> weichen von den Standardwerten ab. Secrets sind maskiert.",
+    "s4SectionHost": "▸ Host & Plattform",
+    "s4SectionConfig": "▸ Konfiguration",
+    "s4SectionSecurity": "▸ Sicherheitskontrollen",
+    "s4TargetHost": "Ziel-Host",
+    "s4InstallDir": "Installationsverzeichnis",
+    "s4ServiceName": "Dienstname",
+    "s4BindAddress": "Bind-Adresse",
+    "s4LogDir": "Log-Verzeichnis",
+    "s4NodeVersion": "Node.js-Version",
+    "s4SecretMethod": "Secret-Methode",
+    "s4ApiKey": "API-Schlüssel",
+    "s4NotConfigured": "(nicht konfiguriert)",
+    "s4Enabled": "✓ Aktiviert",
+    "s4Disabled": "✗ Deaktiviert",
+    "s4SecretNote": "Secret-Werte (API-Schlüssel, Secret-Speichermethode) sind maskiert und erscheinen niemals im Audit-Protokoll.",
+    "s5Title": "Probelauf (Preflight)",
+    "s5Desc": "Preflight-Prüfungen werden für <strong>{host}</strong> simuliert. Jede Prüfung validiert Ihre Umgebung vor der Installation.",
+    "s5Passed": "bestanden",
+    "s5Warnings": "Warnungen",
+    "s5Failed": "fehlgeschlagen",
+    "statusPass": "OK",
+    "statusWarn": "WARN",
+    "statusFail": "FEHLER",
+    "statusInfo": "INFO",
+    "dc_node": "Node.js-Version ≥ 20",
+    "dc_node_msg": "Node 20.x erkannt (simuliert)",
+    "dc_npm": "npm / Paketmanager",
+    "dc_npm_msg": "npm 10.x vorhanden",
+    "dc_git": "git verfügbar",
+    "dc_git_msg": "git 2.44 erkannt",
+    "dc_port": "Verfügbarkeit von Port 3000",
+    "dc_port_msg": "Port 3000 ist frei",
+    "dc_bind": "Bind-Adresse ist localhost",
+    "dc_bind_ok": "Bind-Adresse ist 127.0.0.1 — ✓ sicher",
+    "dc_bind_warn": "Bind-Adresse ist {addr} — Risiko externer Offenlegung",
+    "dc_installdir": "Installationsverzeichnis beschreibbar",
+    "dc_installdir_msg": "{dir} beschreibbar",
+    "dc_logdir": "Log-Verzeichnis zugänglich",
+    "dc_logdir_msg": "{dir} zugänglich",
+    "dc_nopii": "Keine PII in der Konfiguration",
+    "dc_nopii_msg": "Konfigurationswerte haben den PII-Scan bestanden",
+    "dc_keychain": "Zugriff auf macOS Keychain",
+    "dc_keychain_msg": "Keychain-API zugänglich",
+    "dc_launch": "LaunchAgent-Verzeichnis",
+    "dc_launch_msg": "~/Library/LaunchAgents existiert",
+    "dc_brew": "Homebrew vorhanden",
+    "dc_brew_msg": "Homebrew nicht erkannt — manuelle Installation kann erforderlich sein",
+    "dc_systemd": "systemd verfügbar",
+    "dc_systemd_msg252": "systemd v252 erkannt",
+    "dc_systemd_msg251": "systemd v251 erkannt",
+    "dc_ufw": "ufw-Firewall aktiv",
+    "dc_ufw_msg": "ufw aktiviert, Port 22 erlaubt",
+    "dc_nonroot": "Nicht-Root-Benutzer",
+    "dc_nonroot_msg": "Läuft als Nicht-Root-Benutzer",
+    "dc_nsg": "Azure-NSG-Prüfung",
+    "dc_nsg_msg": "Keine eingehenden Regeln für Port 3000",
+    "dc_iptables": "iptables / Firewall",
+    "dc_iptables_msg": "Keine Firewall erkannt — ufw oder iptables in Betracht ziehen",
+    "s6Title": "Installation ausführen",
+    "s6Desc": "Installation von OpenClaw auf <strong>{host}</strong>. Jeder Schritt wird abgeschlossen, bevor der nächste beginnt.",
+    "s6Complete": "Installation abgeschlossen!",
+    "s6CompleteMsg": "OpenClaw AI Gateway ist auf {host} installiert und läuft.",
+    "s6Rollback": "Rollback:",
+    "s6RollbackMsg": "Bei Bedarf sind Rollback-Skripte im Verzeichnis <code style=\"font-size:12px;\">scripts/</code> Ihres Installationspfads verfügbar.",
+    "is_validate": "Konfiguration validieren",
+    "is_npm": "Node.js-Abhängigkeiten installieren (npm install)",
+    "is_clone": "OpenClaw-Repository klonen",
+    "is_harden": "Sicherheits-Hardening-Patches anwenden",
+    "is_auditinit": "Audit-Log-Kette initialisieren",
+    "is_health": "Health-Check nach Installation durchführen",
+    "is_manifest": "Installationsmanifest schreiben",
+    "is_launchagent": "macOS LaunchAgent-Plist registrieren",
+    "is_keychain": "Secrets in Keychain speichern",
+    "is_logrotate_mac": "Log-Rotation konfigurieren",
+    "is_start_mac": "Gateway-Dienst starten",
+    "is_systemd_create": "systemd-Unit-Datei erstellen",
+    "is_secrets_env": "Secrets in secrets.env speichern",
+    "is_logrotate": "logrotate konfigurieren",
+    "is_nsg_rules": "Azure-NSG-Regeln konfigurieren",
+    "is_enable_start": "openclaw.service aktivieren und starten",
+    "s7Title": "Versionsprotokoll & Audit-Trail",
+    "s7Desc": "Kryptografisch verkettetes Audit-Protokoll aller Aktionen während dieser Sitzung. Jeder Eintrag enthält einen SHA-256-Hash, der über seinen Inhalt plus den Hash des vorherigen Eintrags berechnet wird (manipulationssichere Kette). Secrets und PII werden niemals einbezogen.",
+    "s7NoEntries": "Noch keine Audit-Einträge.",
+    "s7Result": "Ergebnis:",
+    "s7Prev": "Vorh.:",
+    "s7Entries": "{n} Einträge — Hash-Kette clientseitig überprüfbar",
+    "s7FooterNote": "Dieser Audit-Trail wurde im Browser mithilfe der Web Crypto API (SubtleCrypto SHA-256) erzeugt. Der Hash jedes Eintrags wird als SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)) berechnet. Während dieser Sitzung wurden keine Daten an einen Server übertragen.",
+    "s7Attribution": "Ein Werk von <strong>Bob Rapp</strong> und <strong>Ken Johnston</strong>",
+    "act_sessionStarted": "Assistenten-Sitzung gestartet",
+    "act_initialized": "Initialisiert",
+    "act_configSaved": "Konfiguration gespeichert",
+    "act_success": "Erfolg",
+    "act_secretNote": "Secret-Felder aus dem Log ausgeschlossen",
+    "act_securityConfirmed": "Sicherheits-Checkliste bestätigt",
+    "act_reviewConfirmed": "Konfigurationsprüfung bestätigt",
+    "act_dryRunDone": "Probelauf abgeschlossen",
+    "act_installStep": "Installationsschritt: {name}",
+    "act_completed": "Abgeschlossen",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Ein Werk von Bob Rapp und Ken Johnston"
+  },
+  "es": {
+    "headerTitle": "AiGovOps Foundation Framework",
+    "headerSubtitle": "Abril 2026 v1 — Instalación guiada OpenClaw por AiGovOps",
+    "darkMode": "Oscuro",
+    "lightMode": "Claro",
+    "languageLabel": "Idioma",
+    "stepWelcome": "Bienvenida",
+    "stepConfiguration": "Configuración",
+    "stepSecurity": "Seguridad",
+    "stepReview": "Revisar",
+    "stepDryRun": "Simulación",
+    "stepInstall": "Instalar",
+    "stepAuditLog": "Registro de auditoría",
+    "stepXofY": "Paso {x} de {y}",
+    "btnContinue": "Continuar",
+    "btnBack": "Atrás",
+    "btnConfirmContinue": "Confirmar y continuar",
+    "btnRunPreflight": "Ejecutar comprobaciones previas",
+    "btnProceedInstall": "Proceder a la instalación",
+    "btnBeginInstall": "Comenzar instalación",
+    "btnInstallBlocked": "Instalación (bloqueada — fallos detectados)",
+    "btnViewAuditLog": "Ver registro de auditoría",
+    "btnStartNewSession": "Iniciar nueva sesión",
+    "btnExportJson": "Exportar como JSON",
+    "s1Title": "Bienvenida y selección de host",
+    "s1Desc": "Este asistente instala la <strong>pasarela de IA OpenClaw</strong>, un proxy de IA local y centrado en la privacidad para el AiGovOps Foundation Framework (Abril 2026 v1). Le guiará a través de la configuración, el endurecimiento de seguridad, las comprobaciones previas y el proceso de instalación, generando un registro de auditoría a prueba de manipulaciones en cada paso.",
+    "s1SelectHost": "Seleccione su plataforma host de destino para comenzar:",
+    "s1PrivacyNote": "Todos los datos introducidos en este asistente permanecen sólo en la memoria del navegador. No se envían datos a ningún servidor. No se utilizan localStorage ni cookies.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "VPS Genérico",
+    "hostMacosDesc": "Desarrollo local o producción en macOS. Usa LaunchAgent, Keychain y Homebrew.",
+    "hostDigitaloceanDesc": "Droplet de DigitalOcean. Usa systemd, cortafuegos ufw y secretos basados en entorno.",
+    "hostAzureDesc": "Máquina Virtual de Microsoft Azure. Usa systemd, Azure NSG y secretos basados en entorno.",
+    "hostVpsDesc": "Cualquier VPS Linux. Usa systemd y archivo de entorno para los secretos.",
+    "s2Title": "Configuración",
+    "s2Desc": "Valores predeterminados para <strong>{host}</strong>. Edite cualquier campo — los valores por defecto son sensatos y revisados por seguridad.",
+    "s2InstallDir": "Directorio de instalación",
+    "s2InstallDirHint": "Dónde se instalarán los archivos de la pasarela OpenClaw.",
+    "s2ServiceName": "Nombre del servicio",
+    "s2ServiceHintMac": "Etiqueta LaunchAgent de macOS (se recomienda formato DNS inverso).",
+    "s2ServiceHintLinux": "Nombre del servicio systemd.",
+    "s2BindAddress": "Dirección de enlace",
+    "s2BindHint": "Dirección de escucha de la pasarela. Deje 127.0.0.1 para sólo-local.",
+    "s2BindWarn": "⚠ Advertencia: cambiar la dirección de enlace desde 127.0.0.1 expone la pasarela externamente. Hágalo sólo si entiende el riesgo y usa un cortafuegos.",
+    "s2LogDir": "Directorio de registros",
+    "s2LogDirHint": "Directorio para los registros de la pasarela. Asegúrese de que el usuario del servicio pueda escribir en él.",
+    "s2NodeVersion": "Versión mínima de Node.js",
+    "s2NodeVersionHint": "Versión mínima de Node.js requerida por la pasarela.",
+    "s2SecretMethod": "Método de almacenamiento de secretos",
+    "s2SecretMethodHint": "Cómo se almacenarán las claves API y tokens. Este campo se excluye de todos los registros.",
+    "s2ApiKey": "Clave API / Token (opcional — configurar tras la instalación)",
+    "s2ApiKeyPlaceholder": "Deje en blanco para configurar tras la instalación",
+    "s2ApiKeyHint": "Si se proporciona, se almacena de forma segura en {method}. Nunca se escribe en texto plano.",
+    "s2SecretTag": "Secreto — no se registrará",
+    "s2ModifiedTag": "⚠ Modificado respecto al valor por defecto",
+    "s3Title": "Seguridad y endurecimiento",
+    "s3Desc": "Revise y confirme los controles de seguridad para esta instalación. Los elementos críticos deben permanecer marcados. Desmarcar un elemento crítico mostrará una advertencia.",
+    "s3Critical": "Crítico",
+    "s3UncheckWarn": "⚠ Desmarcar este control crítico reduce la seguridad",
+    "sec_localhost_label": "Vincular sólo a localhost (127.0.0.1)",
+    "sec_localhost_sub": "Evita el acceso externo al puerto de la pasarela.",
+    "sec_tailscale_label": "Habilitar Tailscale VPN para acceso remoto",
+    "sec_tailscale_sub": "Use Tailscale en lugar de exponer puertos directamente.",
+    "sec_user_label": "Ejecutar bajo una cuenta de usuario dedicada",
+    "sec_user_sub": "Principio de mínimo privilegio — nunca ejecutar como root.",
+    "sec_secrets_label": "Almacenar secretos en Keychain / variables de entorno seguras",
+    "sec_secrets_sub": "Sin secretos en texto plano en archivos de configuración o registros.",
+    "sec_audit_label": "Habilitar registro de auditoría inmutable",
+    "sec_audit_sub": "Cadena hash criptográfica para registros a prueba de manipulaciones.",
+    "sec_logrotate_label": "Configurar rotación de registros",
+    "sec_logrotate_sub": "Evita el agotamiento de disco; usa logrotate o journald.",
+    "sec_nopii_label": "Sin PII en los registros",
+    "sec_nopii_sub": "Censurar claves API, tokens e identificadores de usuario en toda salida de registro.",
+    "sec_health_label": "Habilitar endpoint de comprobación de salud",
+    "sec_health_sub": "GET /health devuelve el estado sin filtrar información interna.",
+    "s4Title": "Revisar configuración",
+    "s4Desc": "Revise todos los ajustes antes de continuar. Los valores en <span style=\"color:var(--amber);font-weight:700;\">ámbar</span> difieren de los predeterminados. Los secretos están enmascarados.",
+    "s4SectionHost": "▸ Host y plataforma",
+    "s4SectionConfig": "▸ Configuración",
+    "s4SectionSecurity": "▸ Controles de seguridad",
+    "s4TargetHost": "Host de destino",
+    "s4InstallDir": "Directorio de instalación",
+    "s4ServiceName": "Nombre del servicio",
+    "s4BindAddress": "Dirección de enlace",
+    "s4LogDir": "Directorio de registros",
+    "s4NodeVersion": "Versión de Node.js",
+    "s4SecretMethod": "Método de secretos",
+    "s4ApiKey": "Clave API",
+    "s4NotConfigured": "(no configurada)",
+    "s4Enabled": "✓ Activado",
+    "s4Disabled": "✗ Desactivado",
+    "s4SecretNote": "Los valores secretos (claves API, método de almacenamiento de secretos) están enmascarados y nunca aparecerán en el registro de auditoría.",
+    "s5Title": "Simulación (preflight)",
+    "s5Desc": "Simulando comprobaciones previas para <strong>{host}</strong>. Cada comprobación valida su entorno antes de la instalación.",
+    "s5Passed": "superadas",
+    "s5Warnings": "advertencias",
+    "s5Failed": "fallidas",
+    "statusPass": "OK",
+    "statusWarn": "AVISO",
+    "statusFail": "FALLO",
+    "statusInfo": "INFO",
+    "dc_node": "Versión de Node.js ≥ 20",
+    "dc_node_msg": "Node 20.x detectado (simulado)",
+    "dc_npm": "npm / gestor de paquetes",
+    "dc_npm_msg": "npm 10.x presente",
+    "dc_git": "git disponible",
+    "dc_git_msg": "git 2.44 detectado",
+    "dc_port": "Disponibilidad del puerto 3000",
+    "dc_port_msg": "El puerto 3000 está libre",
+    "dc_bind": "La dirección de enlace es localhost",
+    "dc_bind_ok": "Dirección de enlace 127.0.0.1 — ✓ seguro",
+    "dc_bind_warn": "Dirección de enlace {addr} — riesgo de exposición externa",
+    "dc_installdir": "Directorio de instalación con permisos de escritura",
+    "dc_installdir_msg": "{dir} con permisos de escritura",
+    "dc_logdir": "Directorio de registros accesible",
+    "dc_logdir_msg": "{dir} accesible",
+    "dc_nopii": "Sin PII en la configuración",
+    "dc_nopii_msg": "Los valores de configuración pasaron el escaneo de PII",
+    "dc_keychain": "Acceso a Keychain de macOS",
+    "dc_keychain_msg": "API de Keychain accesible",
+    "dc_launch": "Directorio LaunchAgent",
+    "dc_launch_msg": "~/Library/LaunchAgents existe",
+    "dc_brew": "Homebrew presente",
+    "dc_brew_msg": "Homebrew no detectado — puede ser necesaria instalación manual",
+    "dc_systemd": "systemd disponible",
+    "dc_systemd_msg252": "systemd v252 detectado",
+    "dc_systemd_msg251": "systemd v251 detectado",
+    "dc_ufw": "cortafuegos ufw activo",
+    "dc_ufw_msg": "ufw habilitado, puerto 22 permitido",
+    "dc_nonroot": "Usuario no-root",
+    "dc_nonroot_msg": "Ejecutándose como usuario no-root",
+    "dc_nsg": "Comprobación Azure NSG",
+    "dc_nsg_msg": "Sin reglas entrantes para el puerto 3000",
+    "dc_iptables": "iptables / cortafuegos",
+    "dc_iptables_msg": "No se detectó cortafuegos — considere ufw o iptables",
+    "s6Title": "Ejecutar instalación",
+    "s6Desc": "Instalando OpenClaw en <strong>{host}</strong>. Cada paso se completa antes de que comience el siguiente.",
+    "s6Complete": "¡Instalación completa!",
+    "s6CompleteMsg": "La pasarela de IA OpenClaw está instalada y en ejecución en {host}.",
+    "s6Rollback": "Rollback:",
+    "s6RollbackMsg": "Si es necesario, los scripts de rollback están disponibles en el directorio <code style=\"font-size:12px;\">scripts/</code> de su ruta de instalación.",
+    "is_validate": "Validar configuración",
+    "is_npm": "Instalar dependencias de Node.js (npm install)",
+    "is_clone": "Clonar repositorio de OpenClaw",
+    "is_harden": "Aplicar parches de endurecimiento de seguridad",
+    "is_auditinit": "Inicializar cadena de registro de auditoría",
+    "is_health": "Ejecutar comprobación de salud post-instalación",
+    "is_manifest": "Escribir manifiesto de instalación",
+    "is_launchagent": "Registrar plist LaunchAgent de macOS",
+    "is_keychain": "Almacenar secretos en Keychain",
+    "is_logrotate_mac": "Configurar rotación de registros",
+    "is_start_mac": "Iniciar servicio de pasarela",
+    "is_systemd_create": "Crear archivo de unidad systemd",
+    "is_secrets_env": "Almacenar secretos en secrets.env",
+    "is_logrotate": "Configurar logrotate",
+    "is_nsg_rules": "Configurar reglas Azure NSG",
+    "is_enable_start": "Habilitar e iniciar openclaw.service",
+    "s7Title": "Registro de versiones y pista de auditoría",
+    "s7Desc": "Registro de auditoría encadenado criptográficamente de todas las acciones realizadas durante esta sesión. Cada entrada incluye un hash SHA-256 calculado sobre su contenido más el hash de la entrada anterior (cadena a prueba de manipulaciones). Los secretos y PII nunca se incluyen.",
+    "s7NoEntries": "Aún no hay entradas de auditoría.",
+    "s7Result": "Resultado:",
+    "s7Prev": "Prev.:",
+    "s7Entries": "{n} entradas — cadena hash verificable en el cliente",
+    "s7FooterNote": "Esta pista de auditoría se generó en el navegador usando la API Web Crypto (SubtleCrypto SHA-256). El hash de cada entrada se calcula como SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)). Durante esta sesión no se transmitió ningún dato a ningún servidor.",
+    "s7Attribution": "Una obra de <strong>Bob Rapp</strong> y <strong>Ken Johnston</strong>",
+    "act_sessionStarted": "Sesión del asistente iniciada",
+    "act_initialized": "Inicializada",
+    "act_configSaved": "Configuración guardada",
+    "act_success": "Éxito",
+    "act_secretNote": "Campos secretos excluidos del registro",
+    "act_securityConfirmed": "Lista de seguridad confirmada",
+    "act_reviewConfirmed": "Revisión de configuración confirmada",
+    "act_dryRunDone": "Simulación completada",
+    "act_installStep": "Paso de instalación: {name}",
+    "act_completed": "Completada",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Una obra de Bob Rapp y Ken Johnston"
+  },
+  "pt": {
+    "headerTitle": "AiGovOps Foundation Framework",
+    "headerSubtitle": "Abril 2026 v1 — Instalação guiada OpenClaw pela AiGovOps",
+    "darkMode": "Escuro",
+    "lightMode": "Claro",
+    "languageLabel": "Idioma",
+    "stepWelcome": "Bem-vindo",
+    "stepConfiguration": "Configuração",
+    "stepSecurity": "Segurança",
+    "stepReview": "Revisar",
+    "stepDryRun": "Simulação",
+    "stepInstall": "Instalar",
+    "stepAuditLog": "Registro de auditoria",
+    "stepXofY": "Passo {x} de {y}",
+    "btnContinue": "Continuar",
+    "btnBack": "Voltar",
+    "btnConfirmContinue": "Confirmar e continuar",
+    "btnRunPreflight": "Executar verificações",
+    "btnProceedInstall": "Prosseguir para instalação",
+    "btnBeginInstall": "Iniciar instalação",
+    "btnInstallBlocked": "Instalação (bloqueada — falhas detectadas)",
+    "btnViewAuditLog": "Ver registro de auditoria",
+    "btnStartNewSession": "Iniciar nova sessão",
+    "btnExportJson": "Exportar como JSON",
+    "s1Title": "Bem-vindo e seleção de host",
+    "s1Desc": "Este assistente instala o <strong>Gateway de IA OpenClaw</strong> — um proxy de IA local e focado em privacidade para o AiGovOps Foundation Framework (Abril 2026 v1). Ele o guiará pela configuração, endurecimento de segurança, verificações prévias e processo de instalação, gerando um registro de auditoria à prova de adulteração a cada etapa.",
+    "s1SelectHost": "Selecione sua plataforma host de destino para começar:",
+    "s1PrivacyNote": "Todos os dados inseridos neste assistente permanecem apenas na memória do navegador. Nenhum dado é enviado a servidores. Não são usados localStorage nem cookies.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "VPS Genérico",
+    "hostMacosDesc": "Desenvolvimento local ou produção no macOS. Usa LaunchAgent, Keychain e Homebrew.",
+    "hostDigitaloceanDesc": "Droplet DigitalOcean. Usa systemd, firewall ufw e segredos baseados em ambiente.",
+    "hostAzureDesc": "Máquina virtual Microsoft Azure. Usa systemd, Azure NSG e segredos baseados em ambiente.",
+    "hostVpsDesc": "Qualquer VPS Linux. Usa systemd e arquivo de ambiente para segredos.",
+    "s2Title": "Configuração",
+    "s2Desc": "Valores padrão pré-preenchidos para <strong>{host}</strong>. Edite qualquer campo — os padrões são sensatos e revisados por segurança.",
+    "s2InstallDir": "Diretório de instalação",
+    "s2InstallDirHint": "Onde os arquivos do gateway OpenClaw serão instalados.",
+    "s2ServiceName": "Nome do serviço",
+    "s2ServiceHintMac": "Rótulo LaunchAgent do macOS (formato DNS reverso recomendado).",
+    "s2ServiceHintLinux": "Nome do serviço systemd.",
+    "s2BindAddress": "Endereço de escuta",
+    "s2BindHint": "Endereço de escuta do gateway. Deixe 127.0.0.1 para somente-local.",
+    "s2BindWarn": "⚠ Atenção: alterar o endereço de escuta de 127.0.0.1 expõe o gateway externamente. Faça isso apenas se compreender o risco e usar um firewall.",
+    "s2LogDir": "Diretório de logs",
+    "s2LogDirHint": "Diretório para logs do gateway. Garanta que seja gravável pelo usuário do serviço.",
+    "s2NodeVersion": "Versão do Node.js necessária",
+    "s2NodeVersionHint": "Versão mínima do Node.js exigida pelo gateway.",
+    "s2SecretMethod": "Método de armazenamento de segredos",
+    "s2SecretMethodHint": "Como chaves de API e tokens serão armazenados. Este campo é excluído de todos os logs.",
+    "s2ApiKey": "Chave de API / Token (opcional — definir após instalação)",
+    "s2ApiKeyPlaceholder": "Deixe em branco para configurar após a instalação",
+    "s2ApiKeyHint": "Se fornecida, armazenada com segurança em {method}. Nunca escrita em texto plano.",
+    "s2SecretTag": "Segredo — não será registrado",
+    "s2ModifiedTag": "⚠ Modificado do padrão",
+    "s3Title": "Segurança e endurecimento",
+    "s3Desc": "Revise e confirme os controles de segurança para esta instalação. Itens críticos devem permanecer marcados. Desmarcar um item crítico exibirá um aviso.",
+    "s3Critical": "Crítico",
+    "s3UncheckWarn": "⚠ Desmarcar este controle crítico reduz a segurança",
+    "sec_localhost_label": "Vincular apenas ao localhost (127.0.0.1)",
+    "sec_localhost_sub": "Previne acesso externo à porta do gateway.",
+    "sec_tailscale_label": "Habilitar Tailscale VPN para acesso remoto",
+    "sec_tailscale_sub": "Use Tailscale em vez de expor portas diretamente.",
+    "sec_user_label": "Executar sob conta de usuário dedicada",
+    "sec_user_sub": "Princípio de menor privilégio — nunca executar como root.",
+    "sec_secrets_label": "Armazenar segredos em Keychain / variáveis de ambiente seguras",
+    "sec_secrets_sub": "Sem segredos em texto plano em arquivos de configuração ou logs.",
+    "sec_audit_label": "Habilitar registro de auditoria imutável",
+    "sec_audit_sub": "Cadeia de hash criptográfica para logs à prova de adulteração.",
+    "sec_logrotate_label": "Configurar rotação de logs",
+    "sec_logrotate_sub": "Previne esgotamento de disco; usa logrotate ou journald.",
+    "sec_nopii_label": "Sem PII nos logs",
+    "sec_nopii_sub": "Omitir chaves de API, tokens e identificadores de usuários de toda saída de log.",
+    "sec_health_label": "Habilitar endpoint de verificação de saúde",
+    "sec_health_sub": "GET /health retorna status sem vazar informações internas.",
+    "s4Title": "Revisar configuração",
+    "s4Desc": "Revise todos os ajustes antes de prosseguir. Valores em <span style=\"color:var(--amber);font-weight:700;\">âmbar</span> diferem dos padrões. Segredos estão mascarados.",
+    "s4SectionHost": "▸ Host e plataforma",
+    "s4SectionConfig": "▸ Configuração",
+    "s4SectionSecurity": "▸ Controles de segurança",
+    "s4TargetHost": "Host de destino",
+    "s4InstallDir": "Diretório de instalação",
+    "s4ServiceName": "Nome do serviço",
+    "s4BindAddress": "Endereço de escuta",
+    "s4LogDir": "Diretório de logs",
+    "s4NodeVersion": "Versão do Node.js",
+    "s4SecretMethod": "Método de segredo",
+    "s4ApiKey": "Chave de API",
+    "s4NotConfigured": "(não configurada)",
+    "s4Enabled": "✓ Ativado",
+    "s4Disabled": "✗ Desativado",
+    "s4SecretNote": "Valores secretos (chaves de API, método de armazenamento de segredos) são mascarados e nunca aparecerão no registro de auditoria.",
+    "s5Title": "Simulação (preflight)",
+    "s5Desc": "Simulando verificações prévias para <strong>{host}</strong>. Cada verificação valida seu ambiente antes da instalação.",
+    "s5Passed": "passou",
+    "s5Warnings": "avisos",
+    "s5Failed": "falhou",
+    "statusPass": "OK",
+    "statusWarn": "AVISO",
+    "statusFail": "FALHA",
+    "statusInfo": "INFO",
+    "dc_node": "Versão do Node.js ≥ 20",
+    "dc_node_msg": "Node 20.x detectado (simulado)",
+    "dc_npm": "npm / gerenciador de pacotes",
+    "dc_npm_msg": "npm 10.x presente",
+    "dc_git": "git disponível",
+    "dc_git_msg": "git 2.44 detectado",
+    "dc_port": "Disponibilidade da porta 3000",
+    "dc_port_msg": "Porta 3000 está livre",
+    "dc_bind": "Endereço de escuta é localhost",
+    "dc_bind_ok": "Endereço de escuta 127.0.0.1 — ✓ seguro",
+    "dc_bind_warn": "Endereço de escuta {addr} — risco de exposição externa",
+    "dc_installdir": "Diretório de instalação gravável",
+    "dc_installdir_msg": "{dir} gravável",
+    "dc_logdir": "Diretório de logs acessível",
+    "dc_logdir_msg": "{dir} acessível",
+    "dc_nopii": "Sem PII na configuração",
+    "dc_nopii_msg": "Valores de configuração passaram na varredura de PII",
+    "dc_keychain": "Acesso ao Keychain do macOS",
+    "dc_keychain_msg": "API Keychain acessível",
+    "dc_launch": "Diretório LaunchAgent",
+    "dc_launch_msg": "~/Library/LaunchAgents existe",
+    "dc_brew": "Homebrew presente",
+    "dc_brew_msg": "Homebrew não detectado — instalação manual pode ser necessária",
+    "dc_systemd": "systemd disponível",
+    "dc_systemd_msg252": "systemd v252 detectado",
+    "dc_systemd_msg251": "systemd v251 detectado",
+    "dc_ufw": "firewall ufw ativo",
+    "dc_ufw_msg": "ufw habilitado, porta 22 permitida",
+    "dc_nonroot": "Usuário não-root",
+    "dc_nonroot_msg": "Executando como usuário não-root",
+    "dc_nsg": "Verificação Azure NSG",
+    "dc_nsg_msg": "Sem regras de entrada para a porta 3000",
+    "dc_iptables": "iptables / firewall",
+    "dc_iptables_msg": "Nenhum firewall detectado — considere ufw ou iptables",
+    "s6Title": "Executar instalação",
+    "s6Desc": "Instalando OpenClaw em <strong>{host}</strong>. Cada etapa é concluída antes que a próxima comece.",
+    "s6Complete": "Instalação concluída!",
+    "s6CompleteMsg": "O Gateway de IA OpenClaw está instalado e em execução em {host}.",
+    "s6Rollback": "Rollback:",
+    "s6RollbackMsg": "Se necessário, scripts de rollback estão disponíveis no diretório <code style=\"font-size:12px;\">scripts/</code> do seu caminho de instalação.",
+    "is_validate": "Validar configuração",
+    "is_npm": "Instalar dependências do Node.js (npm install)",
+    "is_clone": "Clonar repositório OpenClaw",
+    "is_harden": "Aplicar correções de endurecimento de segurança",
+    "is_auditinit": "Inicializar cadeia do registro de auditoria",
+    "is_health": "Executar verificação de saúde pós-instalação",
+    "is_manifest": "Gravar manifesto de instalação",
+    "is_launchagent": "Registrar plist LaunchAgent do macOS",
+    "is_keychain": "Armazenar segredos no Keychain",
+    "is_logrotate_mac": "Configurar rotação de logs",
+    "is_start_mac": "Iniciar serviço do gateway",
+    "is_systemd_create": "Criar arquivo de unidade systemd",
+    "is_secrets_env": "Armazenar segredos em secrets.env",
+    "is_logrotate": "Configurar logrotate",
+    "is_nsg_rules": "Configurar regras Azure NSG",
+    "is_enable_start": "Habilitar e iniciar openclaw.service",
+    "s7Title": "Registro de versões e trilha de auditoria",
+    "s7Desc": "Registro de auditoria criptograficamente encadeado de todas as ações realizadas durante esta sessão. Cada entrada inclui um hash SHA-256 calculado sobre seu conteúdo mais o hash da entrada anterior (cadeia à prova de adulteração). Segredos e PII nunca são incluídos.",
+    "s7NoEntries": "Ainda não há entradas de auditoria.",
+    "s7Result": "Resultado:",
+    "s7Prev": "Ant.:",
+    "s7Entries": "{n} entradas — cadeia de hash verificável no cliente",
+    "s7FooterNote": "Esta trilha de auditoria foi gerada no navegador usando a API Web Crypto (SubtleCrypto SHA-256). O hash de cada entrada é calculado como SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)). Nenhum dado foi transmitido a servidores durante esta sessão.",
+    "s7Attribution": "Uma obra de <strong>Bob Rapp</strong> e <strong>Ken Johnston</strong>",
+    "act_sessionStarted": "Sessão do assistente iniciada",
+    "act_initialized": "Inicializada",
+    "act_configSaved": "Configuração salva",
+    "act_success": "Sucesso",
+    "act_secretNote": "Campos secretos excluídos do registro",
+    "act_securityConfirmed": "Lista de segurança confirmada",
+    "act_reviewConfirmed": "Revisão de configuração confirmada",
+    "act_dryRunDone": "Simulação concluída",
+    "act_installStep": "Passo de instalação: {name}",
+    "act_completed": "Concluída",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Uma obra de Bob Rapp e Ken Johnston"
+  },
+  "zh": {
+    "headerTitle": "AiGovOps 基础框架",
+    "headerSubtitle": "2026 年 4 月 v1 — 由 AiGovOps 提供的 OpenClaw 向导式安装",
+    "darkMode": "深色",
+    "lightMode": "浅色",
+    "languageLabel": "语言",
+    "stepWelcome": "欢迎",
+    "stepConfiguration": "配置",
+    "stepSecurity": "安全",
+    "stepReview": "检查",
+    "stepDryRun": "试运行",
+    "stepInstall": "安装",
+    "stepAuditLog": "审计日志",
+    "stepXofY": "第 {x} 步,共 {y} 步",
+    "btnContinue": "继续",
+    "btnBack": "返回",
+    "btnConfirmContinue": "确认并继续",
+    "btnRunPreflight": "运行预检",
+    "btnProceedInstall": "开始安装",
+    "btnBeginInstall": "开始安装",
+    "btnInstallBlocked": "安装 (已阻止 — 检测到失败)",
+    "btnViewAuditLog": "查看审计日志",
+    "btnStartNewSession": "开始新会话",
+    "btnExportJson": "导出为 JSON",
+    "s1Title": "欢迎与主机选择",
+    "s1Desc": "本向导将安装 <strong>OpenClaw AI 网关</strong> — 一个注重隐私的本地托管 AI 代理,属于 AiGovOps 基础框架(2026 年 4 月 v1)。它将引导您完成配置、安全加固、预检和安装过程,并在每一步生成防篡改的审计日志。",
+    "s1SelectHost": "选择您的目标主机平台以开始:",
+    "s1PrivacyNote": "您在此向导中输入的所有数据仅保留在浏览器内存中。不会向任何服务器发送数据。不使用 localStorage 或 Cookie。",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure 虚拟机",
+    "hostVps": "通用 VPS",
+    "hostMacosDesc": "在 macOS 上进行本地开发或生产。使用 LaunchAgent、Keychain 和 Homebrew。",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet。使用 systemd、ufw 防火墙和基于环境变量的密钥。",
+    "hostAzureDesc": "Microsoft Azure 虚拟机。使用 systemd、Azure NSG 和基于环境变量的密钥。",
+    "hostVpsDesc": "任何 Linux VPS。使用 systemd 和环境文件存储密钥。",
+    "s2Title": "配置",
+    "s2Desc": "已为 <strong>{host}</strong> 预填默认值。可编辑任意字段 — 默认值合理且经过安全审查。",
+    "s2InstallDir": "安装目录",
+    "s2InstallDirHint": "OpenClaw 网关文件的安装位置。",
+    "s2ServiceName": "服务名",
+    "s2ServiceHintMac": "macOS LaunchAgent 标签(推荐反向 DNS 格式)。",
+    "s2ServiceHintLinux": "systemd 服务名。",
+    "s2BindAddress": "绑定地址",
+    "s2BindHint": "网关监听地址。保留 127.0.0.1 表示仅本地。",
+    "s2BindWarn": "⚠ 警告:将绑定地址从 127.0.0.1 修改会将网关暴露到外部。仅在了解风险并使用防火墙时执行。",
+    "s2LogDir": "日志目录",
+    "s2LogDirHint": "网关日志目录。请确保服务用户可写。",
+    "s2NodeVersion": "Node.js 版本要求",
+    "s2NodeVersionHint": "网关要求的最低 Node.js 版本。",
+    "s2SecretMethod": "密钥存储方式",
+    "s2SecretMethodHint": "API 密钥和令牌的存储方式。此字段从所有日志中排除。",
+    "s2ApiKey": "API 密钥 / 令牌(可选 — 安装后设置)",
+    "s2ApiKeyPlaceholder": "留空则安装后再配置",
+    "s2ApiKeyHint": "如提供,将安全存储在 {method} 中。绝不以明文写入磁盘。",
+    "s2SecretTag": "密钥 — 不会被记录",
+    "s2ModifiedTag": "⚠ 已修改默认值",
+    "s3Title": "安全与加固",
+    "s3Desc": "审查并确认本次安装的安全控制。关键项应保持勾选。取消勾选关键项将显示警告。",
+    "s3Critical": "关键",
+    "s3UncheckWarn": "⚠ 取消勾选此关键控制会降低安全性",
+    "sec_localhost_label": "仅绑定到 localhost (127.0.0.1)",
+    "sec_localhost_sub": "防止对网关端口的外部访问。",
+    "sec_tailscale_label": "启用 Tailscale VPN 进行远程访问",
+    "sec_tailscale_sub": "使用 Tailscale 代替直接暴露端口。",
+    "sec_user_label": "以专用用户账户运行",
+    "sec_user_sub": "最小权限原则 — 切勿以 root 运行。",
+    "sec_secrets_label": "将密钥存储在 Keychain / 安全环境变量中",
+    "sec_secrets_sub": "配置文件或日志中不得出现明文密钥。",
+    "sec_audit_label": "启用不可变审计日志",
+    "sec_audit_sub": "加密哈希链以实现防篡改日志。",
+    "sec_logrotate_label": "配置日志轮转",
+    "sec_logrotate_sub": "防止磁盘耗尽;使用 logrotate 或 journald。",
+    "sec_nopii_label": "日志中无 PII",
+    "sec_nopii_sub": "从所有日志输出中删除 API 密钥、令牌和用户标识符。",
+    "sec_health_label": "启用健康检查端点",
+    "sec_health_sub": "GET /health 返回状态而不泄露内部信息。",
+    "s4Title": "检查配置",
+    "s4Desc": "继续前请检查所有设置。显示为 <span style=\"color:var(--amber);font-weight:700;\">琥珀色</span> 的值与默认值不同。密钥已屏蔽。",
+    "s4SectionHost": "▸ 主机与平台",
+    "s4SectionConfig": "▸ 配置",
+    "s4SectionSecurity": "▸ 安全控制",
+    "s4TargetHost": "目标主机",
+    "s4InstallDir": "安装目录",
+    "s4ServiceName": "服务名",
+    "s4BindAddress": "绑定地址",
+    "s4LogDir": "日志目录",
+    "s4NodeVersion": "Node.js 版本",
+    "s4SecretMethod": "密钥方式",
+    "s4ApiKey": "API 密钥",
+    "s4NotConfigured": "(未配置)",
+    "s4Enabled": "✓ 已启用",
+    "s4Disabled": "✗ 已禁用",
+    "s4SecretNote": "密钥值(API 密钥、密钥存储方式)已屏蔽,绝不会出现在审计日志中。",
+    "s5Title": "试运行(预检)",
+    "s5Desc": "正在模拟针对 <strong>{host}</strong> 的预检。每项检查都会在安装前验证您的环境。",
+    "s5Passed": "通过",
+    "s5Warnings": "警告",
+    "s5Failed": "失败",
+    "statusPass": "通过",
+    "statusWarn": "警告",
+    "statusFail": "失败",
+    "statusInfo": "信息",
+    "dc_node": "Node.js 版本 ≥ 20",
+    "dc_node_msg": "检测到 Node 20.x(模拟)",
+    "dc_npm": "npm / 包管理器",
+    "dc_npm_msg": "已安装 npm 10.x",
+    "dc_git": "git 可用",
+    "dc_git_msg": "检测到 git 2.44",
+    "dc_port": "端口 3000 可用性",
+    "dc_port_msg": "端口 3000 空闲",
+    "dc_bind": "绑定地址为 localhost",
+    "dc_bind_ok": "绑定地址为 127.0.0.1 — ✓ 安全",
+    "dc_bind_warn": "绑定地址为 {addr} — 存在外部暴露风险",
+    "dc_installdir": "安装目录可写",
+    "dc_installdir_msg": "{dir} 可写",
+    "dc_logdir": "日志目录可访问",
+    "dc_logdir_msg": "{dir} 可访问",
+    "dc_nopii": "配置中无 PII",
+    "dc_nopii_msg": "配置值通过了 PII 扫描",
+    "dc_keychain": "macOS Keychain 访问",
+    "dc_keychain_msg": "Keychain API 可访问",
+    "dc_launch": "LaunchAgent 目录",
+    "dc_launch_msg": "~/Library/LaunchAgents 存在",
+    "dc_brew": "Homebrew 存在",
+    "dc_brew_msg": "未检测到 Homebrew — 可能需要手动安装",
+    "dc_systemd": "systemd 可用",
+    "dc_systemd_msg252": "检测到 systemd v252",
+    "dc_systemd_msg251": "检测到 systemd v251",
+    "dc_ufw": "ufw 防火墙激活",
+    "dc_ufw_msg": "ufw 已启用,端口 22 已允许",
+    "dc_nonroot": "非 root 用户",
+    "dc_nonroot_msg": "以非 root 用户身份运行",
+    "dc_nsg": "Azure NSG 检查",
+    "dc_nsg_msg": "端口 3000 无入站规则",
+    "dc_iptables": "iptables / 防火墙",
+    "dc_iptables_msg": "未检测到防火墙 — 建议使用 ufw 或 iptables",
+    "s6Title": "执行安装",
+    "s6Desc": "正在 <strong>{host}</strong> 上安装 OpenClaw。每一步完成后才会开始下一步。",
+    "s6Complete": "安装完成!",
+    "s6CompleteMsg": "OpenClaw AI 网关已在 {host} 上安装并运行。",
+    "s6Rollback": "回滚:",
+    "s6RollbackMsg": "如有需要,回滚脚本位于您安装路径的 <code style=\"font-size:12px;\">scripts/</code> 目录中。",
+    "is_validate": "验证配置",
+    "is_npm": "安装 Node.js 依赖(npm install)",
+    "is_clone": "克隆 OpenClaw 仓库",
+    "is_harden": "应用安全加固补丁",
+    "is_auditinit": "初始化审计日志链",
+    "is_health": "运行安装后健康检查",
+    "is_manifest": "写入安装清单",
+    "is_launchagent": "注册 macOS LaunchAgent plist",
+    "is_keychain": "将密钥存储在 Keychain 中",
+    "is_logrotate_mac": "配置日志轮转",
+    "is_start_mac": "启动网关服务",
+    "is_systemd_create": "创建 systemd 单元文件",
+    "is_secrets_env": "将密钥存储在 secrets.env 中",
+    "is_logrotate": "配置 logrotate",
+    "is_nsg_rules": "配置 Azure NSG 规则",
+    "is_enable_start": "启用并启动 openclaw.service",
+    "s7Title": "版本日志与审计轨迹",
+    "s7Desc": "此会话期间所有操作的加密链式审计日志。每个条目包含对其内容加上前一条目哈希计算的 SHA-256 哈希(防篡改链)。绝不包含密钥和 PII。",
+    "s7NoEntries": "暂无审计条目。",
+    "s7Result": "结果:",
+    "s7Prev": "上一条:",
+    "s7Entries": "{n} 条记录 — 哈希链可在客户端验证",
+    "s7FooterNote": "本审计轨迹使用 Web Crypto API(SubtleCrypto SHA-256)在浏览器中生成。每条记录的哈希计算为 SHA-256(JSON(&#123;ts, action, result, prevHash&#125;))。此会话期间未向任何服务器传输数据。",
+    "s7Attribution": "<strong>Bob Rapp</strong> 与 <strong>Ken Johnston</strong> 的作品",
+    "act_sessionStarted": "向导会话已开始",
+    "act_initialized": "已初始化",
+    "act_configSaved": "已保存配置",
+    "act_success": "成功",
+    "act_secretNote": "密钥字段已从日志中排除",
+    "act_securityConfirmed": "已确认安全清单",
+    "act_reviewConfirmed": "已确认配置审查",
+    "act_dryRunDone": "试运行已完成",
+    "act_installStep": "安装步骤:{name}",
+    "act_completed": "已完成",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Bob Rapp 与 Ken Johnston 的作品"
+  },
+  "hi": {
+    "headerTitle": "AiGovOps फ़ाउंडेशन फ़्रेमवर्क",
+    "headerSubtitle": "अप्रैल 2026 v1 — AiGovOps द्वारा OpenClaw निर्देशित इंस्टॉल",
+    "darkMode": "डार्क",
+    "lightMode": "लाइट",
+    "languageLabel": "भाषा",
+    "stepWelcome": "स्वागत",
+    "stepConfiguration": "कॉन्फ़िगरेशन",
+    "stepSecurity": "सुरक्षा",
+    "stepReview": "समीक्षा",
+    "stepDryRun": "ड्राई रन",
+    "stepInstall": "इंस्टॉल",
+    "stepAuditLog": "ऑडिट लॉग",
+    "stepXofY": "चरण {x} / {y}",
+    "btnContinue": "जारी रखें",
+    "btnBack": "वापस",
+    "btnConfirmContinue": "पुष्टि करें और जारी रखें",
+    "btnRunPreflight": "प्रीफ़्लाइट जाँच चलाएँ",
+    "btnProceedInstall": "इंस्टॉल पर जाएँ",
+    "btnBeginInstall": "इंस्टॉलेशन शुरू करें",
+    "btnInstallBlocked": "इंस्टॉल (अवरुद्ध — विफलताएँ पाई गईं)",
+    "btnViewAuditLog": "ऑडिट लॉग देखें",
+    "btnStartNewSession": "नया सत्र शुरू करें",
+    "btnExportJson": "JSON के रूप में निर्यात करें",
+    "s1Title": "स्वागत और होस्ट चयन",
+    "s1Desc": "यह विज़ार्ड <strong>OpenClaw AI गेटवे</strong> इंस्टॉल करता है — AiGovOps फ़ाउंडेशन फ़्रेमवर्क (अप्रैल 2026 v1) के लिए एक गोपनीयता-प्रथम, स्थानीय रूप से होस्ट किया गया AI प्रॉक्सी। यह आपको कॉन्फ़िगरेशन, सुरक्षा सख़्तीकरण, प्रीफ़्लाइट जाँच और इंस्टॉल प्रक्रिया से गुज़ारेगा, हर चरण में छेड़छाड़-प्रमाण ऑडिट लॉग तैयार करता है।",
+    "s1SelectHost": "शुरू करने के लिए अपना लक्षित होस्ट प्लेटफ़ॉर्म चुनें:",
+    "s1PrivacyNote": "इस विज़ार्ड में दर्ज सभी डेटा केवल आपके ब्राउज़र की मेमोरी में रहता है। कोई डेटा किसी सर्वर पर नहीं भेजा जाता। कोई localStorage या कुकीज़ उपयोग नहीं की जातीं।",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "सामान्य VPS",
+    "hostMacosDesc": "macOS पर स्थानीय विकास या प्रोडक्शन। LaunchAgent, Keychain और Homebrew उपयोग करता है।",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet। systemd, ufw फ़ायरवॉल और env-आधारित रहस्यों का उपयोग करता है।",
+    "hostAzureDesc": "Microsoft Azure वर्चुअल मशीन। systemd, Azure NSG और env-आधारित रहस्यों का उपयोग करता है।",
+    "hostVpsDesc": "कोई भी Linux VPS। systemd और रहस्यों के लिए पर्यावरण फ़ाइल का उपयोग करता है।",
+    "s2Title": "कॉन्फ़िगरेशन",
+    "s2Desc": "<strong>{host}</strong> के लिए पूर्व-भरे डिफ़ॉल्ट। किसी भी फ़ील्ड को संपादित करें — डिफ़ॉल्ट समझदार और सुरक्षा-समीक्षित हैं।",
+    "s2InstallDir": "इंस्टॉल डायरेक्टरी",
+    "s2InstallDirHint": "जहाँ OpenClaw गेटवे फ़ाइलें स्थापित की जाएंगी।",
+    "s2ServiceName": "सेवा नाम",
+    "s2ServiceHintMac": "macOS LaunchAgent लेबल (रिवर्स-DNS प्रारूप अनुशंसित)।",
+    "s2ServiceHintLinux": "systemd सेवा नाम।",
+    "s2BindAddress": "बाइंड पता",
+    "s2BindHint": "गेटवे लिसनिंग पता। केवल-स्थानीय के लिए 127.0.0.1 छोड़ दें।",
+    "s2BindWarn": "⚠ चेतावनी: बाइंड पता 127.0.0.1 से बदलने से गेटवे बाहरी रूप से उजागर होता है। केवल तभी करें जब आप जोखिम समझते हों और फ़ायरवॉल उपयोग करें।",
+    "s2LogDir": "लॉग डायरेक्टरी",
+    "s2LogDirHint": "गेटवे लॉग के लिए डायरेक्टरी। सुनिश्चित करें कि सेवा उपयोगकर्ता द्वारा लिखने योग्य हो।",
+    "s2NodeVersion": "Node.js संस्करण आवश्यकता",
+    "s2NodeVersionHint": "गेटवे द्वारा आवश्यक न्यूनतम Node.js संस्करण।",
+    "s2SecretMethod": "रहस्य संग्रहण विधि",
+    "s2SecretMethodHint": "API कुंजियाँ और टोकन कैसे संग्रहीत होंगे। यह फ़ील्ड सभी लॉग से बाहर रखा गया है।",
+    "s2ApiKey": "API कुंजी / टोकन (वैकल्पिक — पोस्ट-इंस्टॉल सेट करें)",
+    "s2ApiKeyPlaceholder": "इंस्टॉल के बाद कॉन्फ़िगर करने के लिए खाली छोड़ दें",
+    "s2ApiKeyHint": "यदि दिया गया, तो {method} में सुरक्षित रूप से संग्रहीत। कभी भी डिस्क पर सादे पाठ में नहीं लिखा जाता।",
+    "s2SecretTag": "रहस्य — लॉग नहीं किया जाएगा",
+    "s2ModifiedTag": "⚠ डिफ़ॉल्ट से संशोधित",
+    "s3Title": "सुरक्षा और सख़्तीकरण",
+    "s3Desc": "इस इंस्टॉलेशन के लिए सुरक्षा नियंत्रणों की समीक्षा करें और पुष्टि करें। क्रिटिकल आइटम चेक किए रहने चाहिए। क्रिटिकल आइटम अनचेक करने पर चेतावनी दिखाई देगी।",
+    "s3Critical": "क्रिटिकल",
+    "s3UncheckWarn": "⚠ इस क्रिटिकल नियंत्रण को अनचेक करने से सुरक्षा कम होती है",
+    "sec_localhost_label": "केवल localhost (127.0.0.1) से बाइंड करें",
+    "sec_localhost_sub": "गेटवे पोर्ट तक बाहरी पहुँच रोकता है।",
+    "sec_tailscale_label": "दूरस्थ पहुँच के लिए Tailscale VPN सक्षम करें",
+    "sec_tailscale_sub": "पोर्ट को सीधे उजागर करने के बजाय Tailscale का उपयोग करें।",
+    "sec_user_label": "समर्पित उपयोगकर्ता खाते के तहत चलाएँ",
+    "sec_user_sub": "कम से कम विशेषाधिकार का सिद्धांत — कभी root के रूप में न चलाएँ।",
+    "sec_secrets_label": "रहस्यों को Keychain / सुरक्षित env वेरिएबल में संग्रहीत करें",
+    "sec_secrets_sub": "कॉन्फ़िग फ़ाइलों या लॉग में कोई सादा पाठ रहस्य नहीं।",
+    "sec_audit_label": "अपरिवर्तनीय ऑडिट लॉगिंग सक्षम करें",
+    "sec_audit_sub": "छेड़छाड़-प्रमाण लॉग के लिए क्रिप्टोग्राफ़िक हैश श्रृंखला।",
+    "sec_logrotate_label": "लॉग रोटेशन कॉन्फ़िगर करें",
+    "sec_logrotate_sub": "डिस्क समाप्ति रोकता है; logrotate या journald का उपयोग करता है।",
+    "sec_nopii_label": "लॉग में कोई PII नहीं",
+    "sec_nopii_sub": "सभी लॉग आउटपुट से API कुंजियाँ, टोकन और उपयोगकर्ता पहचानकर्ता हटा दें।",
+    "sec_health_label": "स्वास्थ्य जाँच एंडपॉइंट सक्षम करें",
+    "sec_health_sub": "GET /health आंतरिक विवरण लीक किए बिना स्थिति लौटाता है।",
+    "s4Title": "कॉन्फ़िगरेशन की समीक्षा करें",
+    "s4Desc": "आगे बढ़ने से पहले सभी सेटिंग्स की समीक्षा करें। <span style=\"color:var(--amber);font-weight:700;\">एम्बर</span> में दिखाए गए मान डिफ़ॉल्ट से भिन्न हैं। रहस्य नकाबपोश हैं।",
+    "s4SectionHost": "▸ होस्ट और प्लेटफ़ॉर्म",
+    "s4SectionConfig": "▸ कॉन्फ़िगरेशन",
+    "s4SectionSecurity": "▸ सुरक्षा नियंत्रण",
+    "s4TargetHost": "लक्ष्य होस्ट",
+    "s4InstallDir": "इंस्टॉल डायरेक्टरी",
+    "s4ServiceName": "सेवा नाम",
+    "s4BindAddress": "बाइंड पता",
+    "s4LogDir": "लॉग डायरेक्टरी",
+    "s4NodeVersion": "Node.js संस्करण",
+    "s4SecretMethod": "रहस्य विधि",
+    "s4ApiKey": "API कुंजी",
+    "s4NotConfigured": "(कॉन्फ़िगर नहीं)",
+    "s4Enabled": "✓ सक्षम",
+    "s4Disabled": "✗ अक्षम",
+    "s4SecretNote": "रहस्य मान (API कुंजियाँ, रहस्य संग्रहण विधि) नकाबपोश हैं और ऑडिट लॉग में कभी नहीं दिखाई देंगे।",
+    "s5Title": "ड्राई रन (प्रीफ़्लाइट)",
+    "s5Desc": "<strong>{host}</strong> के लिए प्रीफ़्लाइट जाँच का अनुकरण। प्रत्येक जाँच इंस्टॉलेशन से पहले आपके वातावरण को मान्य करती है।",
+    "s5Passed": "पास",
+    "s5Warnings": "चेतावनियाँ",
+    "s5Failed": "विफल",
+    "statusPass": "पास",
+    "statusWarn": "चेतावनी",
+    "statusFail": "विफल",
+    "statusInfo": "सूचना",
+    "dc_node": "Node.js संस्करण ≥ 20",
+    "dc_node_msg": "Node 20.x पाया गया (अनुकरण)",
+    "dc_npm": "npm / पैकेज प्रबंधक",
+    "dc_npm_msg": "npm 10.x मौजूद",
+    "dc_git": "git उपलब्ध",
+    "dc_git_msg": "git 2.44 पाया गया",
+    "dc_port": "पोर्ट 3000 उपलब्धता",
+    "dc_port_msg": "पोर्ट 3000 खाली है",
+    "dc_bind": "बाइंड पता localhost है",
+    "dc_bind_ok": "बाइंड पता 127.0.0.1 — ✓ सुरक्षित",
+    "dc_bind_warn": "बाइंड पता {addr} — बाहरी एक्सपोज़र जोखिम",
+    "dc_installdir": "इंस्टॉल डायरेक्टरी लिखने योग्य",
+    "dc_installdir_msg": "{dir} लिखने योग्य",
+    "dc_logdir": "लॉग डायरेक्टरी पहुँच योग्य",
+    "dc_logdir_msg": "{dir} पहुँच योग्य",
+    "dc_nopii": "कॉन्फ़िगरेशन में कोई PII नहीं",
+    "dc_nopii_msg": "कॉन्फ़िगरेशन मान PII स्कैन में पास",
+    "dc_keychain": "macOS Keychain पहुँच",
+    "dc_keychain_msg": "Keychain API पहुँच योग्य",
+    "dc_launch": "LaunchAgent डायरेक्टरी",
+    "dc_launch_msg": "~/Library/LaunchAgents मौजूद",
+    "dc_brew": "Homebrew मौजूद",
+    "dc_brew_msg": "Homebrew नहीं मिला — मैन्युअल इंस्टॉल आवश्यक हो सकता है",
+    "dc_systemd": "systemd उपलब्ध",
+    "dc_systemd_msg252": "systemd v252 पाया गया",
+    "dc_systemd_msg251": "systemd v251 पाया गया",
+    "dc_ufw": "ufw फ़ायरवॉल सक्रिय",
+    "dc_ufw_msg": "ufw सक्षम, पोर्ट 22 अनुमत",
+    "dc_nonroot": "गैर-root उपयोगकर्ता",
+    "dc_nonroot_msg": "गैर-root उपयोगकर्ता के रूप में चल रहा है",
+    "dc_nsg": "Azure NSG जाँच",
+    "dc_nsg_msg": "पोर्ट 3000 के लिए कोई इनबाउंड नियम नहीं",
+    "dc_iptables": "iptables / फ़ायरवॉल",
+    "dc_iptables_msg": "कोई फ़ायरवॉल नहीं मिला — ufw या iptables पर विचार करें",
+    "s6Title": "इंस्टॉल निष्पादित करें",
+    "s6Desc": "<strong>{host}</strong> पर OpenClaw इंस्टॉल किया जा रहा है। अगला चरण शुरू होने से पहले प्रत्येक चरण पूरा होता है।",
+    "s6Complete": "इंस्टॉलेशन पूर्ण!",
+    "s6CompleteMsg": "OpenClaw AI गेटवे {host} पर इंस्टॉल और चल रहा है।",
+    "s6Rollback": "रोलबैक:",
+    "s6RollbackMsg": "यदि आवश्यक हो, रोलबैक स्क्रिप्ट आपके इंस्टॉल पथ की <code style=\"font-size:12px;\">scripts/</code> डायरेक्टरी में उपलब्ध हैं।",
+    "is_validate": "कॉन्फ़िगरेशन मान्य करें",
+    "is_npm": "Node.js निर्भरताएँ इंस्टॉल करें (npm install)",
+    "is_clone": "OpenClaw रिपॉज़िटरी क्लोन करें",
+    "is_harden": "सुरक्षा सख़्तीकरण पैच लागू करें",
+    "is_auditinit": "ऑडिट लॉग श्रृंखला आरंभ करें",
+    "is_health": "पोस्ट-इंस्टॉल स्वास्थ्य जाँच चलाएँ",
+    "is_manifest": "इंस्टॉल मैनिफ़ेस्ट लिखें",
+    "is_launchagent": "macOS LaunchAgent plist पंजीकृत करें",
+    "is_keychain": "रहस्य Keychain में संग्रहीत करें",
+    "is_logrotate_mac": "लॉग रोटेशन कॉन्फ़िगर करें",
+    "is_start_mac": "गेटवे सेवा शुरू करें",
+    "is_systemd_create": "systemd यूनिट फ़ाइल बनाएँ",
+    "is_secrets_env": "रहस्य secrets.env में संग्रहीत करें",
+    "is_logrotate": "logrotate कॉन्फ़िगर करें",
+    "is_nsg_rules": "Azure NSG नियम कॉन्फ़िगर करें",
+    "is_enable_start": "openclaw.service सक्षम और शुरू करें",
+    "s7Title": "संस्करण लॉग और ऑडिट ट्रेल",
+    "s7Desc": "इस विज़ार्ड सत्र के दौरान की गई सभी कार्रवाइयों का क्रिप्टोग्राफ़िक रूप से जुड़ा हुआ ऑडिट लॉग। प्रत्येक प्रविष्टि में उसकी सामग्री तथा पिछली प्रविष्टि के हैश पर गणित SHA-256 हैश शामिल है (छेड़छाड़-प्रमाण श्रृंखला)। रहस्य और PII कभी शामिल नहीं होते।",
+    "s7NoEntries": "अभी तक कोई ऑडिट प्रविष्टि नहीं।",
+    "s7Result": "परिणाम:",
+    "s7Prev": "पिछला:",
+    "s7Entries": "{n} प्रविष्टियाँ — हैश श्रृंखला क्लाइंट-साइड सत्यापन योग्य",
+    "s7FooterNote": "यह ऑडिट ट्रेल Web Crypto API (SubtleCrypto SHA-256) का उपयोग करके ब्राउज़र में उत्पन्न किया गया था। प्रत्येक प्रविष्टि का हैश SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)) के रूप में गणना किया जाता है। इस सत्र के दौरान कोई डेटा किसी सर्वर पर प्रेषित नहीं किया गया।",
+    "s7Attribution": "<strong>Bob Rapp</strong> और <strong>Ken Johnston</strong> का कार्य",
+    "act_sessionStarted": "विज़ार्ड सत्र शुरू हुआ",
+    "act_initialized": "आरंभ किया गया",
+    "act_configSaved": "कॉन्फ़िगरेशन सहेजा गया",
+    "act_success": "सफलता",
+    "act_secretNote": "रहस्य फ़ील्ड लॉग से बाहर रखे गए",
+    "act_securityConfirmed": "सुरक्षा चेकलिस्ट की पुष्टि",
+    "act_reviewConfirmed": "कॉन्फ़िगरेशन समीक्षा पुष्टि",
+    "act_dryRunDone": "ड्राई रन पूरा",
+    "act_installStep": "इंस्टॉल चरण: {name}",
+    "act_completed": "पूर्ण",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Bob Rapp और Ken Johnston का कार्य"
+  },
+  "ar": {
+    "headerTitle": "إطار عمل مؤسسة AiGovOps",
+    "headerSubtitle": "أبريل 2026 v1 — تثبيت OpenClaw الموجَّه بواسطة AiGovOps",
+    "darkMode": "داكن",
+    "lightMode": "فاتح",
+    "languageLabel": "اللغة",
+    "stepWelcome": "ترحيب",
+    "stepConfiguration": "التكوين",
+    "stepSecurity": "الأمان",
+    "stepReview": "مراجعة",
+    "stepDryRun": "تشغيل تجريبي",
+    "stepInstall": "تثبيت",
+    "stepAuditLog": "سجل التدقيق",
+    "stepXofY": "الخطوة {x} من {y}",
+    "btnContinue": "متابعة",
+    "btnBack": "رجوع",
+    "btnConfirmContinue": "تأكيد ومتابعة",
+    "btnRunPreflight": "تشغيل فحوصات ما قبل الإقلاع",
+    "btnProceedInstall": "المتابعة إلى التثبيت",
+    "btnBeginInstall": "بدء التثبيت",
+    "btnInstallBlocked": "التثبيت (محظور — تم اكتشاف فشل)",
+    "btnViewAuditLog": "عرض سجل التدقيق",
+    "btnStartNewSession": "بدء جلسة جديدة",
+    "btnExportJson": "تصدير بصيغة JSON",
+    "s1Title": "الترحيب واختيار المضيف",
+    "s1Desc": "يقوم هذا المعالج بتثبيت <strong>بوابة OpenClaw للذكاء الاصطناعي</strong> — وكيل ذكاء اصطناعي محلي يركّز على الخصوصية لإطار عمل مؤسسة AiGovOps (أبريل 2026 v1). سيرشدك عبر التكوين وتعزيز الأمان وفحوصات ما قبل الإقلاع وعملية التثبيت، منشئًا سجل تدقيق غير قابل للتلاعب في كل خطوة.",
+    "s1SelectHost": "اختر منصة المضيف المستهدف للبدء:",
+    "s1PrivacyNote": "جميع البيانات المدخلة في هذا المعالج تبقى فقط في ذاكرة المتصفح. لا تُرسل أي بيانات إلى أي خادم. لا يتم استخدام localStorage أو ملفات تعريف الارتباط.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "VPS عام",
+    "hostMacosDesc": "تطوير محلي أو إنتاج على macOS. يستخدم LaunchAgent و Keychain و Homebrew.",
+    "hostDigitaloceanDesc": "قطيرة DigitalOcean. يستخدم systemd وجدار حماية ufw وأسرارًا قائمة على البيئة.",
+    "hostAzureDesc": "آلة Microsoft Azure الافتراضية. يستخدم systemd و Azure NSG وأسرارًا قائمة على البيئة.",
+    "hostVpsDesc": "أي VPS لينكس. يستخدم systemd وملف البيئة للأسرار.",
+    "s2Title": "التكوين",
+    "s2Desc": "قيم افتراضية معبأة مسبقًا لـ <strong>{host}</strong>. عدّل أي حقل — الإعدادات الافتراضية منطقية ومراجَعة أمنيًا.",
+    "s2InstallDir": "دليل التثبيت",
+    "s2InstallDirHint": "حيث سيتم تثبيت ملفات بوابة OpenClaw.",
+    "s2ServiceName": "اسم الخدمة",
+    "s2ServiceHintMac": "علامة LaunchAgent لنظام macOS (يُوصى بتنسيق DNS عكسي).",
+    "s2ServiceHintLinux": "اسم خدمة systemd.",
+    "s2BindAddress": "عنوان الربط",
+    "s2BindHint": "عنوان استماع البوابة. اتركه 127.0.0.1 للمحلي فقط.",
+    "s2BindWarn": "⚠ تحذير: تغيير عنوان الربط من 127.0.0.1 يعرّض البوابة خارجيًا. لا تفعل ذلك إلا إذا فهمت المخاطر واستخدمت جدار حماية.",
+    "s2LogDir": "دليل السجلات",
+    "s2LogDirHint": "دليل سجلات البوابة. تأكد من أنه قابل للكتابة بواسطة مستخدم الخدمة.",
+    "s2NodeVersion": "متطلب إصدار Node.js",
+    "s2NodeVersionHint": "الحد الأدنى من إصدار Node.js المطلوب للبوابة.",
+    "s2SecretMethod": "طريقة تخزين الأسرار",
+    "s2SecretMethodHint": "كيف سيتم تخزين مفاتيح API والرموز. يُستثنى هذا الحقل من جميع السجلات.",
+    "s2ApiKey": "مفتاح API / رمز (اختياري — اضبطه بعد التثبيت)",
+    "s2ApiKeyPlaceholder": "اتركه فارغًا للتكوين بعد التثبيت",
+    "s2ApiKeyHint": "إن تم توفيره، يُخزَّن بأمان في {method}. لا يُكتب أبدًا على القرص بنص صريح.",
+    "s2SecretTag": "سري — لن يتم تسجيله",
+    "s2ModifiedTag": "⚠ معدَّل عن الافتراضي",
+    "s3Title": "الأمان والتصلّب",
+    "s3Desc": "راجع وأكّد ضوابط الأمان لهذا التثبيت. يجب أن تبقى العناصر الحرجة مفعّلة. إلغاء تفعيل عنصر حرج سيعرض تحذيرًا.",
+    "s3Critical": "حرج",
+    "s3UncheckWarn": "⚠ إلغاء تفعيل هذا الضبط الحرج يقلل الأمان",
+    "sec_localhost_label": "الربط بـ localhost فقط (127.0.0.1)",
+    "sec_localhost_sub": "يمنع الوصول الخارجي إلى منفذ البوابة.",
+    "sec_tailscale_label": "تمكين Tailscale VPN للوصول عن بُعد",
+    "sec_tailscale_sub": "استخدم Tailscale بدلاً من تعريض المنافذ مباشرة.",
+    "sec_user_label": "التشغيل تحت حساب مستخدم مخصص",
+    "sec_user_sub": "مبدأ أقل الامتيازات — لا تشغّل أبدًا كـ root.",
+    "sec_secrets_label": "تخزين الأسرار في Keychain / متغيرات بيئة آمنة",
+    "sec_secrets_sub": "لا أسرار بنص صريح في ملفات الإعداد أو السجلات.",
+    "sec_audit_label": "تمكين سجل تدقيق غير قابل للتغيير",
+    "sec_audit_sub": "سلسلة تجزئة تشفيرية لسجلات غير قابلة للتلاعب.",
+    "sec_logrotate_label": "تكوين تدوير السجلات",
+    "sec_logrotate_sub": "يمنع نفاد القرص؛ يستخدم logrotate أو journald.",
+    "sec_nopii_label": "لا معلومات شخصية في السجلات",
+    "sec_nopii_sub": "حجب مفاتيح API والرموز ومعرّفات المستخدمين من كل إخراج السجل.",
+    "sec_health_label": "تمكين نقطة نهاية فحص الصحة",
+    "sec_health_sub": "GET /health يعيد الحالة دون تسريب الداخليات.",
+    "s4Title": "مراجعة التكوين",
+    "s4Desc": "راجع كل الإعدادات قبل المتابعة. القيم المعروضة بلون <span style=\"color:var(--amber);font-weight:700;\">كهرماني</span> تختلف عن الافتراضيات. الأسرار مقنّعة.",
+    "s4SectionHost": "▸ المضيف والمنصة",
+    "s4SectionConfig": "▸ التكوين",
+    "s4SectionSecurity": "▸ ضوابط الأمان",
+    "s4TargetHost": "المضيف المستهدف",
+    "s4InstallDir": "دليل التثبيت",
+    "s4ServiceName": "اسم الخدمة",
+    "s4BindAddress": "عنوان الربط",
+    "s4LogDir": "دليل السجلات",
+    "s4NodeVersion": "إصدار Node.js",
+    "s4SecretMethod": "طريقة السر",
+    "s4ApiKey": "مفتاح API",
+    "s4NotConfigured": "(غير مُعيَّن)",
+    "s4Enabled": "✓ مفعّل",
+    "s4Disabled": "✗ معطّل",
+    "s4SecretNote": "القيم السرية (مفاتيح API، طريقة تخزين الأسرار) مقنّعة ولن تظهر أبدًا في سجل التدقيق.",
+    "s5Title": "تشغيل تجريبي (ما قبل الإقلاع)",
+    "s5Desc": "محاكاة فحوصات ما قبل الإقلاع لـ <strong>{host}</strong>. كل فحص يتحقق من بيئتك قبل التثبيت.",
+    "s5Passed": "نجحت",
+    "s5Warnings": "تحذيرات",
+    "s5Failed": "فشلت",
+    "statusPass": "نجاح",
+    "statusWarn": "تحذير",
+    "statusFail": "فشل",
+    "statusInfo": "معلومة",
+    "dc_node": "إصدار Node.js ≥ 20",
+    "dc_node_msg": "تم اكتشاف Node 20.x (محاكاة)",
+    "dc_npm": "npm / مدير الحزم",
+    "dc_npm_msg": "npm 10.x موجود",
+    "dc_git": "git متاح",
+    "dc_git_msg": "تم اكتشاف git 2.44",
+    "dc_port": "توفر المنفذ 3000",
+    "dc_port_msg": "المنفذ 3000 متاح",
+    "dc_bind": "عنوان الربط هو localhost",
+    "dc_bind_ok": "عنوان الربط 127.0.0.1 — ✓ آمن",
+    "dc_bind_warn": "عنوان الربط {addr} — خطر التعرض الخارجي",
+    "dc_installdir": "دليل التثبيت قابل للكتابة",
+    "dc_installdir_msg": "{dir} قابل للكتابة",
+    "dc_logdir": "دليل السجلات يمكن الوصول إليه",
+    "dc_logdir_msg": "{dir} يمكن الوصول إليه",
+    "dc_nopii": "لا معلومات شخصية في التكوين",
+    "dc_nopii_msg": "قيم التكوين اجتازت فحص PII",
+    "dc_keychain": "الوصول إلى Keychain في macOS",
+    "dc_keychain_msg": "واجهة Keychain متاحة",
+    "dc_launch": "دليل LaunchAgent",
+    "dc_launch_msg": "~/Library/LaunchAgents موجود",
+    "dc_brew": "Homebrew متوفر",
+    "dc_brew_msg": "لم يتم اكتشاف Homebrew — قد تكون هناك حاجة لتثبيت يدوي",
+    "dc_systemd": "systemd متاح",
+    "dc_systemd_msg252": "تم اكتشاف systemd v252",
+    "dc_systemd_msg251": "تم اكتشاف systemd v251",
+    "dc_ufw": "جدار حماية ufw نشط",
+    "dc_ufw_msg": "ufw ممكّن، المنفذ 22 مسموح",
+    "dc_nonroot": "مستخدم غير root",
+    "dc_nonroot_msg": "يعمل كمستخدم غير root",
+    "dc_nsg": "فحص Azure NSG",
+    "dc_nsg_msg": "لا قواعد واردة للمنفذ 3000",
+    "dc_iptables": "iptables / جدار حماية",
+    "dc_iptables_msg": "لم يتم اكتشاف جدار حماية — فكّر في ufw أو iptables",
+    "s6Title": "تنفيذ التثبيت",
+    "s6Desc": "تثبيت OpenClaw على <strong>{host}</strong>. كل خطوة تكتمل قبل بدء التالية.",
+    "s6Complete": "اكتمل التثبيت!",
+    "s6CompleteMsg": "بوابة OpenClaw للذكاء الاصطناعي مثبَّتة وتعمل على {host}.",
+    "s6Rollback": "التراجع:",
+    "s6RollbackMsg": "عند الحاجة، تتوفر نصوص التراجع في دليل <code style=\"font-size:12px;\">scripts/</code> ضمن مسار التثبيت.",
+    "is_validate": "التحقق من التكوين",
+    "is_npm": "تثبيت تبعيات Node.js (npm install)",
+    "is_clone": "استنساخ مستودع OpenClaw",
+    "is_harden": "تطبيق تصحيحات التصلّب الأمني",
+    "is_auditinit": "تهيئة سلسلة سجل التدقيق",
+    "is_health": "تشغيل فحص الصحة بعد التثبيت",
+    "is_manifest": "كتابة بيان التثبيت",
+    "is_launchagent": "تسجيل plist الخاص بـ macOS LaunchAgent",
+    "is_keychain": "تخزين الأسرار في Keychain",
+    "is_logrotate_mac": "تكوين تدوير السجلات",
+    "is_start_mac": "بدء خدمة البوابة",
+    "is_systemd_create": "إنشاء ملف وحدة systemd",
+    "is_secrets_env": "تخزين الأسرار في secrets.env",
+    "is_logrotate": "تكوين logrotate",
+    "is_nsg_rules": "تكوين قواعد Azure NSG",
+    "is_enable_start": "تمكين وبدء openclaw.service",
+    "s7Title": "سجل الإصدار ومسار التدقيق",
+    "s7Desc": "سجل تدقيق متسلسل تشفيريًا لجميع الإجراءات المتخذة خلال هذه الجلسة. كل إدخال يتضمن تجزئة SHA-256 محسوبة على محتواه وتجزئة الإدخال السابق (سلسلة غير قابلة للتلاعب). الأسرار ومعلومات PII لا تُضمَّن أبدًا.",
+    "s7NoEntries": "لا توجد إدخالات تدقيق بعد.",
+    "s7Result": "النتيجة:",
+    "s7Prev": "السابق:",
+    "s7Entries": "{n} إدخالات — سلسلة التجزئة قابلة للتحقق من جانب العميل",
+    "s7FooterNote": "تم إنشاء مسار التدقيق هذا داخل المتصفح باستخدام Web Crypto API (SubtleCrypto SHA-256). تجزئة كل إدخال محسوبة بصيغة SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)). لم يتم إرسال أي بيانات إلى أي خادم خلال هذه الجلسة.",
+    "s7Attribution": "عمل من <strong>Bob Rapp</strong> و <strong>Ken Johnston</strong>",
+    "act_sessionStarted": "بدأت جلسة المعالج",
+    "act_initialized": "تمت التهيئة",
+    "act_configSaved": "تم حفظ التكوين",
+    "act_success": "نجاح",
+    "act_secretNote": "حقول الأسرار مستثناة من السجل",
+    "act_securityConfirmed": "تم تأكيد قائمة الأمان",
+    "act_reviewConfirmed": "تم تأكيد مراجعة التكوين",
+    "act_dryRunDone": "اكتمل التشغيل التجريبي",
+    "act_installStep": "خطوة التثبيت: {name}",
+    "act_completed": "مكتمل",
+    "footerText": "مؤسسة AiGovOps",
+    "footerAttribution": "عمل من Bob Rapp و Ken Johnston"
+  },
+  "ru": {
+    "headerTitle": "Фреймворк AiGovOps Foundation",
+    "headerSubtitle": "Апрель 2026 v1 — Пошаговая установка OpenClaw от AiGovOps",
+    "darkMode": "Тёмная",
+    "lightMode": "Светлая",
+    "languageLabel": "Язык",
+    "stepWelcome": "Добро пожаловать",
+    "stepConfiguration": "Настройка",
+    "stepSecurity": "Безопасность",
+    "stepReview": "Проверка",
+    "stepDryRun": "Пробный запуск",
+    "stepInstall": "Установка",
+    "stepAuditLog": "Журнал аудита",
+    "stepXofY": "Шаг {x} из {y}",
+    "btnContinue": "Продолжить",
+    "btnBack": "Назад",
+    "btnConfirmContinue": "Подтвердить и продолжить",
+    "btnRunPreflight": "Запустить проверки",
+    "btnProceedInstall": "Перейти к установке",
+    "btnBeginInstall": "Начать установку",
+    "btnInstallBlocked": "Установка (заблокирована — обнаружены сбои)",
+    "btnViewAuditLog": "Открыть журнал аудита",
+    "btnStartNewSession": "Начать новую сессию",
+    "btnExportJson": "Экспорт в JSON",
+    "s1Title": "Приветствие и выбор хоста",
+    "s1Desc": "Этот мастер устанавливает <strong>OpenClaw AI Gateway</strong> — локальный, ориентированный на конфиденциальность AI-прокси для фреймворка AiGovOps Foundation (Апрель 2026 v1). Он проведёт вас через настройку, усиление безопасности, предварительные проверки и процесс установки, формируя защищённый от подделки журнал аудита на каждом шаге.",
+    "s1SelectHost": "Выберите целевую хост-платформу, чтобы начать:",
+    "s1PrivacyNote": "Все данные, введённые в этом мастере, остаются только в памяти браузера. Никакие данные не отправляются на сервер. localStorage и куки не используются.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "Обычный VPS",
+    "hostMacosDesc": "Локальная разработка или продакшн на macOS. Использует LaunchAgent, Keychain и Homebrew.",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet. Использует systemd, фаервол ufw и переменные окружения для секретов.",
+    "hostAzureDesc": "Виртуальная машина Microsoft Azure. Использует systemd, Azure NSG и переменные окружения для секретов.",
+    "hostVpsDesc": "Любой Linux VPS. Использует systemd и файл окружения для секретов.",
+    "s2Title": "Настройка",
+    "s2Desc": "Предварительно заполненные значения для <strong>{host}</strong>. Отредактируйте любое поле — значения по умолчанию разумны и проверены на безопасность.",
+    "s2InstallDir": "Каталог установки",
+    "s2InstallDirHint": "Куда будут установлены файлы шлюза OpenClaw.",
+    "s2ServiceName": "Имя службы",
+    "s2ServiceHintMac": "Метка LaunchAgent macOS (рекомендуется формат обратного DNS).",
+    "s2ServiceHintLinux": "Имя службы systemd.",
+    "s2BindAddress": "Адрес привязки",
+    "s2BindHint": "Адрес прослушивания шлюза. Оставьте 127.0.0.1 только для локального доступа.",
+    "s2BindWarn": "⚠ Внимание: изменение адреса привязки с 127.0.0.1 открывает шлюз для внешних подключений. Делайте это только при понимании рисков и с использованием фаервола.",
+    "s2LogDir": "Каталог журналов",
+    "s2LogDirHint": "Каталог журналов шлюза. Убедитесь, что он доступен для записи пользователю службы.",
+    "s2NodeVersion": "Требуемая версия Node.js",
+    "s2NodeVersionHint": "Минимальная версия Node.js, требуемая шлюзом.",
+    "s2SecretMethod": "Метод хранения секретов",
+    "s2SecretMethodHint": "Как будут храниться API-ключи и токены. Это поле исключено из всех журналов.",
+    "s2ApiKey": "API-ключ / токен (необязательно — задайте после установки)",
+    "s2ApiKeyPlaceholder": "Оставьте пустым, чтобы настроить после установки",
+    "s2ApiKeyHint": "При указании хранится безопасно в {method}. Никогда не записывается на диск в открытом виде.",
+    "s2SecretTag": "Секрет — не будет записан в журнал",
+    "s2ModifiedTag": "⚠ Изменено относительно умолчания",
+    "s3Title": "Безопасность и усиление",
+    "s3Desc": "Просмотрите и подтвердите меры безопасности для этой установки. Критичные пункты должны оставаться отмеченными. Снятие отметки с критичного пункта вызовет предупреждение.",
+    "s3Critical": "Критично",
+    "s3UncheckWarn": "⚠ Снятие этой критичной отметки снижает безопасность",
+    "sec_localhost_label": "Привязать только к localhost (127.0.0.1)",
+    "sec_localhost_sub": "Предотвращает внешний доступ к порту шлюза.",
+    "sec_tailscale_label": "Включить Tailscale VPN для удалённого доступа",
+    "sec_tailscale_sub": "Используйте Tailscale вместо прямого открытия портов.",
+    "sec_user_label": "Запускать под выделенной учётной записью",
+    "sec_user_sub": "Принцип наименьших привилегий — никогда не запускайте от root.",
+    "sec_secrets_label": "Хранить секреты в Keychain / безопасных переменных окружения",
+    "sec_secrets_sub": "Никаких секретов в открытом виде в файлах конфигурации или журналах.",
+    "sec_audit_label": "Включить неизменяемое ведение журнала аудита",
+    "sec_audit_sub": "Криптографическая цепочка хешей для защищённых от подделки журналов.",
+    "sec_logrotate_label": "Настроить ротацию журналов",
+    "sec_logrotate_sub": "Предотвращает исчерпание диска; использует logrotate или journald.",
+    "sec_nopii_label": "Без PII в журналах",
+    "sec_nopii_sub": "Исключать API-ключи, токены и идентификаторы пользователей из всего журнального вывода.",
+    "sec_health_label": "Включить конечную точку проверки здоровья",
+    "sec_health_sub": "GET /health возвращает статус без раскрытия внутренней информации.",
+    "s4Title": "Проверка конфигурации",
+    "s4Desc": "Проверьте все настройки перед продолжением. Значения <span style=\"color:var(--amber);font-weight:700;\">янтарным</span> цветом отличаются от значений по умолчанию. Секреты замаскированы.",
+    "s4SectionHost": "▸ Хост и платформа",
+    "s4SectionConfig": "▸ Конфигурация",
+    "s4SectionSecurity": "▸ Меры безопасности",
+    "s4TargetHost": "Целевой хост",
+    "s4InstallDir": "Каталог установки",
+    "s4ServiceName": "Имя службы",
+    "s4BindAddress": "Адрес привязки",
+    "s4LogDir": "Каталог журналов",
+    "s4NodeVersion": "Версия Node.js",
+    "s4SecretMethod": "Метод секретов",
+    "s4ApiKey": "API-ключ",
+    "s4NotConfigured": "(не настроен)",
+    "s4Enabled": "✓ Включено",
+    "s4Disabled": "✗ Отключено",
+    "s4SecretNote": "Секретные значения (API-ключи, метод хранения секретов) замаскированы и никогда не появятся в журнале аудита.",
+    "s5Title": "Пробный запуск (Preflight)",
+    "s5Desc": "Имитация предварительных проверок для <strong>{host}</strong>. Каждая проверка валидирует ваше окружение перед установкой.",
+    "s5Passed": "пройдено",
+    "s5Warnings": "предупреждений",
+    "s5Failed": "неудач",
+    "statusPass": "OK",
+    "statusWarn": "ВНИМ.",
+    "statusFail": "СБОЙ",
+    "statusInfo": "ИНФО",
+    "dc_node": "Версия Node.js ≥ 20",
+    "dc_node_msg": "Обнаружен Node 20.x (имитация)",
+    "dc_npm": "npm / менеджер пакетов",
+    "dc_npm_msg": "npm 10.x присутствует",
+    "dc_git": "git доступен",
+    "dc_git_msg": "Обнаружен git 2.44",
+    "dc_port": "Доступность порта 3000",
+    "dc_port_msg": "Порт 3000 свободен",
+    "dc_bind": "Адрес привязки — localhost",
+    "dc_bind_ok": "Адрес привязки 127.0.0.1 — ✓ безопасно",
+    "dc_bind_warn": "Адрес привязки {addr} — риск внешнего раскрытия",
+    "dc_installdir": "Каталог установки доступен для записи",
+    "dc_installdir_msg": "{dir} доступен для записи",
+    "dc_logdir": "Каталог журналов доступен",
+    "dc_logdir_msg": "{dir} доступен",
+    "dc_nopii": "В конфигурации нет PII",
+    "dc_nopii_msg": "Значения конфигурации прошли проверку PII",
+    "dc_keychain": "Доступ к Keychain macOS",
+    "dc_keychain_msg": "API Keychain доступен",
+    "dc_launch": "Каталог LaunchAgent",
+    "dc_launch_msg": "~/Library/LaunchAgents существует",
+    "dc_brew": "Homebrew присутствует",
+    "dc_brew_msg": "Homebrew не обнаружен — может потребоваться ручная установка",
+    "dc_systemd": "systemd доступен",
+    "dc_systemd_msg252": "Обнаружен systemd v252",
+    "dc_systemd_msg251": "Обнаружен systemd v251",
+    "dc_ufw": "Фаервол ufw активен",
+    "dc_ufw_msg": "ufw включён, порт 22 разрешён",
+    "dc_nonroot": "Пользователь не root",
+    "dc_nonroot_msg": "Запущено от имени не-root пользователя",
+    "dc_nsg": "Проверка Azure NSG",
+    "dc_nsg_msg": "Нет входящих правил для порта 3000",
+    "dc_iptables": "iptables / фаервол",
+    "dc_iptables_msg": "Фаервол не обнаружен — рассмотрите ufw или iptables",
+    "s6Title": "Выполнить установку",
+    "s6Desc": "Установка OpenClaw на <strong>{host}</strong>. Каждый шаг завершается до начала следующего.",
+    "s6Complete": "Установка завершена!",
+    "s6CompleteMsg": "OpenClaw AI Gateway установлен и работает на {host}.",
+    "s6Rollback": "Откат:",
+    "s6RollbackMsg": "При необходимости скрипты отката доступны в каталоге <code style=\"font-size:12px;\">scripts/</code> вашего пути установки.",
+    "is_validate": "Проверить конфигурацию",
+    "is_npm": "Установить зависимости Node.js (npm install)",
+    "is_clone": "Клонировать репозиторий OpenClaw",
+    "is_harden": "Применить патчи усиления безопасности",
+    "is_auditinit": "Инициализировать цепочку журнала аудита",
+    "is_health": "Запустить проверку здоровья после установки",
+    "is_manifest": "Записать манифест установки",
+    "is_launchagent": "Зарегистрировать plist LaunchAgent macOS",
+    "is_keychain": "Сохранить секреты в Keychain",
+    "is_logrotate_mac": "Настроить ротацию журналов",
+    "is_start_mac": "Запустить службу шлюза",
+    "is_systemd_create": "Создать unit-файл systemd",
+    "is_secrets_env": "Сохранить секреты в secrets.env",
+    "is_logrotate": "Настроить logrotate",
+    "is_nsg_rules": "Настроить правила Azure NSG",
+    "is_enable_start": "Включить и запустить openclaw.service",
+    "s7Title": "Журнал версий и след аудита",
+    "s7Desc": "Криптографически связанный журнал аудита всех действий, выполненных во время этой сессии. Каждая запись включает хеш SHA-256, вычисленный по её содержимому плюс хеш предыдущей записи (защищённая от подделки цепочка). Секреты и PII никогда не включаются.",
+    "s7NoEntries": "Записей аудита пока нет.",
+    "s7Result": "Результат:",
+    "s7Prev": "Пред.:",
+    "s7Entries": "{n} записей — цепочку хешей можно проверить на клиенте",
+    "s7FooterNote": "Этот след аудита был сгенерирован в браузере с помощью Web Crypto API (SubtleCrypto SHA-256). Хеш каждой записи вычисляется как SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)). Никакие данные не передавались на сервер в течение этой сессии.",
+    "s7Attribution": "Работа <strong>Боба Раппа</strong> и <strong>Кена Джонстона</strong>",
+    "act_sessionStarted": "Сессия мастера начата",
+    "act_initialized": "Инициализировано",
+    "act_configSaved": "Конфигурация сохранена",
+    "act_success": "Успех",
+    "act_secretNote": "Секретные поля исключены из журнала",
+    "act_securityConfirmed": "Чек-лист безопасности подтверждён",
+    "act_reviewConfirmed": "Проверка конфигурации подтверждена",
+    "act_dryRunDone": "Пробный запуск завершён",
+    "act_installStep": "Шаг установки: {name}",
+    "act_completed": "Завершено",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Работа Боба Раппа и Кена Джонстона"
+  },
+  "tr": {
+    "headerTitle": "AiGovOps Vakfı Çerçevesi",
+    "headerSubtitle": "Nisan 2026 v1 — AiGovOps tarafından OpenClaw Rehberli Kurulum",
+    "darkMode": "Koyu",
+    "lightMode": "Açık",
+    "languageLabel": "Dil",
+    "stepWelcome": "Hoş Geldiniz",
+    "stepConfiguration": "Yapılandırma",
+    "stepSecurity": "Güvenlik",
+    "stepReview": "İnceleme",
+    "stepDryRun": "Deneme",
+    "stepInstall": "Kur",
+    "stepAuditLog": "Denetim Günlüğü",
+    "stepXofY": "{y} adımdan {x}.",
+    "btnContinue": "Devam",
+    "btnBack": "Geri",
+    "btnConfirmContinue": "Onayla ve Devam Et",
+    "btnRunPreflight": "Ön Uçuş Kontrollerini Çalıştır",
+    "btnProceedInstall": "Kuruluma Geç",
+    "btnBeginInstall": "Kuruluma Başla",
+    "btnInstallBlocked": "Kurulum (engellendi — hatalar tespit edildi)",
+    "btnViewAuditLog": "Denetim Günlüğünü Görüntüle",
+    "btnStartNewSession": "Yeni Oturum Başlat",
+    "btnExportJson": "JSON olarak dışa aktar",
+    "s1Title": "Hoş Geldiniz ve Host Seçimi",
+    "s1Desc": "Bu sihirbaz, <strong>OpenClaw AI Ağ Geçidini</strong> kurar — AiGovOps Vakfı Çerçevesi için gizlilik öncelikli, yerel olarak barındırılan bir AI vekili (Nisan 2026 v1). Sizi yapılandırma, güvenlik sıkılaştırma, ön uçuş kontrolleri ve kurulum sürecinden geçirir ve her adımda kurcalanmaya karşı kanıt niteliğinde bir denetim günlüğü oluşturur.",
+    "s1SelectHost": "Başlamak için hedef host platformunuzu seçin:",
+    "s1PrivacyNote": "Bu sihirbaza girilen tüm veriler yalnızca tarayıcı belleğinizde kalır. Hiçbir sunucuya veri gönderilmez. localStorage veya çerez kullanılmaz.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "Genel VPS",
+    "hostMacosDesc": "macOS üzerinde yerel geliştirme veya üretim. LaunchAgent, Keychain ve Homebrew kullanır.",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet. systemd, ufw güvenlik duvarı ve ortam tabanlı sırlar kullanır.",
+    "hostAzureDesc": "Microsoft Azure Sanal Makinesi. systemd, Azure NSG ve ortam tabanlı sırlar kullanır.",
+    "hostVpsDesc": "Herhangi bir Linux VPS. systemd ve sırlar için ortam dosyası kullanır.",
+    "s2Title": "Yapılandırma",
+    "s2Desc": "<strong>{host}</strong> için önceden doldurulmuş varsayılanlar. Herhangi bir alanı düzenleyin — varsayılanlar mantıklı ve güvenlik açısından incelenmiştir.",
+    "s2InstallDir": "Kurulum Dizini",
+    "s2InstallDirHint": "OpenClaw ağ geçidi dosyalarının kurulacağı yer.",
+    "s2ServiceName": "Servis Adı",
+    "s2ServiceHintMac": "macOS LaunchAgent etiketi (ters DNS formatı önerilir).",
+    "s2ServiceHintLinux": "systemd servis adı.",
+    "s2BindAddress": "Bağlama Adresi",
+    "s2BindHint": "Ağ geçidi dinleme adresi. Yalnızca yerel için 127.0.0.1 olarak bırakın.",
+    "s2BindWarn": "⚠ Uyarı: Bağlama adresini 127.0.0.1 dışında değiştirmek ağ geçidini dış dünyaya açar. Yalnızca riski anlıyorsanız ve güvenlik duvarı kullanıyorsanız yapın.",
+    "s2LogDir": "Günlük Dizini",
+    "s2LogDirHint": "Ağ geçidi günlükleri için dizin. Servis kullanıcısının yazabildiğinden emin olun.",
+    "s2NodeVersion": "Node.js Sürüm Gereksinimi",
+    "s2NodeVersionHint": "Ağ geçidinin gerektirdiği minimum Node.js sürümü.",
+    "s2SecretMethod": "Sır Depolama Yöntemi",
+    "s2SecretMethodHint": "API anahtarları ve jetonların nasıl saklanacağı. Bu alan tüm günlüklerden hariç tutulur.",
+    "s2ApiKey": "API Anahtarı / Jeton (isteğe bağlı — kurulumdan sonra ayarlayın)",
+    "s2ApiKeyPlaceholder": "Kurulumdan sonra yapılandırmak için boş bırakın",
+    "s2ApiKeyHint": "Sağlanırsa {method} içinde güvenli şekilde saklanır. Asla diske düz metin olarak yazılmaz.",
+    "s2SecretTag": "Sır — günlüğe kaydedilmez",
+    "s2ModifiedTag": "⚠ Varsayılandan değiştirildi",
+    "s3Title": "Güvenlik ve Sıkılaştırma",
+    "s3Desc": "Bu kurulum için güvenlik kontrollerini inceleyin ve onaylayın. Kritik öğeler işaretli kalmalıdır. Kritik bir öğenin işaretini kaldırmak bir uyarı gösterir.",
+    "s3Critical": "Kritik",
+    "s3UncheckWarn": "⚠ Bu kritik kontrolün işaretini kaldırmak güvenliği azaltır",
+    "sec_localhost_label": "Yalnızca localhost'a bağla (127.0.0.1)",
+    "sec_localhost_sub": "Ağ geçidi bağlantı noktasına dış erişimi engeller.",
+    "sec_tailscale_label": "Uzaktan erişim için Tailscale VPN'i etkinleştir",
+    "sec_tailscale_sub": "Portları doğrudan açmak yerine Tailscale kullanın.",
+    "sec_user_label": "Özel kullanıcı hesabı altında çalıştır",
+    "sec_user_sub": "En az ayrıcalık ilkesi — asla root olarak çalıştırmayın.",
+    "sec_secrets_label": "Sırları Keychain / güvenli ortam değişkenlerinde sakla",
+    "sec_secrets_sub": "Yapılandırma dosyalarında veya günlüklerde düz metin sır yok.",
+    "sec_audit_label": "Değişmez denetim günlüğünü etkinleştir",
+    "sec_audit_sub": "Kurcalanmaya karşı kanıt günlükleri için kriptografik hash zinciri.",
+    "sec_logrotate_label": "Günlük rotasyonunu yapılandır",
+    "sec_logrotate_sub": "Disk tükenmesini önler; logrotate veya journald kullanır.",
+    "sec_nopii_label": "Günlüklerde PII yok",
+    "sec_nopii_sub": "API anahtarlarını, jetonları ve kullanıcı tanımlayıcılarını tüm günlük çıktısından sansürle.",
+    "sec_health_label": "Sağlık denetimi uç noktasını etkinleştir",
+    "sec_health_sub": "GET /health, dahili ayrıntıları sızdırmadan durumu döndürür.",
+    "s4Title": "Yapılandırmayı İncele",
+    "s4Desc": "Devam etmeden önce tüm ayarları inceleyin. <span style=\"color:var(--amber);font-weight:700;\">Amber</span> renginde gösterilen değerler varsayılanlardan farklıdır. Sırlar maskelenmiştir.",
+    "s4SectionHost": "▸ Host ve Platform",
+    "s4SectionConfig": "▸ Yapılandırma",
+    "s4SectionSecurity": "▸ Güvenlik Kontrolleri",
+    "s4TargetHost": "Hedef Host",
+    "s4InstallDir": "Kurulum Dizini",
+    "s4ServiceName": "Servis Adı",
+    "s4BindAddress": "Bağlama Adresi",
+    "s4LogDir": "Günlük Dizini",
+    "s4NodeVersion": "Node.js Sürümü",
+    "s4SecretMethod": "Sır Yöntemi",
+    "s4ApiKey": "API Anahtarı",
+    "s4NotConfigured": "(yapılandırılmadı)",
+    "s4Enabled": "✓ Etkin",
+    "s4Disabled": "✗ Devre dışı",
+    "s4SecretNote": "Sır değerleri (API anahtarları, sır depolama yöntemi) maskelenmiştir ve denetim günlüğünde asla görünmez.",
+    "s5Title": "Deneme (Ön Uçuş)",
+    "s5Desc": "<strong>{host}</strong> için ön uçuş kontrolleri simüle ediliyor. Her kontrol, kurulumdan önce ortamınızı doğrular.",
+    "s5Passed": "başarılı",
+    "s5Warnings": "uyarı",
+    "s5Failed": "başarısız",
+    "statusPass": "BAŞARILI",
+    "statusWarn": "UYARI",
+    "statusFail": "HATA",
+    "statusInfo": "BİLGİ",
+    "dc_node": "Node.js sürümü ≥ 20",
+    "dc_node_msg": "Node 20.x tespit edildi (simülasyon)",
+    "dc_npm": "npm / paket yöneticisi",
+    "dc_npm_msg": "npm 10.x mevcut",
+    "dc_git": "git kullanılabilir",
+    "dc_git_msg": "git 2.44 tespit edildi",
+    "dc_port": "Port 3000 kullanılabilirliği",
+    "dc_port_msg": "Port 3000 boş",
+    "dc_bind": "Bağlama adresi localhost",
+    "dc_bind_ok": "Bağlama adresi 127.0.0.1 — ✓ güvenli",
+    "dc_bind_warn": "Bağlama adresi {addr} — dış maruziyet riski",
+    "dc_installdir": "Kurulum dizini yazılabilir",
+    "dc_installdir_msg": "{dir} yazılabilir",
+    "dc_logdir": "Günlük dizini erişilebilir",
+    "dc_logdir_msg": "{dir} erişilebilir",
+    "dc_nopii": "Yapılandırmada PII yok",
+    "dc_nopii_msg": "Yapılandırma değerleri PII taramasından geçti",
+    "dc_keychain": "macOS Keychain erişimi",
+    "dc_keychain_msg": "Keychain API'si erişilebilir",
+    "dc_launch": "LaunchAgent dizini",
+    "dc_launch_msg": "~/Library/LaunchAgents mevcut",
+    "dc_brew": "Homebrew mevcut",
+    "dc_brew_msg": "Homebrew tespit edilmedi — manuel kurulum gerekebilir",
+    "dc_systemd": "systemd kullanılabilir",
+    "dc_systemd_msg252": "systemd v252 tespit edildi",
+    "dc_systemd_msg251": "systemd v251 tespit edildi",
+    "dc_ufw": "ufw güvenlik duvarı etkin",
+    "dc_ufw_msg": "ufw etkin, port 22 izinli",
+    "dc_nonroot": "Root olmayan kullanıcı",
+    "dc_nonroot_msg": "Root olmayan kullanıcı olarak çalışıyor",
+    "dc_nsg": "Azure NSG kontrolü",
+    "dc_nsg_msg": "Port 3000 için gelen kural yok",
+    "dc_iptables": "iptables / güvenlik duvarı",
+    "dc_iptables_msg": "Güvenlik duvarı tespit edilmedi — ufw veya iptables düşünün",
+    "s6Title": "Kurulumu Çalıştır",
+    "s6Desc": "<strong>{host}</strong> üzerinde OpenClaw kuruluyor. Her adım bir sonraki başlamadan önce tamamlanır.",
+    "s6Complete": "Kurulum Tamamlandı!",
+    "s6CompleteMsg": "OpenClaw AI Ağ Geçidi {host} üzerinde kurulu ve çalışıyor.",
+    "s6Rollback": "Geri Alma:",
+    "s6RollbackMsg": "Gerekirse, geri alma betikleri kurulum yolunuzun <code style=\"font-size:12px;\">scripts/</code> dizininde bulunur.",
+    "is_validate": "Yapılandırmayı doğrula",
+    "is_npm": "Node.js bağımlılıklarını kur (npm install)",
+    "is_clone": "OpenClaw deposunu klonla",
+    "is_harden": "Güvenlik sıkılaştırma yamalarını uygula",
+    "is_auditinit": "Denetim günlüğü zincirini başlat",
+    "is_health": "Kurulum sonrası sağlık kontrolü çalıştır",
+    "is_manifest": "Kurulum manifestini yaz",
+    "is_launchagent": "macOS LaunchAgent plist'i kaydet",
+    "is_keychain": "Sırları Keychain'de sakla",
+    "is_logrotate_mac": "Günlük rotasyonunu yapılandır",
+    "is_start_mac": "Ağ geçidi servisini başlat",
+    "is_systemd_create": "systemd birim dosyası oluştur",
+    "is_secrets_env": "Sırları secrets.env içinde sakla",
+    "is_logrotate": "logrotate yapılandır",
+    "is_nsg_rules": "Azure NSG kurallarını yapılandır",
+    "is_enable_start": "openclaw.service'i etkinleştir ve başlat",
+    "s7Title": "Sürüm Günlüğü ve Denetim İzi",
+    "s7Desc": "Bu oturumda gerçekleştirilen tüm eylemlerin kriptografik olarak zincirlenmiş denetim günlüğü. Her giriş, içeriği ve önceki girişin hash'i üzerinden hesaplanan bir SHA-256 hash içerir (kurcalanmaya karşı kanıt zincir). Sırlar ve PII asla dahil edilmez.",
+    "s7NoEntries": "Henüz denetim girişi yok.",
+    "s7Result": "Sonuç:",
+    "s7Prev": "Önc.:",
+    "s7Entries": "{n} giriş — hash zinciri istemci tarafında doğrulanabilir",
+    "s7FooterNote": "Bu denetim izi, Web Crypto API (SubtleCrypto SHA-256) kullanılarak tarayıcıda oluşturulmuştur. Her girişin hash'i SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)) olarak hesaplanır. Bu oturumda hiçbir sunucuya veri iletilmemiştir.",
+    "s7Attribution": "<strong>Bob Rapp</strong> ve <strong>Ken Johnston</strong>'un eseri",
+    "act_sessionStarted": "Sihirbaz oturumu başladı",
+    "act_initialized": "Başlatıldı",
+    "act_configSaved": "Yapılandırma kaydedildi",
+    "act_success": "Başarılı",
+    "act_secretNote": "Sır alanları günlükten hariç",
+    "act_securityConfirmed": "Güvenlik kontrol listesi onaylandı",
+    "act_reviewConfirmed": "Yapılandırma incelemesi onaylandı",
+    "act_dryRunDone": "Deneme tamamlandı",
+    "act_installStep": "Kurulum adımı: {name}",
+    "act_completed": "Tamamlandı",
+    "footerText": "AiGovOps Vakfı",
+    "footerAttribution": "Bob Rapp ve Ken Johnston'un eseri"
+  },
+  "ur": {
+    "headerTitle": "AiGovOps فاؤنڈیشن فریم ورک",
+    "headerSubtitle": "اپریل 2026 v1 — AiGovOps کی جانب سے OpenClaw رہنمائی کے ساتھ تنصیب",
+    "darkMode": "تاریک",
+    "lightMode": "روشن",
+    "languageLabel": "زبان",
+    "stepWelcome": "خوش آمدید",
+    "stepConfiguration": "ترتیب",
+    "stepSecurity": "سیکیورٹی",
+    "stepReview": "جائزہ",
+    "stepDryRun": "خشک آزمائش",
+    "stepInstall": "تنصیب",
+    "stepAuditLog": "آڈٹ لاگ",
+    "stepXofY": "قدم {x} از {y}",
+    "btnContinue": "جاری رکھیں",
+    "btnBack": "واپس",
+    "btnConfirmContinue": "تصدیق کریں اور جاری رکھیں",
+    "btnRunPreflight": "پری فلائٹ چیکس چلائیں",
+    "btnProceedInstall": "تنصیب کی طرف بڑھیں",
+    "btnBeginInstall": "تنصیب شروع کریں",
+    "btnInstallBlocked": "تنصیب (روک دی گئی — ناکامیاں ملی ہیں)",
+    "btnViewAuditLog": "آڈٹ لاگ دیکھیں",
+    "btnStartNewSession": "نیا سیشن شروع کریں",
+    "btnExportJson": "JSON کے طور پر ایکسپورٹ کریں",
+    "s1Title": "خوش آمدید اور میزبان کا انتخاب",
+    "s1Desc": "یہ وزرڈ <strong>OpenClaw AI گیٹ وے</strong> نصب کرتا ہے — AiGovOps فاؤنڈیشن فریم ورک (اپریل 2026 v1) کے لیے ایک پرائیویسی پر توجہ دینے والا، مقامی طور پر میزبان AI پراکسی۔ یہ آپ کی رہنمائی ترتیب، سیکیورٹی سختی، پری فلائٹ چیکس اور تنصیب کے عمل کے ذریعے کرے گا، ہر قدم پر چھیڑ چھاڑ سے محفوظ آڈٹ لاگ تیار کرتا ہے۔",
+    "s1SelectHost": "شروع کرنے کے لیے اپنا ہدف میزبان پلیٹ فارم منتخب کریں:",
+    "s1PrivacyNote": "اس وزرڈ میں درج کردہ تمام ڈیٹا صرف آپ کے براؤزر کی میموری میں رہتا ہے۔ کسی سرور کو کوئی ڈیٹا نہیں بھیجا جاتا۔ localStorage یا کوکیز استعمال نہیں ہوتیں۔",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "عام VPS",
+    "hostMacosDesc": "macOS پر مقامی ترقی یا پیداوار۔ LaunchAgent، Keychain اور Homebrew استعمال کرتا ہے۔",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet۔ systemd، ufw فائر وال اور ماحول پر مبنی راز استعمال کرتا ہے۔",
+    "hostAzureDesc": "Microsoft Azure ورچوئل مشین۔ systemd، Azure NSG اور ماحول پر مبنی راز استعمال کرتا ہے۔",
+    "hostVpsDesc": "کوئی بھی لینکس VPS۔ systemd اور رازوں کے لیے ماحول فائل استعمال کرتا ہے۔",
+    "s2Title": "ترتیب",
+    "s2Desc": "<strong>{host}</strong> کے لیے پہلے سے بھرے ڈیفالٹ۔ کسی بھی فیلڈ کو ایڈٹ کریں — ڈیفالٹ معقول اور سیکیورٹی کی نظرثانی شدہ ہیں۔",
+    "s2InstallDir": "تنصیب کی ڈائرکٹری",
+    "s2InstallDirHint": "جہاں OpenClaw گیٹ وے کی فائلیں نصب ہوں گی۔",
+    "s2ServiceName": "سروس کا نام",
+    "s2ServiceHintMac": "macOS LaunchAgent لیبل (معکوس DNS فارمیٹ تجویز کردہ)۔",
+    "s2ServiceHintLinux": "systemd سروس کا نام۔",
+    "s2BindAddress": "بائنڈ ایڈریس",
+    "s2BindHint": "گیٹ وے سننے کا ایڈریس۔ صرف مقامی کے لیے 127.0.0.1 چھوڑ دیں۔",
+    "s2BindWarn": "⚠ انتباہ: بائنڈ ایڈریس کو 127.0.0.1 سے بدلنا گیٹ وے کو باہر سے بے نقاب کرتا ہے۔ صرف اسی صورت میں کریں اگر آپ خطرہ سمجھتے ہیں اور فائر وال استعمال کرتے ہیں۔",
+    "s2LogDir": "لاگ ڈائرکٹری",
+    "s2LogDirHint": "گیٹ وے لاگز کے لیے ڈائرکٹری۔ یقینی بنائیں کہ سروس صارف اس میں لکھ سکے۔",
+    "s2NodeVersion": "Node.js ورژن کی ضرورت",
+    "s2NodeVersionHint": "گیٹ وے کے لیے مطلوبہ کم از کم Node.js ورژن۔",
+    "s2SecretMethod": "راز ذخیرہ کرنے کا طریقہ",
+    "s2SecretMethodHint": "API کیز اور ٹوکنز کو کیسے ذخیرہ کیا جائے گا۔ یہ فیلڈ تمام لاگز سے خارج ہے۔",
+    "s2ApiKey": "API کلید / ٹوکن (اختیاری — تنصیب کے بعد سیٹ کریں)",
+    "s2ApiKeyPlaceholder": "تنصیب کے بعد ترتیب دینے کے لیے خالی چھوڑ دیں",
+    "s2ApiKeyHint": "اگر فراہم کیا گیا، تو {method} میں محفوظ طریقے سے ذخیرہ ہوگا۔ کبھی بھی ڈسک پر سادہ متن میں نہیں لکھا جاتا۔",
+    "s2SecretTag": "راز — لاگ نہیں کیا جائے گا",
+    "s2ModifiedTag": "⚠ ڈیفالٹ سے ترمیم شدہ",
+    "s3Title": "سیکیورٹی اور سختی",
+    "s3Desc": "اس تنصیب کے لیے سیکیورٹی کنٹرولز کا جائزہ لیں اور تصدیق کریں۔ اہم آئٹمز چیک شدہ رہنے چاہییں۔ اہم آئٹم کا نشان ہٹانا ایک انتباہ دکھائے گا۔",
+    "s3Critical": "اہم",
+    "s3UncheckWarn": "⚠ اس اہم کنٹرول کا نشان ہٹانا سیکیورٹی کم کرتا ہے",
+    "sec_localhost_label": "صرف localhost سے باندھیں (127.0.0.1)",
+    "sec_localhost_sub": "گیٹ وے پورٹ تک بیرونی رسائی کو روکتا ہے۔",
+    "sec_tailscale_label": "دور دراز رسائی کے لیے Tailscale VPN فعال کریں",
+    "sec_tailscale_sub": "پورٹس براہ راست بے نقاب کرنے کے بجائے Tailscale استعمال کریں۔",
+    "sec_user_label": "وقف صارف اکاؤنٹ کے تحت چلائیں",
+    "sec_user_sub": "کم سے کم استحقاق کا اصول — کبھی بھی root کے طور پر نہ چلائیں۔",
+    "sec_secrets_label": "راز Keychain / محفوظ env متغیرات میں ذخیرہ کریں",
+    "sec_secrets_sub": "کنفگ فائلوں یا لاگز میں کوئی سادہ متن راز نہیں۔",
+    "sec_audit_label": "غیر تبدیل شدنی آڈٹ لاگنگ فعال کریں",
+    "sec_audit_sub": "چھیڑ چھاڑ سے محفوظ لاگز کے لیے کرپٹوگرافک ہیش چین۔",
+    "sec_logrotate_label": "لاگ روٹیشن ترتیب دیں",
+    "sec_logrotate_sub": "ڈسک ختم ہونے سے روکتا ہے؛ logrotate یا journald استعمال کرتا ہے۔",
+    "sec_nopii_label": "لاگز میں کوئی PII نہیں",
+    "sec_nopii_sub": "تمام لاگ آؤٹ پٹ سے API کیز، ٹوکن اور صارف کے شناخت کنندگان کو ہٹا دیں۔",
+    "sec_health_label": "ہیلتھ چیک اینڈ پوائنٹ فعال کریں",
+    "sec_health_sub": "GET /health اندرونی معلومات ظاہر کیے بغیر حیثیت واپس کرتا ہے۔",
+    "s4Title": "ترتیب کا جائزہ لیں",
+    "s4Desc": "آگے بڑھنے سے پہلے تمام ترتیبات کا جائزہ لیں۔ <span style=\"color:var(--amber);font-weight:700;\">عنبر</span> میں دکھائی گئی اقدار ڈیفالٹ سے مختلف ہیں۔ راز نقاب پوش ہیں۔",
+    "s4SectionHost": "▸ میزبان اور پلیٹ فارم",
+    "s4SectionConfig": "▸ ترتیب",
+    "s4SectionSecurity": "▸ سیکیورٹی کنٹرولز",
+    "s4TargetHost": "ہدف میزبان",
+    "s4InstallDir": "تنصیب ڈائرکٹری",
+    "s4ServiceName": "سروس کا نام",
+    "s4BindAddress": "بائنڈ ایڈریس",
+    "s4LogDir": "لاگ ڈائرکٹری",
+    "s4NodeVersion": "Node.js ورژن",
+    "s4SecretMethod": "راز طریقہ",
+    "s4ApiKey": "API کلید",
+    "s4NotConfigured": "(ترتیب نہیں)",
+    "s4Enabled": "✓ فعال",
+    "s4Disabled": "✗ غیر فعال",
+    "s4SecretNote": "راز اقدار (API کیز، راز ذخیرہ کرنے کا طریقہ) نقاب پوش ہیں اور آڈٹ لاگ میں کبھی ظاہر نہیں ہوں گی۔",
+    "s5Title": "خشک آزمائش (پری فلائٹ)",
+    "s5Desc": "<strong>{host}</strong> کے لیے پری فلائٹ چیکس کی نقل کی جا رہی ہے۔ ہر چیک تنصیب سے پہلے آپ کے ماحول کی توثیق کرتا ہے۔",
+    "s5Passed": "کامیاب",
+    "s5Warnings": "انتباہات",
+    "s5Failed": "ناکام",
+    "statusPass": "کامیاب",
+    "statusWarn": "انتباہ",
+    "statusFail": "ناکام",
+    "statusInfo": "معلومات",
+    "dc_node": "Node.js ورژن ≥ 20",
+    "dc_node_msg": "Node 20.x پایا گیا (نقالی)",
+    "dc_npm": "npm / پیکج مینیجر",
+    "dc_npm_msg": "npm 10.x موجود",
+    "dc_git": "git دستیاب",
+    "dc_git_msg": "git 2.44 پایا گیا",
+    "dc_port": "پورٹ 3000 دستیابی",
+    "dc_port_msg": "پورٹ 3000 خالی ہے",
+    "dc_bind": "بائنڈ ایڈریس localhost ہے",
+    "dc_bind_ok": "بائنڈ ایڈریس 127.0.0.1 — ✓ محفوظ",
+    "dc_bind_warn": "بائنڈ ایڈریس {addr} — بیرونی نمائش کا خطرہ",
+    "dc_installdir": "تنصیب ڈائرکٹری قابل تحریر",
+    "dc_installdir_msg": "{dir} قابل تحریر",
+    "dc_logdir": "لاگ ڈائرکٹری قابل رسائی",
+    "dc_logdir_msg": "{dir} قابل رسائی",
+    "dc_nopii": "ترتیب میں کوئی PII نہیں",
+    "dc_nopii_msg": "ترتیب اقدار PII اسکین میں کامیاب",
+    "dc_keychain": "macOS Keychain تک رسائی",
+    "dc_keychain_msg": "Keychain API قابل رسائی",
+    "dc_launch": "LaunchAgent ڈائرکٹری",
+    "dc_launch_msg": "~/Library/LaunchAgents موجود",
+    "dc_brew": "Homebrew موجود",
+    "dc_brew_msg": "Homebrew نہیں ملا — دستی تنصیب کی ضرورت ہو سکتی ہے",
+    "dc_systemd": "systemd دستیاب",
+    "dc_systemd_msg252": "systemd v252 پایا گیا",
+    "dc_systemd_msg251": "systemd v251 پایا گیا",
+    "dc_ufw": "ufw فائر وال فعال",
+    "dc_ufw_msg": "ufw فعال، پورٹ 22 اجازت شدہ",
+    "dc_nonroot": "غیر root صارف",
+    "dc_nonroot_msg": "غیر root صارف کے طور پر چل رہا ہے",
+    "dc_nsg": "Azure NSG چیک",
+    "dc_nsg_msg": "پورٹ 3000 کے لیے کوئی ان باؤنڈ قواعد نہیں",
+    "dc_iptables": "iptables / فائر وال",
+    "dc_iptables_msg": "کوئی فائر وال نہیں ملا — ufw یا iptables پر غور کریں",
+    "s6Title": "تنصیب چلائیں",
+    "s6Desc": "<strong>{host}</strong> پر OpenClaw نصب ہو رہا ہے۔ اگلا قدم شروع ہونے سے پہلے ہر قدم مکمل ہوتا ہے۔",
+    "s6Complete": "تنصیب مکمل!",
+    "s6CompleteMsg": "OpenClaw AI گیٹ وے {host} پر نصب ہے اور چل رہا ہے۔",
+    "s6Rollback": "رول بیک:",
+    "s6RollbackMsg": "اگر ضرورت ہو تو، رول بیک اسکرپٹس آپ کے تنصیب راستے کی <code style=\"font-size:12px;\">scripts/</code> ڈائرکٹری میں دستیاب ہیں۔",
+    "is_validate": "ترتیب کی توثیق کریں",
+    "is_npm": "Node.js انحصار نصب کریں (npm install)",
+    "is_clone": "OpenClaw مخزن کلون کریں",
+    "is_harden": "سیکیورٹی سختی کے پیچ لگائیں",
+    "is_auditinit": "آڈٹ لاگ چین شروع کریں",
+    "is_health": "تنصیب کے بعد صحت کی جانچ کریں",
+    "is_manifest": "تنصیب مینی فیسٹ لکھیں",
+    "is_launchagent": "macOS LaunchAgent plist رجسٹر کریں",
+    "is_keychain": "راز Keychain میں ذخیرہ کریں",
+    "is_logrotate_mac": "لاگ روٹیشن ترتیب دیں",
+    "is_start_mac": "گیٹ وے سروس شروع کریں",
+    "is_systemd_create": "systemd یونٹ فائل بنائیں",
+    "is_secrets_env": "راز secrets.env میں ذخیرہ کریں",
+    "is_logrotate": "logrotate ترتیب دیں",
+    "is_nsg_rules": "Azure NSG قواعد ترتیب دیں",
+    "is_enable_start": "openclaw.service فعال کریں اور شروع کریں",
+    "s7Title": "ورژن لاگ اور آڈٹ ٹریل",
+    "s7Desc": "اس وزرڈ سیشن کے دوران کیے گئے تمام اقدامات کا کرپٹوگرافک طور پر جڑا ہوا آڈٹ لاگ۔ ہر اندراج میں اس کے مواد اور پچھلے اندراج کے ہیش پر مبنی SHA-256 ہیش شامل ہے (چھیڑ چھاڑ سے محفوظ چین)۔ راز اور PII کبھی شامل نہیں ہوتے۔",
+    "s7NoEntries": "ابھی کوئی آڈٹ اندراج نہیں۔",
+    "s7Result": "نتیجہ:",
+    "s7Prev": "پچھلا:",
+    "s7Entries": "{n} اندراجات — ہیش چین کلائنٹ سائیڈ قابل تصدیق",
+    "s7FooterNote": "یہ آڈٹ ٹریل Web Crypto API (SubtleCrypto SHA-256) کا استعمال کرتے ہوئے براؤزر میں تیار کیا گیا تھا۔ ہر اندراج کا ہیش SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)) کے طور پر شمار کیا جاتا ہے۔ اس سیشن کے دوران کوئی ڈیٹا کسی سرور پر منتقل نہیں کیا گیا۔",
+    "s7Attribution": "<strong>Bob Rapp</strong> اور <strong>Ken Johnston</strong> کا کام",
+    "act_sessionStarted": "وزرڈ سیشن شروع ہو گیا",
+    "act_initialized": "شروع کیا گیا",
+    "act_configSaved": "ترتیب محفوظ کر لی گئی",
+    "act_success": "کامیابی",
+    "act_secretNote": "راز فیلڈز لاگ سے خارج",
+    "act_securityConfirmed": "سیکیورٹی چیک لسٹ کی تصدیق",
+    "act_reviewConfirmed": "ترتیب کے جائزے کی تصدیق",
+    "act_dryRunDone": "خشک آزمائش مکمل",
+    "act_installStep": "تنصیب کا قدم: {name}",
+    "act_completed": "مکمل",
+    "footerText": "AiGovOps فاؤنڈیشن",
+    "footerAttribution": "Bob Rapp اور Ken Johnston کا کام"
+  },
+  "ps": {
+    "headerTitle": "د AiGovOps بنسټ چوکاټ",
+    "headerSubtitle": "اپریل 2026 v1 — د AiGovOps لخوا د OpenClaw لارښود نصب",
+    "darkMode": "تیاره",
+    "lightMode": "روښانه",
+    "languageLabel": "ژبه",
+    "stepWelcome": "ښه راغلاست",
+    "stepConfiguration": "تنظیم",
+    "stepSecurity": "امنیت",
+    "stepReview": "کتنه",
+    "stepDryRun": "وچ چلول",
+    "stepInstall": "نصب",
+    "stepAuditLog": "د پلټنې لاګ",
+    "stepXofY": "ګام {x} له {y}",
+    "btnContinue": "دوام",
+    "btnBack": "بېرته",
+    "btnConfirmContinue": "تایید او دوام",
+    "btnRunPreflight": "د مخکینۍ کتنې چلول",
+    "btnProceedInstall": "نصب ته لاړ شه",
+    "btnBeginInstall": "نصب پیل کړه",
+    "btnInstallBlocked": "نصب (بند شوی — ناکامۍ وموندل شوې)",
+    "btnViewAuditLog": "د پلټنې لاګ وګوره",
+    "btnStartNewSession": "نوې غونډه پیل کړه",
+    "btnExportJson": "د JSON په توګه صادرول",
+    "s1Title": "ښه راغلاست او د کوربه ټاکل",
+    "s1Desc": "دا وزرډ <strong>د OpenClaw AI ګیټوې</strong> نصبوي — د AiGovOps بنسټ چوکاټ لپاره د محرمیت لومړی، محلي کوربه شوی AI پراکسي (اپریل 2026 v1). دا به تاسو د ترتیب، امنیتي سختولو، د مخکینۍ کتنې او د نصب پروسې له لارې رهبري کړي، او په هر ګام کې به د لاسوهنې ثبوت لرونکی د پلټنې لاګ جوړوي.",
+    "s1SelectHost": "د پیل لپاره خپل هدفي کوربه پلیټ فارم وټاکئ:",
+    "s1PrivacyNote": "په دې وزرډ کې داخل شوي ټول معلومات یوازې ستاسو د براوزر حافظه کې پاتې کیږي. کوم معلومات سرور ته نه لیږل کیږي. localStorage یا کوکیز نه کارول کیږي.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "عمومي VPS",
+    "hostMacosDesc": "په macOS کې محلي پراختیا یا تولید. LaunchAgent، Keychain او Homebrew کاروي.",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet. systemd، د ufw فایر وال او د چاپیریال پر بنسټ رازونه کاروي.",
+    "hostAzureDesc": "د Microsoft Azure مجازي ماشین. systemd، Azure NSG او د چاپیریال پر بنسټ رازونه کاروي.",
+    "hostVpsDesc": "هر لینکس VPS. systemd او د رازونو لپاره د چاپیریال فایل کاروي.",
+    "s2Title": "تنظیم",
+    "s2Desc": "د <strong>{host}</strong> لپاره مخکې ډک شوي ډیفالټ. هر ساحه ایډیټ کړئ — ډیفالټونه معقول او د امنیت څخه بیاکتل شوي دي.",
+    "s2InstallDir": "د نصب فولډر",
+    "s2InstallDirHint": "چیرته به د OpenClaw ګیټوې فایلونه نصب شي.",
+    "s2ServiceName": "د خدمت نوم",
+    "s2ServiceHintMac": "د macOS LaunchAgent لیبل (د بیرته DNS بڼه سپارښتنه شوې).",
+    "s2ServiceHintLinux": "د systemd خدمت نوم.",
+    "s2BindAddress": "د تړلو پته",
+    "s2BindHint": "د ګیټوې اوریدلو پته. یوازې محلي لپاره 127.0.0.1 پریږدئ.",
+    "s2BindWarn": "⚠ خبرتیا: د تړلو پته له 127.0.0.1 څخه بدلول ګیټوې ته بهرنۍ لاسرسی ورکوي. یوازې هغه وخت ترسره کړئ چې خطر درک کړئ او فایر وال وکاروئ.",
+    "s2LogDir": "د لاګ فولډر",
+    "s2LogDirHint": "د ګیټوې لاګونو لپاره فولډر. ډاډ ترلاسه کړئ چې د خدمت کاروونکي لخوا د لیکلو وړ وي.",
+    "s2NodeVersion": "د Node.js نسخې اړتیا",
+    "s2NodeVersionHint": "د ګیټوې لخوا اړین لږترلږه د Node.js نسخه.",
+    "s2SecretMethod": "د رازونو ذخیرې طریقه",
+    "s2SecretMethodHint": "د API کلیدونه او ټوکنونه به څنګه ذخیره شي. دا ساحه له ټولو لاګونو څخه شړل شوې ده.",
+    "s2ApiKey": "API کلی / ټوکن (اختیاري — له نصب وروسته وټاکئ)",
+    "s2ApiKeyPlaceholder": "له نصب وروسته د تنظیم لپاره خالي پریږدئ",
+    "s2ApiKeyHint": "که وړاندې شي، په {method} کې په خوندي ډول ذخیره کیږي. هیڅکله په ساده متن کې ډسک ته نه لیکل کیږي.",
+    "s2SecretTag": "راز — لاګ نه کیږي",
+    "s2ModifiedTag": "⚠ له ډیفالټ څخه بدلون",
+    "s3Title": "امنیت او سختول",
+    "s3Desc": "د دې نصب لپاره د امنیت کنټرولونه وګورئ او تایید کړئ. مهم توکي باید چک وساتل شي. د مهم توکي له چک کولو څخه لرې کول به یو خبرتیا ښکاره کړي.",
+    "s3Critical": "مهم",
+    "s3UncheckWarn": "⚠ د دې مهم کنټرول له چک کولو څخه لرې کول امنیت کموي",
+    "sec_localhost_label": "یوازې localhost ته وتړئ (127.0.0.1)",
+    "sec_localhost_sub": "د ګیټوې پورټ ته بهرنۍ لاسرسي مخنیوی کوي.",
+    "sec_tailscale_label": "د لرې لاسرسي لپاره Tailscale VPN فعال کړئ",
+    "sec_tailscale_sub": "د مستقیم پورټ ښکاره کولو پر ځای Tailscale وکاروئ.",
+    "sec_user_label": "د وقف شوي کاروونکي حساب لاندې چلول",
+    "sec_user_sub": "د لږترلږه امتیاز اصول — هیڅکله د root په توګه مه چلوئ.",
+    "sec_secrets_label": "رازونه په Keychain / خوندي env متغیرونو کې وساتئ",
+    "sec_secrets_sub": "د تنظیم فایلونو یا لاګونو کې هیڅ ساده متن راز نشته.",
+    "sec_audit_label": "د بدلون وړ نه د پلټنې لاګ فعال کړئ",
+    "sec_audit_sub": "د لاسوهنې ثبوت لرونکو لاګونو لپاره کریپټوګرافیک هش چین.",
+    "sec_logrotate_label": "د لاګ رول تنظیم کړئ",
+    "sec_logrotate_sub": "د ډیسک د پای ته رسیدو مخنیوی کوي؛ logrotate یا journald کاروي.",
+    "sec_nopii_label": "په لاګونو کې هیڅ PII نه",
+    "sec_nopii_sub": "د ټول لاګ محصول څخه د API کلیدونه، ټوکنونه او د کاروونکو پیژندونکي لرې کړئ.",
+    "sec_health_label": "د روغتیا د چک پای ټکی فعال کړئ",
+    "sec_health_sub": "GET /health د داخلي توکو افشا کولو پرته حالت راګرځوي.",
+    "s4Title": "د تنظیم بیاکتنه",
+    "s4Desc": "د دوام څخه مخکې ټولې تنظیمات وګورئ. په <span style=\"color:var(--amber);font-weight:700;\">کهربايي</span> کې ښودل شوي ارزښتونه له ډیفالټ څخه توپیر لري. رازونه پټ شوي دي.",
+    "s4SectionHost": "▸ کوربه او پلیټ فارم",
+    "s4SectionConfig": "▸ تنظیم",
+    "s4SectionSecurity": "▸ د امنیت کنټرولونه",
+    "s4TargetHost": "هدفي کوربه",
+    "s4InstallDir": "د نصب فولډر",
+    "s4ServiceName": "د خدمت نوم",
+    "s4BindAddress": "د تړلو پته",
+    "s4LogDir": "د لاګ فولډر",
+    "s4NodeVersion": "د Node.js نسخه",
+    "s4SecretMethod": "د راز میتود",
+    "s4ApiKey": "API کلی",
+    "s4NotConfigured": "(نه دی تنظیم شوی)",
+    "s4Enabled": "✓ فعال",
+    "s4Disabled": "✗ غیر فعال",
+    "s4SecretNote": "د راز ارزښتونه (د API کلیدونه، د راز ذخیرې طریقه) پټ شوي دي او هیڅکله به د پلټنې لاګ کې ښکاره نشي.",
+    "s5Title": "وچ چلول (مخکینۍ کتنه)",
+    "s5Desc": "د <strong>{host}</strong> لپاره د مخکینۍ کتنې نقل کول. هر چک ستاسو چاپیریال د نصب څخه مخکې تاییدوي.",
+    "s5Passed": "بریالي",
+    "s5Warnings": "خبرتیاوې",
+    "s5Failed": "ناکام",
+    "statusPass": "بریالي",
+    "statusWarn": "خبرتیا",
+    "statusFail": "ناکام",
+    "statusInfo": "معلومات",
+    "dc_node": "د Node.js نسخه ≥ 20",
+    "dc_node_msg": "Node 20.x وموندل شو (نقل)",
+    "dc_npm": "npm / د پیکج مدیر",
+    "dc_npm_msg": "npm 10.x شتون لري",
+    "dc_git": "git شتون لري",
+    "dc_git_msg": "git 2.44 وموندل شو",
+    "dc_port": "د پورټ 3000 شتون",
+    "dc_port_msg": "پورټ 3000 وړیا دی",
+    "dc_bind": "د تړلو پته localhost ده",
+    "dc_bind_ok": "د تړلو پته 127.0.0.1 — ✓ خوندي",
+    "dc_bind_warn": "د تړلو پته {addr} — د بهرنۍ افشا خطر",
+    "dc_installdir": "د نصب فولډر د لیکلو وړ",
+    "dc_installdir_msg": "{dir} د لیکلو وړ",
+    "dc_logdir": "د لاګ فولډر د لاسرسي وړ",
+    "dc_logdir_msg": "{dir} د لاسرسي وړ",
+    "dc_nopii": "په تنظیم کې هیڅ PII نشته",
+    "dc_nopii_msg": "د تنظیم ارزښتونو د PII سکین ترلاسه کړ",
+    "dc_keychain": "د macOS Keychain ته لاسرسی",
+    "dc_keychain_msg": "د Keychain API د لاسرسي وړ",
+    "dc_launch": "د LaunchAgent فولډر",
+    "dc_launch_msg": "~/Library/LaunchAgents شتون لري",
+    "dc_brew": "Homebrew شتون لري",
+    "dc_brew_msg": "Homebrew ونه موندل شو — لاسي نصب ممکن اړین وي",
+    "dc_systemd": "systemd شتون لري",
+    "dc_systemd_msg252": "systemd v252 وموندل شو",
+    "dc_systemd_msg251": "systemd v251 وموندل شو",
+    "dc_ufw": "د ufw فایر وال فعال",
+    "dc_ufw_msg": "ufw فعال، پورټ 22 اجازه لري",
+    "dc_nonroot": "غیر-root کاروونکی",
+    "dc_nonroot_msg": "د غیر-root کاروونکي په توګه چلیږي",
+    "dc_nsg": "د Azure NSG چک",
+    "dc_nsg_msg": "د پورټ 3000 لپاره هیڅ داخلي قواعد نشته",
+    "dc_iptables": "iptables / فایر وال",
+    "dc_iptables_msg": "هیڅ فایر وال ونه موندل شو — ufw یا iptables ته پام وکړئ",
+    "s6Title": "نصب اجرا کړئ",
+    "s6Desc": "په <strong>{host}</strong> کې د OpenClaw نصب کول. هر ګام د راتلونکي پیل څخه مخکې بشپړیږي.",
+    "s6Complete": "نصب بشپړ شو!",
+    "s6CompleteMsg": "د OpenClaw AI ګیټوې په {host} کې نصب شوی او چلیږي.",
+    "s6Rollback": "بیرته راګرځول:",
+    "s6RollbackMsg": "که اړتیا وي، د بیرته راګرځولو سکریپټونه ستاسو د نصب لارې د <code style=\"font-size:12px;\">scripts/</code> فولډر کې شتون لري.",
+    "is_validate": "تنظیم تایید کړئ",
+    "is_npm": "د Node.js وابستګۍ نصب کړئ (npm install)",
+    "is_clone": "د OpenClaw زیرمه کلون کړئ",
+    "is_harden": "د امنیتي سختولو پیچونه پلي کړئ",
+    "is_auditinit": "د پلټنې لاګ چین پیل کړئ",
+    "is_health": "له نصب وروسته د روغتیا چک چلوئ",
+    "is_manifest": "د نصب مانیفیست ولیکئ",
+    "is_launchagent": "د macOS LaunchAgent plist راجستر کړئ",
+    "is_keychain": "رازونه په Keychain کې وساتئ",
+    "is_logrotate_mac": "د لاګ رول تنظیم کړئ",
+    "is_start_mac": "د ګیټوې خدمت پیل کړئ",
+    "is_systemd_create": "د systemd یونټ فایل جوړ کړئ",
+    "is_secrets_env": "رازونه په secrets.env کې وساتئ",
+    "is_logrotate": "logrotate تنظیم کړئ",
+    "is_nsg_rules": "د Azure NSG قواعد تنظیم کړئ",
+    "is_enable_start": "openclaw.service فعال کړئ او پیل کړئ",
+    "s7Title": "د نسخې لاګ او د پلټنې اثر",
+    "s7Desc": "د دې وزرډ غونډې په جریان کې د ټولو اخیستل شویو اقداماتو کریپټوګرافیک پیوسته د پلټنې لاګ. هر ننوتل د هغه د مینځپانګې او د پخواني ننوتلو د هش پر بنسټ د SHA-256 هش لري (د لاسوهنې ثبوت لرونکی چین). رازونه او PII هیڅکله شامل نه دي.",
+    "s7NoEntries": "تر اوسه د پلټنې کوم ننوتل نشته.",
+    "s7Result": "پایله:",
+    "s7Prev": "پخوانی:",
+    "s7Entries": "{n} ننوتل — هش چین د پیرودونکي خوا تایید وړ",
+    "s7FooterNote": "دا د پلټنې اثر د Web Crypto API (SubtleCrypto SHA-256) په کارولو سره په براوزر کې جوړ شو. د هر ننوتلو هش د SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)) په توګه محاسبه کیږي. د دې غونډې په جریان کې هیڅ معلومات کوم سرور ته نه دي لیږل شوي.",
+    "s7Attribution": "د <strong>Bob Rapp</strong> او <strong>Ken Johnston</strong> کار",
+    "act_sessionStarted": "د وزرډ غونډه پیل شوه",
+    "act_initialized": "پیل شو",
+    "act_configSaved": "تنظیم خوندي شو",
+    "act_success": "بریا",
+    "act_secretNote": "د راز ساحې له لاګ څخه شړل شوي",
+    "act_securityConfirmed": "د امنیت چک لیست تایید شو",
+    "act_reviewConfirmed": "د تنظیم بیاکتنه تایید شوه",
+    "act_dryRunDone": "وچ چلول بشپړ شو",
+    "act_installStep": "د نصب ګام: {name}",
+    "act_completed": "بشپړ شو",
+    "footerText": "AiGovOps بنسټ",
+    "footerAttribution": "د Bob Rapp او Ken Johnston کار"
+  },
+  "sw": {
+    "headerTitle": "Mfumo wa AiGovOps Foundation",
+    "headerSubtitle": "Aprili 2026 v1 — Usanidi Elekezi wa OpenClaw na AiGovOps",
+    "darkMode": "Giza",
+    "lightMode": "Nuru",
+    "languageLabel": "Lugha",
+    "stepWelcome": "Karibu",
+    "stepConfiguration": "Usanidi",
+    "stepSecurity": "Usalama",
+    "stepReview": "Hakiki",
+    "stepDryRun": "Jaribio",
+    "stepInstall": "Sakinisha",
+    "stepAuditLog": "Kumbukumbu ya Ukaguzi",
+    "stepXofY": "Hatua {x} kati ya {y}",
+    "btnContinue": "Endelea",
+    "btnBack": "Rudi",
+    "btnConfirmContinue": "Thibitisha na Endelea",
+    "btnRunPreflight": "Endesha Ukaguzi wa Awali",
+    "btnProceedInstall": "Endelea na Usakinishaji",
+    "btnBeginInstall": "Anza Usakinishaji",
+    "btnInstallBlocked": "Usakinishaji (umezuiliwa — makosa yamegunduliwa)",
+    "btnViewAuditLog": "Tazama Kumbukumbu ya Ukaguzi",
+    "btnStartNewSession": "Anza Kipindi Kipya",
+    "btnExportJson": "Hamisha kama JSON",
+    "s1Title": "Karibu na Uchaguzi wa Mwenyeji",
+    "s1Desc": "Msaidizi huu unasakinisha <strong>Lango la AI la OpenClaw</strong> — wakala wa AI wa kienyeji unaolenga faragha kwa mfumo wa AiGovOps Foundation (Aprili 2026 v1). Utakuongoza kupitia usanidi, uimarishaji wa usalama, ukaguzi wa awali, na mchakato wa usakinishaji, ukitengeneza kumbukumbu ya ukaguzi isiyoweza kuchezewa katika kila hatua.",
+    "s1SelectHost": "Chagua jukwaa lako la mwenyeji lengwa ili kuanza:",
+    "s1PrivacyNote": "Data yote iliyoingizwa katika msaidizi huu inabaki tu katika kumbukumbu ya kivinjari chako. Hakuna data inayotumwa kwa seva yoyote. localStorage na vidakuzi havitumiki.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "VPS ya Jumla",
+    "hostMacosDesc": "Uendelezaji wa kienyeji au uzalishaji kwenye macOS. Hutumia LaunchAgent, Keychain, na Homebrew.",
+    "hostDigitaloceanDesc": "DigitalOcean Droplet. Hutumia systemd, ukuta wa ufw, na siri za mazingira.",
+    "hostAzureDesc": "Mashine Pepe ya Microsoft Azure. Hutumia systemd, Azure NSG, na siri za mazingira.",
+    "hostVpsDesc": "VPS yoyote ya Linux. Hutumia systemd na faili la mazingira kwa siri.",
+    "s2Title": "Usanidi",
+    "s2Desc": "Mipangilio chaguo-msingi iliyojazwa mapema kwa <strong>{host}</strong>. Hariri sehemu yoyote — mipangilio chaguo-msingi ni yenye busara na imechunguzwa kiusalama.",
+    "s2InstallDir": "Saraka ya Usakinishaji",
+    "s2InstallDirHint": "Mahali ambapo faili za lango la OpenClaw zitasakinishwa.",
+    "s2ServiceName": "Jina la Huduma",
+    "s2ServiceHintMac": "Lebo ya LaunchAgent ya macOS (umbizo la DNS kinyume linapendekezwa).",
+    "s2ServiceHintLinux": "Jina la huduma ya systemd.",
+    "s2BindAddress": "Anwani ya Kufunga",
+    "s2BindHint": "Anwani ya kusikiliza ya lango. Acha 127.0.0.1 kwa matumizi ya kienyeji tu.",
+    "s2BindWarn": "⚠ Onyo: Kubadilisha anwani ya kufunga kutoka 127.0.0.1 kunaweka lango wazi nje. Fanya hivyo tu ikiwa unaelewa hatari na unatumia ukuta wa moto.",
+    "s2LogDir": "Saraka ya Kumbukumbu",
+    "s2LogDirHint": "Saraka ya kumbukumbu za lango. Hakikisha inaweza kuandikwa na mtumiaji wa huduma.",
+    "s2NodeVersion": "Hitaji la Toleo la Node.js",
+    "s2NodeVersionHint": "Toleo la chini la Node.js linalohitajika na lango.",
+    "s2SecretMethod": "Njia ya Kuhifadhi Siri",
+    "s2SecretMethodHint": "Jinsi funguo za API na tokeni zitakavyohifadhiwa. Sehemu hii haijumuishwi katika kumbukumbu zote.",
+    "s2ApiKey": "Ufunguo wa API / Tokeni (hiari — weka baada ya usakinishaji)",
+    "s2ApiKeyPlaceholder": "Acha tupu ili kusanidi baada ya usakinishaji",
+    "s2ApiKeyHint": "Ikitolewa, huhifadhiwa kwa usalama katika {method}. Haiwahi kuandikwa kwenye diski kama maandishi wazi.",
+    "s2SecretTag": "Siri — haitarekodi",
+    "s2ModifiedTag": "⚠ Imebadilishwa kutoka chaguo-msingi",
+    "s3Title": "Usalama na Uimarishaji",
+    "s3Desc": "Hakiki na thibitisha vidhibiti vya usalama kwa usakinishaji huu. Vitu muhimu vinapaswa kubaki vimekaguliwa. Kuondoa alama kwenye kitu muhimu kutaonyesha onyo.",
+    "s3Critical": "Muhimu",
+    "s3UncheckWarn": "⚠ Kuondoa alama kwa kidhibiti hiki muhimu hupunguza usalama",
+    "sec_localhost_label": "Funga kwa localhost tu (127.0.0.1)",
+    "sec_localhost_sub": "Huzuia ufikiaji wa nje wa mlango wa lango.",
+    "sec_tailscale_label": "Wezesha Tailscale VPN kwa ufikiaji wa mbali",
+    "sec_tailscale_sub": "Tumia Tailscale badala ya kufichua milango moja kwa moja.",
+    "sec_user_label": "Endesha chini ya akaunti maalum ya mtumiaji",
+    "sec_user_sub": "Kanuni ya mamlaka ndogo kabisa — kamwe usiendeshe kama root.",
+    "sec_secrets_label": "Hifadhi siri katika Keychain / vigezo salama vya mazingira",
+    "sec_secrets_sub": "Hakuna siri za maandishi wazi katika faili za usanidi au kumbukumbu.",
+    "sec_audit_label": "Wezesha ukumbukaji wa ukaguzi usiobadilika",
+    "sec_audit_sub": "Mnyororo wa hesh wa kriptografia kwa kumbukumbu zinazothibitisha uchezeaji.",
+    "sec_logrotate_label": "Sanidi mzunguko wa kumbukumbu",
+    "sec_logrotate_sub": "Huzuia diski kuisha; hutumia logrotate au journald.",
+    "sec_nopii_label": "Hakuna PII katika kumbukumbu",
+    "sec_nopii_sub": "Ondoa funguo za API, tokeni, na vitambulishi vya watumiaji kutoka kwa matokeo yote ya kumbukumbu.",
+    "sec_health_label": "Wezesha lango la ukaguzi wa afya",
+    "sec_health_sub": "GET /health inarudisha hali bila kufichua taarifa za ndani.",
+    "s4Title": "Hakiki Usanidi",
+    "s4Desc": "Hakiki mipangilio yote kabla ya kuendelea. Thamani zilizoonyeshwa katika rangi ya <span style=\"color:var(--amber);font-weight:700;\">kahawia</span> zinatofautiana na chaguo-msingi. Siri zimefichwa.",
+    "s4SectionHost": "▸ Mwenyeji na Jukwaa",
+    "s4SectionConfig": "▸ Usanidi",
+    "s4SectionSecurity": "▸ Vidhibiti vya Usalama",
+    "s4TargetHost": "Mwenyeji Lengwa",
+    "s4InstallDir": "Saraka ya Usakinishaji",
+    "s4ServiceName": "Jina la Huduma",
+    "s4BindAddress": "Anwani ya Kufunga",
+    "s4LogDir": "Saraka ya Kumbukumbu",
+    "s4NodeVersion": "Toleo la Node.js",
+    "s4SecretMethod": "Njia ya Siri",
+    "s4ApiKey": "Ufunguo wa API",
+    "s4NotConfigured": "(haijasanidiwa)",
+    "s4Enabled": "✓ Imewezeshwa",
+    "s4Disabled": "✗ Imezimwa",
+    "s4SecretNote": "Thamani za siri (funguo za API, njia ya kuhifadhi siri) zimefichwa na hazitaonekana kamwe katika kumbukumbu ya ukaguzi.",
+    "s5Title": "Jaribio (Ukaguzi wa Awali)",
+    "s5Desc": "Inaiga ukaguzi wa awali kwa <strong>{host}</strong>. Kila ukaguzi unathibitisha mazingira yako kabla ya usakinishaji.",
+    "s5Passed": "zimepita",
+    "s5Warnings": "maonyo",
+    "s5Failed": "zimeshindwa",
+    "statusPass": "PITISHA",
+    "statusWarn": "ONYO",
+    "statusFail": "KOSA",
+    "statusInfo": "TAARIFA",
+    "dc_node": "Toleo la Node.js ≥ 20",
+    "dc_node_msg": "Node 20.x imegunduliwa (uigaji)",
+    "dc_npm": "npm / msimamizi wa pakiti",
+    "dc_npm_msg": "npm 10.x ipo",
+    "dc_git": "git inapatikana",
+    "dc_git_msg": "git 2.44 imegunduliwa",
+    "dc_port": "Upatikanaji wa mlango 3000",
+    "dc_port_msg": "Mlango 3000 uko huru",
+    "dc_bind": "Anwani ya kufunga ni localhost",
+    "dc_bind_ok": "Anwani ya kufunga 127.0.0.1 — ✓ salama",
+    "dc_bind_warn": "Anwani ya kufunga {addr} — hatari ya kufichuliwa nje",
+    "dc_installdir": "Saraka ya usakinishaji inayoweza kuandikwa",
+    "dc_installdir_msg": "{dir} inayoweza kuandikwa",
+    "dc_logdir": "Saraka ya kumbukumbu inapatikana",
+    "dc_logdir_msg": "{dir} inapatikana",
+    "dc_nopii": "Hakuna PII katika usanidi",
+    "dc_nopii_msg": "Thamani za usanidi zimepita skana ya PII",
+    "dc_keychain": "Ufikiaji wa Keychain ya macOS",
+    "dc_keychain_msg": "API ya Keychain inapatikana",
+    "dc_launch": "Saraka ya LaunchAgent",
+    "dc_launch_msg": "~/Library/LaunchAgents ipo",
+    "dc_brew": "Homebrew ipo",
+    "dc_brew_msg": "Homebrew haijagunduliwa — usakinishaji wa mkono unaweza kuhitajika",
+    "dc_systemd": "systemd inapatikana",
+    "dc_systemd_msg252": "systemd v252 imegunduliwa",
+    "dc_systemd_msg251": "systemd v251 imegunduliwa",
+    "dc_ufw": "ukuta wa ufw umewashwa",
+    "dc_ufw_msg": "ufw imewezeshwa, mlango 22 umeruhusiwa",
+    "dc_nonroot": "Mtumiaji asiye-root",
+    "dc_nonroot_msg": "Inaendesha kama mtumiaji asiye-root",
+    "dc_nsg": "Ukaguzi wa Azure NSG",
+    "dc_nsg_msg": "Hakuna sheria za ndani kwa mlango 3000",
+    "dc_iptables": "iptables / ukuta wa moto",
+    "dc_iptables_msg": "Hakuna ukuta uliopatikana — zingatia ufw au iptables",
+    "s6Title": "Tekeleza Usakinishaji",
+    "s6Desc": "Inasakinisha OpenClaw kwenye <strong>{host}</strong>. Kila hatua inakamilika kabla ya inayofuata kuanza.",
+    "s6Complete": "Usakinishaji Umekamilika!",
+    "s6CompleteMsg": "Lango la AI la OpenClaw limesakinishwa na linaendesha kwenye {host}.",
+    "s6Rollback": "Kurudisha Nyuma:",
+    "s6RollbackMsg": "Ikihitajika, hati za kurudisha nyuma zinapatikana katika saraka ya <code style=\"font-size:12px;\">scripts/</code> ya njia yako ya usakinishaji.",
+    "is_validate": "Thibitisha usanidi",
+    "is_npm": "Sakinisha utegemezi wa Node.js (npm install)",
+    "is_clone": "Klonisha hifadhi ya OpenClaw",
+    "is_harden": "Weka viraka vya uimarishaji wa usalama",
+    "is_auditinit": "Anzisha mnyororo wa kumbukumbu ya ukaguzi",
+    "is_health": "Endesha ukaguzi wa afya baada ya usakinishaji",
+    "is_manifest": "Andika faili la ufafanuzi wa usakinishaji",
+    "is_launchagent": "Sajili plist ya macOS LaunchAgent",
+    "is_keychain": "Hifadhi siri katika Keychain",
+    "is_logrotate_mac": "Sanidi mzunguko wa kumbukumbu",
+    "is_start_mac": "Anzisha huduma ya lango",
+    "is_systemd_create": "Unda faili la kitengo cha systemd",
+    "is_secrets_env": "Hifadhi siri katika secrets.env",
+    "is_logrotate": "Sanidi logrotate",
+    "is_nsg_rules": "Sanidi sheria za Azure NSG",
+    "is_enable_start": "Wezesha na anzisha openclaw.service",
+    "s7Title": "Kumbukumbu ya Toleo na Njia ya Ukaguzi",
+    "s7Desc": "Kumbukumbu ya ukaguzi iliyoongezwa kimnyororo wa kriptografia ya vitendo vyote vilivyochukuliwa wakati wa kipindi hiki. Kila ingizo hujumuisha hesh ya SHA-256 iliyohesabiwa juu ya yaliyomo pamoja na hesh ya ingizo la awali (mnyororo unaothibitisha uchezeaji). Siri na PII hazijumuishwi kamwe.",
+    "s7NoEntries": "Bado hakuna ingizo la ukaguzi.",
+    "s7Result": "Matokeo:",
+    "s7Prev": "Awali:",
+    "s7Entries": "{n} ingizo — mnyororo wa hesh unaweza kuthibitishwa kwa upande wa mteja",
+    "s7FooterNote": "Njia hii ya ukaguzi ilizalishwa katika kivinjari kwa kutumia Web Crypto API (SubtleCrypto SHA-256). Hesh ya kila ingizo huhesabiwa kama SHA-256(JSON(&#123;ts, action, result, prevHash&#125;)). Hakuna data iliyotumwa kwa seva yoyote wakati wa kipindi hiki.",
+    "s7Attribution": "Kazi ya <strong>Bob Rapp</strong> na <strong>Ken Johnston</strong>",
+    "act_sessionStarted": "Kipindi cha msaidizi kimeanza",
+    "act_initialized": "Imeanzishwa",
+    "act_configSaved": "Usanidi umehifadhiwa",
+    "act_success": "Mafanikio",
+    "act_secretNote": "Sehemu za siri hazijumuishwi kwenye kumbukumbu",
+    "act_securityConfirmed": "Orodha ya usalama imethibitishwa",
+    "act_reviewConfirmed": "Ukaguzi wa usanidi umethibitishwa",
+    "act_dryRunDone": "Jaribio limekamilika",
+    "act_installStep": "Hatua ya usakinishaji: {name}",
+    "act_completed": "Imekamilika",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "Kazi ya Bob Rapp na Ken Johnston"
+  },
+  "chr": {
+    "headerTitle": "AiGovOps Foundation Framework",
+    "headerSubtitle": "ᎠᏅᎯ 2026 v1 — OpenClaw Guided Install by AiGovOps",
+    "darkMode": "ᎤᎳᏏᎨ",
+    "lightMode": "ᎤᎦᏔᎯ",
+    "languageLabel": "ᎧᏬᏂᎯᏍᏗ",
+    "stepWelcome": "ᎣᏏᏲ",
+    "stepConfiguration": "ᎠᏓᏅᏖᏗ",
+    "stepSecurity": "ᎤᎵᏍᏆᏗᏍᏙᏗ",
+    "stepReview": "ᎠᎦᏔᎮᏗ",
+    "stepDryRun": "ᎠᏓᏍᏕᎵᏍᎬ",
+    "stepInstall": "ᎠᏓᏁᏗ",
+    "stepAuditLog": "ᎠᎦᏔᎮᏗ ᎠᏍᏆᏂᎪᏙᏗ",
+    "stepXofY": "ᎠᎵᏍᏚᎢ {x} / {y}",
+    "btnContinue": "ᎠᏓᏅᏍᏗ",
+    "btnBack": "ᎠᏂᎷᏍᏗ",
+    "btnConfirmContinue": "ᎪᎯᏳᏗ & ᎠᏓᏅᏍᏗ",
+    "btnRunPreflight": "ᎠᏓᏍᏕᎵᏍᎬ ᎢᏳᎾᏛᏁᏗ",
+    "btnProceedInstall": "ᎠᏓᏁᏗ →",
+    "btnBeginInstall": "ᎠᏓᏁᏗ ᎠᎴᏅᏗ",
+    "btnInstallBlocked": "Install (blocked — failures detected)",
+    "btnViewAuditLog": "View Audit Log",
+    "btnStartNewSession": "ᎢᏤ ᎠᎴᏅᏗ",
+    "btnExportJson": "Export as JSON",
+    "s1Title": "ᎣᏏᏲ & Host Selection",
+    "s1Desc": "This wizard installs the <strong>OpenClaw AI Gateway</strong> — a privacy-first, locally-hosted AI proxy for the AiGovOps Foundation Framework (April 2026 v1). It will guide you through configuration, security hardening, preflight checks, and the install process, generating a tamper-evident audit log at every step.",
+    "s1SelectHost": "Select your target host platform to begin:",
+    "s1PrivacyNote": "All data entered in this wizard stays in your browser's memory only. No data is sent to any server.",
+    "hostMacos": "macOS",
+    "hostDigitalocean": "DigitalOcean",
+    "hostAzure": "Azure VM",
+    "hostVps": "Generic VPS",
+    "footerText": "AiGovOps Foundation",
+    "footerAttribution": "A work of Bob Rapp and Ken Johnston"
+  },
+  "brl": {
+    "headerTitle": "⠁⠊⠛⠕⠧⠕⠏⠎ ⠋⠕⠥⠝⠙⠁⠞⠊⠕⠝ ⠋⠗⠁⠍⠑⠺⠕⠗⠅",
+    "headerSubtitle": "⠁⠏⠗⠊⠇ ⠼⠃⠚⠃⠋ ⠧⠼⠁ ⠤ ⠕⠏⠑⠝⠉⠇⠁⠺ ⠛⠥⠊⠙⠑⠙ ⠊⠝⠎⠞⠁⠇⠇",
+    "darkMode": "⠙⠁⠗⠅",
+    "lightMode": "⠇⠊⠛⠓⠞",
+    "languageLabel": "⠇⠁⠝⠛⠥⠁⠛⠑",
+    "stepWelcome": "⠺⠑⠇⠉⠕⠍⠑",
+    "stepConfiguration": "⠉⠕⠝⠋⠊⠛",
+    "stepSecurity": "⠎⠑⠉⠥⠗⠊⠞⠽",
+    "stepReview": "⠗⠑⠧⠊⠑⠺",
+    "stepDryRun": "⠙⠗⠽ ⠗⠥⠝",
+    "stepInstall": "⠊⠝⠎⠞⠁⠇⠇",
+    "stepAuditLog": "⠁⠥⠙⠊⠞ ⠇⠕⠛",
+    "stepXofY": "⠎⠞⠑⠏ {x} ⠕⠋ {y}",
+    "btnContinue": "⠉⠕⠝⠞⠊⠝⠥⠑",
+    "btnBack": "⠃⠁⠉⠅",
+    "btnConfirmContinue": "⠉⠕⠝⠋⠊⠗⠍ ⠯ ⠉⠕⠝⠞⠊⠝⠥⠑",
+    "btnRunPreflight": "⠗⠥⠝ ⠏⠗⠑⠋⠇⠊⠛⠓⠞ ⠉⠓⠑⠉⠅⠎",
+    "btnProceedInstall": "⠏⠗⠕⠉⠑⠑⠙ ⠞⠕ ⠊⠝⠎⠞⠁⠇⠇",
+    "btnBeginInstall": "⠃⠑⠛⠊⠝ ⠊⠝⠎⠞⠁⠇⠇⠁⠞⠊⠕⠝",
+    "btnInstallBlocked": "⠊⠝⠎⠞⠁⠇⠇ ⠐⠣⠃⠇⠕⠉⠅⠑⠙⠐⠜",
+    "btnViewAuditLog": "⠧⠊⠑⠺ ⠁⠥⠙⠊⠞ ⠇⠕⠛",
+    "btnStartNewSession": "⠎⠞⠁⠗⠞ ⠝⠑⠺ ⠎⠑⠎⠎⠊⠕⠝",
+    "btnExportJson": "⠑⠭⠏⠕⠗⠞ ⠁⠎ ⠚⠎⠕⠝",
+    "footerText": "⠁⠊⠛⠕⠧⠕⠏⠎ ⠋⠕⠥⠝⠙⠁⠞⠊⠕⠝",
+    "footerAttribution": "⠁ ⠺⠕⠗⠅ ⠕⠋ ⠃⠕⠃ ⠗⠁⠏⠏ ⠁⠝⠙ ⠅⠑⠝ ⠚⠕⠓⠝⠎⠞⠕⠝"
+  }
+};
+
+const RTL_LOCALES = ["ar", "ur", "ps"];
+
+let currentLocale = 'en';
+
+function t(key, params) {
+  const locale = WIZARD_I18N[currentLocale] || {};
+  const en = WIZARD_I18N['en'] || {};
+  let str = (locale[key] !== undefined) ? locale[key] : (en[key] !== undefined ? en[key] : key);
+  if (params && typeof str === 'string') {
+    Object.keys(params).forEach(k => {
+      str = str.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
+    });
+  }
+  return str;
+}
+
+function switchLocale(code) {
+  if (!WIZARD_I18N[code]) code = 'en';
+  currentLocale = code;
+  const html = document.documentElement;
+  html.setAttribute('lang', code);
+  html.setAttribute('dir', RTL_LOCALES.indexOf(code) !== -1 ? 'rtl' : 'ltr');
+
+  // Update header
+  const titleEl = document.getElementById('headerTitle');
+  const subEl   = document.getElementById('headerSubtitle');
+  if (titleEl) titleEl.textContent = t('headerTitle');
+  if (subEl)   subEl.textContent   = t('headerSubtitle');
+
+  // Update theme button label
+  const themeLabel = document.getElementById('themeLabel');
+  if (themeLabel) {
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    themeLabel.textContent = isDark ? t('lightMode') : t('darkMode');
+  }
+
+  // Update footer
+  const ft = document.getElementById('footerText');
+  const fa = document.getElementById('footerAttribution');
+  if (ft) ft.textContent = t('footerText');
+  if (fa) fa.textContent = t('footerAttribution');
+
+  // Update dropdown selection (in case called programmatically)
+  const sel = document.getElementById('localeSwitcher');
+  if (sel && sel.value !== code) sel.value = code;
+
+  // Re-render current step + progress
+  if (typeof render === 'function') {
+    render();
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════
    STATE
    ═══════════════════════════════════════════════════════════════ */
@@ -671,10 +3205,12 @@ const STATE = {
   dryRunDone: false,
 };
 
-const STEP_LABELS = [
-  'Welcome', 'Configuration', 'Security',
-  'Review', 'Dry Run', 'Install', 'Audit Log'
-];
+function getStepLabels() {
+  return [
+    t('stepWelcome'), t('stepConfiguration'), t('stepSecurity'),
+    t('stepReview'), t('stepDryRun'), t('stepInstall'), t('stepAuditLog')
+  ];
+}
 
 /* ═══════════════════════════════════════════════════════════════
    CRYPTO — SHA-256 HASH CHAIN
@@ -702,10 +3238,11 @@ async function addAuditEntry(action, result, extra = {}) {
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
-  document.getElementById('themeBtn').innerHTML =
-    `<span>${isDark ? '🌙' : '☀️'}</span> ${isDark ? 'Dark' : 'Light'}`;
+  const nowDark = !isDark;
+  html.setAttribute('data-theme', nowDark ? 'dark' : 'light');
+  document.getElementById('themeIcon').textContent = nowDark ? '☀️' : '🌙';
+  const labelEl = document.getElementById('themeLabel');
+  if (labelEl) labelEl.textContent = nowDark ? t('lightMode') : t('darkMode');
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -746,64 +3283,87 @@ const DEFAULTS = {
   },
 };
 
-const HOST_INFO = {
-  macos:        { label: 'macOS', icon: '🍎', desc: 'Local development or production on macOS. Uses LaunchAgent, Keychain, and Homebrew.' },
-  digitalocean: { label: 'DigitalOcean', icon: '🌊', desc: 'DigitalOcean Droplet. Uses systemd, ufw firewall, and env-based secrets.' },
-  azure:        { label: 'Azure VM', icon: '☁️', desc: 'Microsoft Azure Virtual Machine. Uses systemd, Azure NSG, and env-based secrets.' },
-  vps:          { label: 'Generic VPS', icon: '🖥️', desc: 'Any Linux VPS. Uses systemd and environment file for secrets.' },
-};
+const HOST_ICONS = { macos: '🍎', digitalocean: '🌊', azure: '☁️', vps: '🖥️' };
+function getHostInfo() {
+  return {
+    macos:        { label: t('hostMacos'),        icon: HOST_ICONS.macos,        desc: t('hostMacosDesc') },
+    digitalocean: { label: t('hostDigitalocean'), icon: HOST_ICONS.digitalocean, desc: t('hostDigitaloceanDesc') },
+    azure:        { label: t('hostAzure'),        icon: HOST_ICONS.azure,        desc: t('hostAzureDesc') },
+    vps:          { label: t('hostVps'),          icon: HOST_ICONS.vps,          desc: t('hostVpsDesc') },
+  };
+}
+// Backwards-compatible proxy that resolves dynamically per locale
+const HOST_INFO = new Proxy({}, { get(_, key) { return getHostInfo()[key]; } });
 
-const SECURITY_ITEMS = [
-  { id: 's_localhost',   label: 'Bind to localhost only (127.0.0.1)', sub: 'Prevents external access to the gateway port.', critical: true },
-  { id: 's_tailscale',  label: 'Enable Tailscale VPN for remote access', sub: 'Use Tailscale instead of exposing ports directly.', critical: true },
-  { id: 's_user',       label: 'Run under dedicated user account', sub: 'Principle of least privilege — never run as root.', critical: true },
-  { id: 's_secrets',    label: 'Store secrets in Keychain / secure env vars', sub: 'No plaintext secrets in config files or logs.', critical: true },
-  { id: 's_audit',      label: 'Enable immutable audit logging', sub: 'Cryptographic hash chain for tamper-evident logs.', critical: false },
-  { id: 's_logrotate',  label: 'Configure log rotation', sub: 'Prevents disk exhaustion; uses logrotate or journald.', critical: false },
-  { id: 's_nopii',      label: 'No PII in logs', sub: 'Redact API keys, tokens, and user identifiers from all log output.', critical: true },
-  { id: 's_health',     label: 'Enable health check endpoint', sub: 'GET /health returns status without leaking internals.', critical: false },
+const SECURITY_ITEM_META = [
+  { id: 's_localhost',  tkey: 'localhost', critical: true },
+  { id: 's_tailscale',  tkey: 'tailscale', critical: true },
+  { id: 's_user',       tkey: 'user',      critical: true },
+  { id: 's_secrets',    tkey: 'secrets',   critical: true },
+  { id: 's_audit',      tkey: 'audit',     critical: false },
+  { id: 's_logrotate',  tkey: 'logrotate', critical: false },
+  { id: 's_nopii',      tkey: 'nopii',     critical: true },
+  { id: 's_health',     tkey: 'health',    critical: false },
 ];
+function getSecurityItems() {
+  return SECURITY_ITEM_META.map(m => ({
+    id: m.id, critical: m.critical,
+    label: t('sec_' + m.tkey + '_label'),
+    sub:   t('sec_' + m.tkey + '_sub'),
+  }));
+}
+// Backwards-compatible proxy: `SECURITY_ITEMS` acts like a fresh localized array
+const SECURITY_ITEMS = new Proxy([], {
+  get(_, prop) {
+    const items = getSecurityItems();
+    if (prop === 'length') return items.length;
+    if (prop === Symbol.iterator) return items[Symbol.iterator].bind(items);
+    if (typeof prop === 'string' && /^\d+$/.test(prop)) return items[Number(prop)];
+    const v = items[prop];
+    return typeof v === 'function' ? v.bind(items) : v;
+  }
+});
 
 /* ═══════════════════════════════════════════════════════════════
    DRY RUN CHECKS
    ═══════════════════════════════════════════════════════════════ */
 function getDryRunChecks(host) {
   const common = [
-    { name: 'Node.js version ≥ 20', fn: () => ({ status: 'pass', msg: 'Node 20.x detected (simulated)' }) },
-    { name: 'npm / package manager', fn: () => ({ status: 'pass', msg: 'npm 10.x present' }) },
-    { name: 'git available', fn: () => ({ status: 'pass', msg: 'git 2.44 detected' }) },
-    { name: 'Port 3000 availability', fn: () => ({ status: 'pass', msg: 'Port 3000 is free' }) },
-    { name: 'Bind address is localhost', fn: () => {
+    { name: t('dc_node'),       fn: () => ({ status: 'pass', msg: t('dc_node_msg') }) },
+    { name: t('dc_npm'),        fn: () => ({ status: 'pass', msg: t('dc_npm_msg') }) },
+    { name: t('dc_git'),        fn: () => ({ status: 'pass', msg: t('dc_git_msg') }) },
+    { name: t('dc_port'),       fn: () => ({ status: 'pass', msg: t('dc_port_msg') }) },
+    { name: t('dc_bind'), fn: () => {
       const addr = STATE.config.bindAddress || DEFAULTS[host].bindAddress;
       return addr === '127.0.0.1'
-        ? { status: 'pass', msg: 'Bind address is 127.0.0.1 — ✓ secure' }
-        : { status: 'warn', msg: `Bind address is ${addr} — external exposure risk` };
+        ? { status: 'pass', msg: t('dc_bind_ok') }
+        : { status: 'warn', msg: t('dc_bind_warn', { addr }) };
     }},
-    { name: 'Install directory writable', fn: () => ({ status: 'pass', msg: `${STATE.config.installDir || DEFAULTS[host].installDir} writable` }) },
-    { name: 'Log directory accessible', fn: () => ({ status: 'pass', msg: `${STATE.config.logDir || DEFAULTS[host].logDir} accessible` }) },
-    { name: 'No PII in configuration', fn: () => ({ status: 'pass', msg: 'Configuration values passed PII scan' }) },
+    { name: t('dc_installdir'), fn: () => ({ status: 'pass', msg: t('dc_installdir_msg', { dir: STATE.config.installDir || DEFAULTS[host].installDir }) }) },
+    { name: t('dc_logdir'),     fn: () => ({ status: 'pass', msg: t('dc_logdir_msg',     { dir: STATE.config.logDir     || DEFAULTS[host].logDir     }) }) },
+    { name: t('dc_nopii'),      fn: () => ({ status: 'pass', msg: t('dc_nopii_msg') }) },
   ];
 
   const hostSpecific = {
     macos: [
-      { name: 'macOS Keychain access', fn: () => ({ status: 'pass', msg: 'Keychain API accessible' }) },
-      { name: 'LaunchAgent directory', fn: () => ({ status: 'pass', msg: '~/Library/LaunchAgents exists' }) },
-      { name: 'Homebrew present', fn: () => ({ status: 'warn', msg: 'Homebrew not detected — manual install may be needed' }) },
+      { name: t('dc_keychain'), fn: () => ({ status: 'pass', msg: t('dc_keychain_msg') }) },
+      { name: t('dc_launch'),   fn: () => ({ status: 'pass', msg: t('dc_launch_msg')   }) },
+      { name: t('dc_brew'),     fn: () => ({ status: 'warn', msg: t('dc_brew_msg')     }) },
     ],
     digitalocean: [
-      { name: 'systemd available', fn: () => ({ status: 'pass', msg: 'systemd v252 detected' }) },
-      { name: 'ufw firewall active', fn: () => ({ status: 'pass', msg: 'ufw enabled, port 22 allowed' }) },
-      { name: 'Non-root user', fn: () => ({ status: 'pass', msg: 'Running as non-root user' }) },
+      { name: t('dc_systemd'),  fn: () => ({ status: 'pass', msg: t('dc_systemd_msg252') }) },
+      { name: t('dc_ufw'),      fn: () => ({ status: 'pass', msg: t('dc_ufw_msg') }) },
+      { name: t('dc_nonroot'),  fn: () => ({ status: 'pass', msg: t('dc_nonroot_msg') }) },
     ],
     azure: [
-      { name: 'systemd available', fn: () => ({ status: 'pass', msg: 'systemd v252 detected' }) },
-      { name: 'Azure NSG check', fn: () => ({ status: 'pass', msg: 'No inbound rules for port 3000' }) },
-      { name: 'Non-root user', fn: () => ({ status: 'pass', msg: 'Running as non-root user' }) },
+      { name: t('dc_systemd'),  fn: () => ({ status: 'pass', msg: t('dc_systemd_msg252') }) },
+      { name: t('dc_nsg'),      fn: () => ({ status: 'pass', msg: t('dc_nsg_msg') }) },
+      { name: t('dc_nonroot'),  fn: () => ({ status: 'pass', msg: t('dc_nonroot_msg') }) },
     ],
     vps: [
-      { name: 'systemd available', fn: () => ({ status: 'pass', msg: 'systemd v251 detected' }) },
-      { name: 'iptables / firewall', fn: () => ({ status: 'warn', msg: 'No firewall detected — consider ufw or iptables' }) },
-      { name: 'Non-root user', fn: () => ({ status: 'pass', msg: 'Running as non-root user' }) },
+      { name: t('dc_systemd'),  fn: () => ({ status: 'pass', msg: t('dc_systemd_msg251') }) },
+      { name: t('dc_iptables'), fn: () => ({ status: 'warn', msg: t('dc_iptables_msg') }) },
+      { name: t('dc_nonroot'),  fn: () => ({ status: 'pass', msg: t('dc_nonroot_msg') }) },
     ],
   };
 
@@ -814,22 +3374,13 @@ function getDryRunChecks(host) {
    INSTALL STEPS
    ═══════════════════════════════════════════════════════════════ */
 function getInstallSteps(host) {
-  const common_start = [
-    'Validate configuration',
-    'Install Node.js dependencies (npm install)',
-    'Clone OpenClaw repository',
-    'Apply security hardening patches',
-  ];
-  const common_end = [
-    'Initialize audit log chain',
-    'Run post-install health check',
-    'Write install manifest',
-  ];
+  const common_start = [ t('is_validate'), t('is_npm'), t('is_clone'), t('is_harden') ];
+  const common_end   = [ t('is_auditinit'), t('is_health'), t('is_manifest') ];
   const hostSteps = {
-    macos: ['Register macOS LaunchAgent plist', 'Store secrets in Keychain', 'Configure log rotation', 'Start gateway service'],
-    digitalocean: ['Create systemd unit file', 'Store secrets in secrets.env', 'Configure logrotate', 'Enable and start openclaw.service'],
-    azure: ['Create systemd unit file', 'Store secrets in secrets.env', 'Configure Azure NSG rules', 'Enable and start openclaw.service'],
-    vps: ['Create systemd unit file', 'Store secrets in secrets.env', 'Configure logrotate', 'Enable and start openclaw.service'],
+    macos:        [ t('is_launchagent'),    t('is_keychain'),    t('is_logrotate_mac'), t('is_start_mac') ],
+    digitalocean: [ t('is_systemd_create'), t('is_secrets_env'), t('is_logrotate'),     t('is_enable_start') ],
+    azure:        [ t('is_systemd_create'), t('is_secrets_env'), t('is_nsg_rules'),     t('is_enable_start') ],
+    vps:          [ t('is_systemd_create'), t('is_secrets_env'), t('is_logrotate'),     t('is_enable_start') ],
   };
   return [...common_start, ...(hostSteps[host] || []), ...common_end];
 }
@@ -846,7 +3397,7 @@ function renderProgress() {
     const active = i === STATE.currentStep;
     html += `<div class="step-pill ${done?'done':''} ${active?'active':''}">
       <div class="step-bubble ${done?'done':''} ${active?'active':''}">${done ? '✓' : i}</div>
-      <span class="step-label">${STEP_LABELS[i-1]}</span>
+      <span class="step-label">${getStepLabels()[i-1]}</span>
     </div>`;
     if (i < STATE.totalSteps) {
       html += `<div class="step-connector ${done?'done':''}"></div>`;
@@ -862,23 +3413,23 @@ function renderProgress() {
 
 // STEP 1 — Welcome & Host Selection
 function renderStep1() {
+  const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+  const arrow = isRtl ? '←' : '→';
+  const hosts = getHostInfo();
   const html = `
   <div class="card">
     <div class="step-heading">
       <div class="step-num-badge">1</div>
-      <h2 class="step-title">Welcome &amp; Host Selection</h2>
+      <h2 class="step-title">${t('s1Title')}</h2>
     </div>
     <p class="step-desc">
-      This wizard installs the <strong>OpenClaw AI Gateway</strong> — a privacy-first,
-      locally-hosted AI proxy for the AiGovOps Foundation Framework (April 2026 v1).
-      It will guide you through configuration, security hardening, preflight checks,
-      and the install process, generating a tamper-evident audit log at every step.
+      ${t('s1Desc')}
       <br><br>
-      <strong>Select your target host platform to begin:</strong>
+      <strong>${t('s1SelectHost')}</strong>
     </p>
 
     <div class="radio-grid" id="hostGrid">
-      ${Object.entries(HOST_INFO).map(([key, info]) => `
+      ${Object.entries(hosts).map(([key, info]) => `
         <label class="radio-card ${STATE.host === key ? 'selected' : ''}" onclick="selectHost('${key}')">
           <input type="radio" name="host" value="${key}" ${STATE.host === key ? 'checked' : ''}>
           <div class="radio-name">
@@ -892,14 +3443,13 @@ function renderStep1() {
 
     <div class="alert alert-blue" style="margin-top:20px;">
       <span>ℹ️</span>
-      <span>All data entered in this wizard stays in your browser's memory only.
-      No data is sent to any server. No localStorage or cookies are used.</span>
+      <span>${t('s1PrivacyNote')}</span>
     </div>
 
     <div class="btn-row">
-      <span style="font-size:12px;color:var(--muted);">Step 1 of 7</span>
+      <span style="font-size:12px;color:var(--muted);">${t('stepXofY', { x: 1, y: STATE.totalSteps })}</span>
       <button class="btn btn-primary" onclick="goNext()">
-        Continue <span>→</span>
+        ${t('btnContinue')} <span>${arrow}</span>
       </button>
     </div>
   </div>`;
@@ -919,6 +3469,10 @@ function renderStep2() {
   const d = DEFAULTS[STATE.host];
   const cfg = STATE.config;
   const isMac = STATE.host === 'macos';
+  const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+  const arrowF = isRtl ? '←' : '→';
+  const arrowB = isRtl ? '→' : '←';
+  const hostInfo = getHostInfo()[STATE.host];
 
   function val(key) { return cfg[key] !== undefined ? cfg[key] : d[key]; }
 
@@ -926,73 +3480,72 @@ function renderStep2() {
   <div class="card">
     <div class="step-heading">
       <div class="step-num-badge">2</div>
-      <h2 class="step-title">Configuration</h2>
+      <h2 class="step-title">${t('s2Title')}</h2>
     </div>
     <p class="step-desc">
-      Pre-filled defaults for <strong>${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</strong>.
-      Edit any field — defaults are sensible and security-reviewed.
+      ${t('s2Desc', { host: hostInfo.icon + ' ' + hostInfo.label })}
     </p>
 
     <div class="form-group">
-      <label class="form-label">Install Directory</label>
+      <label class="form-label">${t('s2InstallDir')}</label>
       <input class="form-input" id="cfg_installDir" type="text" value="${val('installDir')}"
         oninput="setCfg('installDir', this.value)">
-      <div class="form-hint">Where the OpenClaw gateway files will be installed.</div>
-      ${isModified('installDir', d) ? `<div class="warn-tag">⚠ Modified from default</div>` : ''}
+      <div class="form-hint">${t('s2InstallDirHint')}</div>
+      ${isModified('installDir', d) ? `<div class="warn-tag">${t('s2ModifiedTag')}</div>` : ''}
     </div>
 
     <div class="form-group">
-      <label class="form-label">Service Name</label>
+      <label class="form-label">${t('s2ServiceName')}</label>
       <input class="form-input" id="cfg_serviceName" type="text" value="${val('serviceName')}"
         oninput="setCfg('serviceName', this.value)">
-      <div class="form-hint">${isMac ? 'macOS LaunchAgent label (reverse-DNS format recommended).' : 'systemd service name.'}</div>
-      ${isModified('serviceName', d) ? `<div class="warn-tag">⚠ Modified from default</div>` : ''}
+      <div class="form-hint">${isMac ? t('s2ServiceHintMac') : t('s2ServiceHintLinux')}</div>
+      ${isModified('serviceName', d) ? `<div class="warn-tag">${t('s2ModifiedTag')}</div>` : ''}
     </div>
 
     <div class="form-group">
-      <label class="form-label">Bind Address</label>
+      <label class="form-label">${t('s2BindAddress')}</label>
       <input class="form-input" id="cfg_bindAddress" type="text" value="${val('bindAddress')}"
         oninput="setCfg('bindAddress', this.value); checkBind()">
       <div id="bindWarn" style="display:none;">
-        <div class="warn-tag">⚠ Warning: Changing bind address from 127.0.0.1 exposes the gateway externally. Only do this if you understand the risk and use a firewall.</div>
+        <div class="warn-tag">${t('s2BindWarn')}</div>
       </div>
-      <div class="form-hint">Gateway listening address. Leave as 127.0.0.1 for local-only.</div>
+      <div class="form-hint">${t('s2BindHint')}</div>
     </div>
 
     <div class="form-group">
-      <label class="form-label">Log Directory</label>
+      <label class="form-label">${t('s2LogDir')}</label>
       <input class="form-input" id="cfg_logDir" type="text" value="${val('logDir')}"
         oninput="setCfg('logDir', this.value)">
-      <div class="form-hint">Directory for gateway logs. Ensure writable by the service user.</div>
-      ${isModified('logDir', d) ? `<div class="warn-tag">⚠ Modified from default</div>` : ''}
+      <div class="form-hint">${t('s2LogDirHint')}</div>
+      ${isModified('logDir', d) ? `<div class="warn-tag">${t('s2ModifiedTag')}</div>` : ''}
     </div>
 
     <div class="form-group">
-      <label class="form-label">Node.js Version Requirement</label>
+      <label class="form-label">${t('s2NodeVersion')}</label>
       <input class="form-input" id="cfg_nodeVersion" type="text" value="${val('nodeVersion')}"
         oninput="setCfg('nodeVersion', this.value)">
-      <div class="form-hint">Minimum Node.js version required by the gateway.</div>
+      <div class="form-hint">${t('s2NodeVersionHint')}</div>
     </div>
 
     <div class="form-group">
-      <label class="form-label">Secret Storage Method</label>
+      <label class="form-label">${t('s2SecretMethod')}</label>
       <input class="form-input" id="cfg_secretMethod" type="text" value="${val('secretMethod')}"
         oninput="setCfg('secretMethod', this.value)">
-      <div class="secret-tag">🔒 Secret — will not be logged</div>
-      <div class="form-hint">How API keys and tokens will be stored. This field is excluded from all logs.</div>
+      <div class="secret-tag">🔒 ${t('s2SecretTag')}</div>
+      <div class="form-hint">${t('s2SecretMethodHint')}</div>
     </div>
 
     <div class="form-group">
-      <label class="form-label">API Key / Token (optional — set post-install)</label>
-      <input class="form-input" id="cfg_apiKey" type="password" placeholder="Leave blank to configure after install"
+      <label class="form-label">${t('s2ApiKey')}</label>
+      <input class="form-input" id="cfg_apiKey" type="password" placeholder="${t('s2ApiKeyPlaceholder')}"
         oninput="setCfg('apiKey', this.value, true)">
-      <div class="secret-tag">🔒 Secret — will not be logged</div>
-      <div class="form-hint">If provided, stored securely in ${val('secretMethod')}. Never written to disk in plaintext.</div>
+      <div class="secret-tag">🔒 ${t('s2SecretTag')}</div>
+      <div class="form-hint">${t('s2ApiKeyHint', { method: val('secretMethod') })}</div>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
-      <button class="btn btn-primary" onclick="saveConfigAndNext()">Continue →</button>
+      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" onclick="saveConfigAndNext()">${t('btnContinue')} ${arrowF}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -1031,45 +3584,44 @@ async function saveConfigAndNext() {
     STATE.config['__secret_apiKey'] = true;
   }
 
-  await addAuditEntry('Configuration saved', 'Success', {
+  await addAuditEntry(t('act_configSaved'), t('act_success'), {
     host: STATE.host,
-    note: 'Secret fields excluded from log'
+    note: t('act_secretNote')
   });
   goNext();
 }
 
 // STEP 3 — Security & Hardening
 function renderStep3() {
-  // Initialize security state if needed
-  SECURITY_ITEMS.forEach(item => {
+  const items = getSecurityItems();
+  items.forEach(item => {
     if (STATE.security[item.id] === undefined) STATE.security[item.id] = true;
   });
+  const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+  const arrowF = isRtl ? '←' : '→';
+  const arrowB = isRtl ? '→' : '←';
 
   const html = `
   <div class="card">
     <div class="step-heading">
       <div class="step-num-badge">3</div>
-      <h2 class="step-title">Security &amp; Hardening</h2>
+      <h2 class="step-title">${t('s3Title')}</h2>
     </div>
-    <p class="step-desc">
-      Review and confirm the security controls for this installation.
-      Critical items should remain checked. Unchecking a critical item will
-      display a warning.
-    </p>
+    <p class="step-desc">${t('s3Desc')}</p>
 
     <div class="checklist" id="securityList">
-      ${SECURITY_ITEMS.map(item => `
+      ${items.map(item => `
         <div class="check-item" id="chk_wrap_${item.id}">
           <input type="checkbox" id="${item.id}" ${STATE.security[item.id] ? 'checked' : ''}
             onchange="toggleSecurity('${item.id}', this.checked, ${item.critical})">
           <div>
             <div class="check-label">
               ${item.label}
-              ${item.critical ? `<span class="critical-badge">Critical</span>` : ''}
+              ${item.critical ? `<span class="critical-badge">${t('s3Critical')}</span>` : ''}
             </div>
             <div class="check-sub">${item.sub}</div>
             <div id="warn_${item.id}" class="warn-tag" style="display:${(!STATE.security[item.id] && item.critical) ? 'inline-flex' : 'none'};">
-              ⚠ Unchecking this critical control reduces security
+              ${t('s3UncheckWarn')}
             </div>
           </div>
         </div>
@@ -1077,8 +3629,8 @@ function renderStep3() {
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
-      <button class="btn btn-primary" onclick="saveSecurityAndNext()">Continue →</button>
+      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" onclick="saveSecurityAndNext()">${t('btnContinue')} ${arrowF}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -1092,7 +3644,7 @@ function toggleSecurity(id, checked, critical) {
 
 async function saveSecurityAndNext() {
   const unchecked = SECURITY_ITEMS.filter(i => !STATE.security[i.id]).map(i => i.label);
-  await addAuditEntry('Security checklist confirmed', 'Success', {
+  await addAuditEntry(t('act_securityConfirmed'), t('act_success'), {
     checkedCount: SECURITY_ITEMS.filter(i => STATE.security[i.id]).length,
     uncheckedCount: unchecked.length,
     uncheckedItems: unchecked
@@ -1107,7 +3659,7 @@ function renderStep4() {
   function val(key) { return cfg[key] !== undefined ? cfg[key] : d[key]; }
   function isSecretKey(key) { return cfg['__secret_' + key] || key === 'apiKey' || key === 'secretMethod'; }
   function dispVal(key) {
-    if (key === 'apiKey') return cfg[key] ? '••••••••' : '(not configured)';
+    if (key === 'apiKey') return cfg[key] ? '••••••••' : t('s4NotConfigured');
     if (key === 'secretMethod') return '••••••';
     return val(key);
   }
@@ -1117,41 +3669,43 @@ function renderStep4() {
   }
 
   const configRows = [
-    { key: 'installDir', label: 'Install Directory' },
-    { key: 'serviceName', label: 'Service Name' },
-    { key: 'bindAddress', label: 'Bind Address' },
-    { key: 'logDir', label: 'Log Directory' },
-    { key: 'nodeVersion', label: 'Node.js Version' },
-    { key: 'secretMethod', label: 'Secret Method' },
-    { key: 'apiKey', label: 'API Key' },
+    { key: 'installDir',   label: t('s4InstallDir') },
+    { key: 'serviceName',  label: t('s4ServiceName') },
+    { key: 'bindAddress',  label: t('s4BindAddress') },
+    { key: 'logDir',       label: t('s4LogDir') },
+    { key: 'nodeVersion',  label: t('s4NodeVersion') },
+    { key: 'secretMethod', label: t('s4SecretMethod') },
+    { key: 'apiKey',       label: t('s4ApiKey') },
   ];
 
-  const secRows = SECURITY_ITEMS.map(i => ({
+  const secItems = getSecurityItems();
+  const secRows = secItems.map(i => ({
     label: i.label,
-    val: STATE.security[i.id] ? '✓ Enabled' : '✗ Disabled',
+    val: STATE.security[i.id] ? t('s4Enabled') : t('s4Disabled'),
     cls: STATE.security[i.id] ? '' : 'modified'
   }));
+
+  const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+  const arrowF = isRtl ? '←' : '→';
+  const arrowB = isRtl ? '→' : '←';
+  const hostInfo = getHostInfo()[STATE.host];
 
   const html = `
   <div class="card">
     <div class="step-heading">
       <div class="step-num-badge">4</div>
-      <h2 class="step-title">Review Configuration</h2>
+      <h2 class="step-title">${t('s4Title')}</h2>
     </div>
-    <p class="step-desc">
-      Review all settings before proceeding. Values shown in
-      <span style="color:var(--amber);font-weight:700;">amber</span>
-      differ from defaults. Secrets are masked.
-    </p>
+    <p class="step-desc">${t('s4Desc')}</p>
 
     <table class="review-table">
-      <tr><td colspan="2" class="review-section">▸ Host &amp; Platform</td></tr>
+      <tr><td colspan="2" class="review-section">${t('s4SectionHost')}</td></tr>
       <tr>
-        <td class="review-key">Target Host</td>
-        <td class="review-val">${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</td>
+        <td class="review-key">${t('s4TargetHost')}</td>
+        <td class="review-val">${hostInfo.icon} ${hostInfo.label}</td>
       </tr>
 
-      <tr><td colspan="2" class="review-section">▸ Configuration</td></tr>
+      <tr><td colspan="2" class="review-section">${t('s4SectionConfig')}</td></tr>
       ${configRows.map(r => `
         <tr>
           <td class="review-key">${r.label}</td>
@@ -1159,7 +3713,7 @@ function renderStep4() {
         </tr>
       `).join('')}
 
-      <tr><td colspan="2" class="review-section">▸ Security Controls</td></tr>
+      <tr><td colspan="2" class="review-section">${t('s4SectionSecurity')}</td></tr>
       ${secRows.map(r => `
         <tr>
           <td class="review-key" style="font-size:12px;">${r.label}</td>
@@ -1170,19 +3724,19 @@ function renderStep4() {
 
     <div class="alert alert-blue" style="margin-top:20px;">
       <span>🔒</span>
-      <span>Secret values (API keys, secret storage method) are masked and will never appear in the audit log.</span>
+      <span>${t('s4SecretNote')}</span>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
-      <button class="btn btn-primary" onclick="confirmReview()">Confirm &amp; Continue →</button>
+      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" onclick="confirmReview()">${t('btnConfirmContinue')} ${arrowF}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
 }
 
 async function confirmReview() {
-  await addAuditEntry('Configuration review confirmed', 'Success', {
+  await addAuditEntry(t('act_reviewConfirmed'), t('act_success'), {
     host: STATE.host,
     bindAddress: STATE.config.bindAddress || DEFAULTS[STATE.host].bindAddress
   });
@@ -1191,30 +3745,30 @@ async function confirmReview() {
 
 // STEP 5 — Dry Run
 function renderStep5() {
+  const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+  const arrowB = isRtl ? '→' : '←';
+  const hostInfo = getHostInfo()[STATE.host];
   const html = `
   <div class="card">
     <div class="step-heading">
       <div class="step-num-badge">5</div>
-      <h2 class="step-title">Dry Run (Preflight)</h2>
+      <h2 class="step-title">${t('s5Title')}</h2>
     </div>
     <p class="step-desc">
-      Simulating preflight checks for
-      <strong>${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</strong>.
-      Each check validates your environment before installation.
+      ${t('s5Desc', { host: hostInfo.icon + ' ' + hostInfo.label })}
     </p>
 
     <div class="checks-list" id="checksList"></div>
     <div id="dryRunSummary"></div>
 
     <div class="btn-row" id="dryBtnRow">
-      <button class="btn btn-ghost" onclick="goPrev()" id="dryPrevBtn">← Back</button>
-      <button class="btn btn-teal" id="runDryBtn" onclick="runDryRun()">▶ Run Preflight Checks</button>
+      <button class="btn btn-ghost" onclick="goPrev()" id="dryPrevBtn">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-teal" id="runDryBtn" onclick="runDryRun()">▶ ${t('btnRunPreflight')}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
 
   if (STATE.dryRunDone && STATE.dryRunResults.length > 0) {
-    // Re-render results if already run
     showDryRunResults(STATE.dryRunResults);
   }
 }
@@ -1234,7 +3788,10 @@ async function runDryRun() {
     const row = document.createElement('div');
     row.className = `check-row ${result.status}`;
     const icon = result.status === 'pass' ? '✅' : result.status === 'warn' ? '⚠️' : '❌';
-    const statusLabel = result.status.toUpperCase();
+    const statusLabel = result.status === 'pass' ? t('statusPass')
+                      : result.status === 'warn' ? t('statusWarn')
+                      : result.status === 'fail' ? t('statusFail')
+                      : t('statusInfo');
     row.innerHTML = `
       <span class="check-icon">${icon}</span>
       <div>
@@ -1252,7 +3809,7 @@ async function runDryRun() {
   const passed = STATE.dryRunResults.filter(r => r.status === 'pass').length;
   const warned = STATE.dryRunResults.filter(r => r.status === 'warn').length;
   const failed = STATE.dryRunResults.filter(r => r.status === 'fail').length;
-  await addAuditEntry('Dry run completed', 'Success', { passed, warned, failed });
+  await addAuditEntry(t('act_dryRunDone'), t('act_success'), { passed, warned, failed });
 }
 
 function showDryRunResults(results) {
@@ -1264,43 +3821,47 @@ function showDryRunResults(results) {
   if (sumEl) {
     sumEl.innerHTML = `
       <div class="dry-run-summary">
-        <span class="summary-pass">✅ ${passed} passed</span>
-        <span class="summary-warn">⚠️ ${warned} warnings</span>
-        <span class="summary-fail">❌ ${failed} failed</span>
+        <span class="summary-pass">✅ ${passed} ${t('s5Passed')}</span>
+        <span class="summary-warn">⚠️ ${warned} ${t('s5Warnings')}</span>
+        <span class="summary-fail">❌ ${failed} ${t('s5Failed')}</span>
       </div>`;
   }
 
   const btnRow = document.getElementById('dryBtnRow');
   if (btnRow) {
+    const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+    const arrowF = isRtl ? '←' : '→';
+    const arrowB = isRtl ? '→' : '←';
     btnRow.innerHTML = `
-      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
+      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
       ${failed === 0
-        ? `<button class="btn btn-primary" onclick="goNext()">Proceed to Install →</button>`
-        : `<button class="btn btn-ghost" disabled title="Resolve failures before installing">Install (blocked — failures detected)</button>`}
+        ? `<button class="btn btn-primary" onclick="goNext()">${t('btnProceedInstall')} ${arrowF}</button>`
+        : `<button class="btn btn-ghost" disabled>${t('btnInstallBlocked')}</button>`}
     `;
   }
 }
 
 // STEP 6 — Execute Install
 function renderStep6() {
+  const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+  const arrowB = isRtl ? '→' : '←';
+  const hostInfo = getHostInfo()[STATE.host];
   const html = `
   <div class="card">
     <div class="step-heading">
       <div class="step-num-badge">6</div>
-      <h2 class="step-title">Execute Install</h2>
+      <h2 class="step-title">${t('s6Title')}</h2>
     </div>
     <p class="step-desc">
-      Installing OpenClaw on
-      <strong>${HOST_INFO[STATE.host].icon} ${HOST_INFO[STATE.host].label}</strong>.
-      Each step completes before the next begins.
+      ${t('s6Desc', { host: hostInfo.icon + ' ' + hostInfo.label })}
     </p>
 
     <div class="install-list" id="installList"></div>
     <div id="installComplete"></div>
 
     <div class="btn-row" id="installBtnRow">
-      <button class="btn btn-ghost" onclick="goPrev()" id="installPrevBtn">← Back</button>
-      <button class="btn btn-primary" id="runInstallBtn" onclick="runInstall()">▶ Begin Installation</button>
+      <button class="btn btn-ghost" onclick="goPrev()" id="installPrevBtn">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" id="runInstallBtn" onclick="runInstall()">▶ ${t('btnBeginInstall')}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -1330,7 +3891,7 @@ async function runInstall() {
     row.className = 'install-row done';
     row.innerHTML = `<span class="install-icon">✅</span><span>${steps[i]}</span>`;
 
-    await addAuditEntry(`Install step: ${steps[i]}`, 'Completed');
+    await addAuditEntry(t('act_installStep', { name: steps[i] }), t('act_completed'));
   }
 
   STATE.installDone = true;
@@ -1339,17 +3900,16 @@ async function runInstall() {
 
 function showInstallComplete() {
   const completeEl = document.getElementById('installComplete');
+  const hostInfo = getHostInfo()[STATE.host];
   if (completeEl) {
     completeEl.innerHTML = `
       <div class="install-complete">
         <div class="install-complete-icon">🎉</div>
         <div>
-          <div class="install-complete-title">Installation Complete!</div>
+          <div class="install-complete-title">${t('s6Complete')}</div>
           <div class="install-complete-msg">
-            OpenClaw AI Gateway is installed and running on
-            ${HOST_INFO[STATE.host].label}.<br>
-            <strong>Rollback:</strong> If needed, rollback scripts are available in the
-            <code style="font-size:12px;">scripts/</code> directory of your install path.
+            ${t('s6CompleteMsg', { host: hostInfo.label })}<br>
+            <strong>${t('s6Rollback')}</strong> ${t('s6RollbackMsg')}
           </div>
         </div>
       </div>`;
@@ -1357,37 +3917,37 @@ function showInstallComplete() {
 
   const btnRow = document.getElementById('installBtnRow');
   if (btnRow) {
+    const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+    const arrowF = isRtl ? '←' : '→';
     btnRow.innerHTML = `
       <span></span>
-      <button class="btn btn-primary" onclick="goNext()">View Audit Log →</button>
+      <button class="btn btn-primary" onclick="goNext()">${t('btnViewAuditLog')} ${arrowF}</button>
     `;
   }
 }
 
 // STEP 7 — Audit Log
 function renderStep7() {
+  const isRtl = RTL_LOCALES.indexOf(currentLocale) !== -1;
+  const arrowB = isRtl ? '→' : '←';
   const html = `
   <div class="card">
     <div class="step-heading">
       <div class="step-num-badge">7</div>
-      <h2 class="step-title">Version Log &amp; Audit Trail</h2>
+      <h2 class="step-title">${t('s7Title')}</h2>
     </div>
-    <p class="step-desc">
-      Cryptographically chained audit log of all actions taken during this wizard session.
-      Each entry includes a SHA-256 hash computed over its content plus the previous
-      entry's hash (tamper-evident chain). Secrets and PII are never included.
-    </p>
+    <p class="step-desc">${t('s7Desc')}</p>
 
     <div class="audit-list" id="auditList">
       ${STATE.auditLog.length === 0
-        ? `<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center;">No audit entries yet.</div>`
+        ? `<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center;">${t('s7NoEntries')}</div>`
         : STATE.auditLog.map((e, i) => `
           <div class="audit-entry">
             <div class="audit-ts">${e.ts}</div>
             <div class="audit-action">#${i+1} — ${e.action}</div>
-            <div style="font-size:12px;color:var(--text);margin:2px 0;">Result: ${e.result}</div>
+            <div style="font-size:12px;color:var(--text);margin:2px 0;">${t('s7Result')} ${e.result}</div>
             <div class="audit-hash">SHA-256: ${e.hash}</div>
-            <div class="audit-prev-hash">Prev: ${e.prevHash.substring(0,32)}…</div>
+            <div class="audit-prev-hash">${t('s7Prev')} ${e.prevHash.substring(0,32)}…</div>
           </div>
         `).join('')
       }
@@ -1396,19 +3956,17 @@ function renderStep7() {
     <div class="divider"></div>
 
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <button class="btn btn-teal" onclick="exportAuditLog()">⬇ Export as JSON</button>
+      <button class="btn btn-teal" onclick="exportAuditLog()">⬇ ${t('btnExportJson')}</button>
       <span style="font-size:12px;color:var(--muted);">
-        ${STATE.auditLog.length} entries — hash chain verifiable client-side
+        ${t('s7Entries', { n: STATE.auditLog.length })}
       </span>
     </div>
 
     <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">
       <div style="font-size:12px;color:var(--muted);line-height:1.7;">
-        <strong>AiGovOps Foundation Framework — April 2026 v1</strong><br>
-        This audit trail was generated in-browser using the Web Crypto API (SubtleCrypto SHA-256).<br>
-        Each entry's hash is computed as SHA-256(JSON({ts, action, result, prevHash})).<br>
-        No data was transmitted to any server during this session.<br><br>
-        A work of <strong>Bob Rapp</strong> and <strong>Ken Johnston</strong> —
+        <strong>${t('headerTitle')} — ${t('headerSubtitle')}</strong><br>
+        ${t('s7FooterNote')}<br><br>
+        ${t('s7Attribution')} —
         <a href="https://www.aigovopsfoundation.org" style="color:var(--teal);">
           www.aigovopsfoundation.org
         </a>
@@ -1416,8 +3974,8 @@ function renderStep7() {
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">← Back</button>
-      <button class="btn btn-primary" onclick="restartWizard()">🔄 Start New Session</button>
+      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" onclick="restartWizard()">🔄 ${t('btnStartNewSession')}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -1494,8 +4052,13 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
    INIT
    ═══════════════════════════════════════════════════════════════ */
 (async () => {
-  await addAuditEntry('Wizard session started', 'Initialized', {
+  // Set initial locale from <select>
+  const sel = document.getElementById('localeSwitcher');
+  if (sel) sel.value = currentLocale;
+  switchLocale(currentLocale);
+  await addAuditEntry(t('act_sessionStarted'), t('act_initialized'), {
     wizardVersion: 'AiGovOps Foundation Framework April 2026 v1',
+    locale: currentLocale,
     userAgent: navigator.userAgent.substring(0, 80)
   });
   render();

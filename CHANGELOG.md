@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.2] — 2026-04-16 — "Polyglot"
+
+Standalone wizard now ships a 15-language locale switcher with full RTL and Cherokee support.
+
+### Added — Standalone Wizard i18n
+- **Locale switcher UI**: dropdown in wizard header lets users preview the full 7-step install flow in any of the 15 supported languages
+- **WIZARD_I18N translation map**: all 165 keys × 15 locales (2,475 strings) embedded in the standalone HTML
+- **RTL layout support**: automatic `dir="rtl"` switching for Arabic, Urdu, and Pashto; full RTL CSS for buttons, navigation, progress bar, and content alignment
+- **Cherokee syllabary fonts**: Noto Sans Cherokee loaded via Google Fonts CDN; CSP updated for `fonts.googleapis.com` and `fonts.gstatic.com`
+- **Arabic font support**: Noto Sans Arabic loaded for proper Arabic/Urdu/Pashto rendering
+- **`switchLocale()` + `t()` helper**: runtime translation function with English fallback
+- **Playwright verification suite** (`tests/e2e/wizard-i18n-verify.ts`): automated RTL layout checks (Arabic + Urdu, 7 steps each, no overflow), Cherokee syllabary rendering (67 chars, zero tofu)
+
+### Changed
+- Standalone wizard expanded from ~1,505 to ~4,068 lines
+- Version bumped to 2.2.2
+
+---
+
 ## [2.2.1] — 2026-04-16 — "Rosetta"
 
 Complete i18n: all 504 missing translations generated across 14 languages, plus 8 quality fixes.
