@@ -35,14 +35,14 @@ export default function Foundation() {
             <div className="rounded-lg border border-border p-4">
               <p className="font-semibold text-sm">Bob Rapp</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Principal AI Architect. Former Vodafone, IBM Watson, GE Healthcare, Microsoft.
-                Currently leading AI Center of Excellence at GM.
+                Co-Founder, AiGovOps Foundation. Former Vodafone, IBM Watson, GE Healthcare, Microsoft.
+                Advocacy for ethical AI governance at enterprise scale.
               </p>
             </div>
             <div className="rounded-lg border border-border p-4">
               <p className="font-semibold text-sm">Ken Johnston</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Former Microsoft, Ford Motor Company. CEO Autonomic.ai.
+                Co-Founder, AiGovOps Foundation. Former Microsoft, Ford Motor Company.
                 Pioneer in AI governance and operational compliance.
               </p>
             </div>

@@ -240,8 +240,8 @@ This project implements standards from the [AiGovOps Foundation](https://www.aig
 - **Community-Driven Standards** — Open-source governance frameworks
 
 ### Co-Founders
-- **Bob Rapp** — Principal AI Architect, former Vodafone, IBM Watson, GE Healthcare, Microsoft
-- **Ken Johnston** — Former Microsoft, Ford Motor Company, CEO Autonomic.ai
+- **Bob Rapp** — Co-Founder, AiGovOps Foundation
+- **Ken Johnston** — Co-Founder, AiGovOps Foundation
 
 ## Version History
 
