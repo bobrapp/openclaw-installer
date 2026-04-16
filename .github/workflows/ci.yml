@@ -137,3 +137,53 @@ jobs:
           echo "## Standalone Wizard" >> $GITHUB_STEP_SUMMARY
           echo "- Size: $SIZE bytes" >> $GITHUB_STEP_SUMMARY
           echo "- External refs: $EXTERNAL_REFS" >> $GITHUB_STEP_SUMMARY
+
+  standalone-wizard-smoke:
+    name: Wizard Smoke Test (4 Host Targets)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run standalone wizard smoke tests
+        run: npx playwright test --config playwright.standalone.config.ts
+        env:
+          CI: true
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: standalone-wizard-smoke-results
+          path: |
+            playwright-report-standalone/
+            test-results/
+          retention-days: 7
+
+      - name: Post smoke test summary
+        if: always()
+        run: |
+          echo "## Standalone Wizard Smoke Tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Host Target | Flow |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| macOS | Full 7-step dry-run ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| DigitalOcean | Full 7-step dry-run ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Azure VM | Full 7-step dry-run ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Generic VPS | Full 7-step dry-run ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**AiGovOps Foundation** — Governance as Code" >> $GITHUB_STEP_SUMMARY

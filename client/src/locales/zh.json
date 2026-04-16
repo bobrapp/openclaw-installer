@@ -20,7 +20,7 @@
   "hostHardening": "加固",
   "hostScripts": "脚本",
   "footerSubtitle": "OpenClaw/Moltbot 引导安装",
-  "footerHumans": "由人类构建，为人类服务 ❤️",
+  "footerHumans": "为人类而造，由人类打造 — 借助AI，造福全人类",
   "headerSoundOn": "声音已开 — 点击静音",
   "headerSoundOff": "声音已关 — 点击开启",
   "headerLanguage": "语言",
@@ -123,5 +123,7 @@
   "navSetup": "设置",
   "navMonitor": "监控",
   "navCommunity": "社区",
-  "navResources": "资源"
+  "navResources": "资源",
+  "sidebarCoffee": "请我们喝杯咖啡",
+  "sidebarCoffeeDesc": "支持AiGovOps基金会"
 }

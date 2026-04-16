@@ -20,7 +20,7 @@
   "hostHardening": "Endurecimiento",
   "hostScripts": "Scripts",
   "footerSubtitle": "Configuración Guiada OpenClaw/Moltbot",
-  "footerHumans": "Hecho por humanos, para humanos ❤️",
+  "footerHumans": "Hecho para Humanos, por Humanos — con IA, para el bien de la humanidad",
   "headerSoundOn": "Sonido activado — clic para silenciar",
   "headerSoundOff": "Sonido desactivado — clic para activar",
   "headerLanguage": "Idioma",
@@ -123,5 +123,7 @@
   "navSetup": "Configuración",
   "navMonitor": "Monitoreo",
   "navCommunity": "Comunidad",
-  "navResources": "Recursos"
+  "navResources": "Recursos",
+  "sidebarCoffee": "Invítanos un café",
+  "sidebarCoffeeDesc": "Apoya la Fundación AiGovOps"
 }

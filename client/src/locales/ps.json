@@ -24,7 +24,7 @@
   "hostHardening": "سختول",
   "hostScripts": "سکرپټونه",
   "footerSubtitle": "OpenClaw/Moltbot لارښود تنظیم",
-  "footerHumans": "د انسانانو لخوا جوړ شوی، د انسانانو لپاره ❤️",
+  "footerHumans": "د بشر لپاره، د بشر لخوا — د AI سره، د بشریت د ښیګړې لپاره",
   "headerSoundOn": "غږ فعال — د خاموشۍ لپاره کلیک وکړئ",
   "headerSoundOff": "غږ بند — د فعالولو لپاره کلیک وکړئ",
   "headerLanguage": "ژبه",
@@ -123,5 +123,7 @@
   "error": "تېروتنه",
   "notFound": "صفحه ونه موندل شوه",
   "notFoundDesc": "تاسو چې صفحه ګورئ شتون نلري.",
-  "goHome": "کور ته لاړشئ"
+  "goHome": "کور ته لاړشئ",
+  "sidebarCoffee": "موږ ته یوه کافي وپیرئ",
+  "sidebarCoffeeDesc": "د AiGovOps بنسټ ملاتړ وکړئ"
 }

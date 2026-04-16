@@ -83,6 +83,8 @@ export interface Translations {
   // Sidebar footer
   footerSubtitle: string;
   footerHumans: string;
+  sidebarCoffee: string;
+  sidebarCoffeeDesc: string;
 
   // Header
   headerSoundOn: string;

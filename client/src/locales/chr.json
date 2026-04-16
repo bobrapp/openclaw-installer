@@ -24,7 +24,7 @@
   "hostHardening": "ᎠᎵᏍᏕᎸᏗ",
   "hostScripts": "ᏗᎪᏪᎵ",
   "footerSubtitle": "OpenClaw/Moltbot ᏗᎾᏓᏅᏍᏗ",
-  "footerHumans": "ᏴᏫ ᏚᏓᏅᏛ, ᏴᏫ ᏧᎾᏕᎶᏆᏍᏗ ❤️",
+  "footerHumans": "ᏴᏫ ᎢᏓᏛᏁᏗ, ᏴᏫ ᏗᏓᎴᏂᏍᎬ — AI ᎬᏗ, ᏴᏫ ᎤᎵᎮᎵᏍᏗ",
   "headerSoundOn": "ᎤᏲᏒ ᎬᏂᎨᏒ — ᎠᎧᎵᏦᏍᏙᏗ",
   "headerSoundOff": "ᎤᏲᏒ ᎬᏂᎨᏒ ᎥᏝ — ᎠᎾᏍᎩᏍᏗ",
   "headerLanguage": "ᎦᏬᏂᎯᏍᏗ",
@@ -123,5 +123,7 @@
   "error": "ᏗᎩᏩᏛ",
   "notFound": "ᎤᏩᏌᏊ ᎥᏝ ᏱᏩᏛᎮ",
   "notFoundDesc": "ᎤᏩᏌᏊ ᏕᎦᎾᏄᎪᎢ ᎥᏝ ᏱᏍᏗ.",
-  "goHome": "ᎤᏔᏅ ᏣᏛᏁᎸ"
+  "goHome": "ᎤᏔᏅ ᏣᏛᏁᎸ",
+  "sidebarCoffee": "ᎧᏫ ᎢᏗᎦᎵᏍᏙᏗ",
+  "sidebarCoffeeDesc": "AiGovOps ᎦᎾᏄᎵᏍᎬ ᏕᏣᏓᏂᎸᏨ"
 }

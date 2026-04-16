@@ -24,7 +24,7 @@
   "hostHardening": "Güçlendirme",
   "hostScripts": "Betikler",
   "footerSubtitle": "OpenClaw/Moltbot Rehberli Kurulum",
-  "footerHumans": "İnsanlar tarafından, insanlar için ❤️",
+  "footerHumans": "İnsanlar için, insanlar tarafından — yapay zekâ ile, insanlığın iyiliği için",
   "headerSoundOn": "Ses açık — kapatmak için tıklayın",
   "headerSoundOff": "Ses kapalı — açmak için tıklayın",
   "headerLanguage": "Dil",
@@ -123,5 +123,7 @@
   "error": "Hata",
   "notFound": "Sayfa Bulunamadı",
   "notFoundDesc": "Aradığınız sayfa mevcut değil.",
-  "goHome": "Ana Sayfaya Git"
+  "goHome": "Ana Sayfaya Git",
+  "sidebarCoffee": "Bize bir kahve ısmarlayın",
+  "sidebarCoffeeDesc": "AiGovOps Vakfı'nı destekleyin"
 }

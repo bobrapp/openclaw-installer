@@ -24,7 +24,7 @@
   "hostHardening": "Uimarishaji",
   "hostScripts": "Hati",
   "footerSubtitle": "Usanidi Ulioongozwa wa OpenClaw/Moltbot",
-  "footerHumans": "Imejengwa na binadamu, kwa binadamu ❤️",
+  "footerHumans": "Kwa Wanadamu, na Wanadamu — kwa AI, kwa manufaa ya ubinadamu",
   "headerSoundOn": "Sauti imewashwa — bonyeza kuzima",
   "headerSoundOff": "Sauti imezimwa — bonyeza kuwasha",
   "headerLanguage": "Lugha",
@@ -123,5 +123,7 @@
   "error": "Hitilafu",
   "notFound": "Ukurasa Haujapatikana",
   "notFoundDesc": "Ukurasa unaoutafuta haupo.",
-  "goHome": "Rudi Nyumbani"
+  "goHome": "Rudi Nyumbani",
+  "sidebarCoffee": "Tununulie kahawa",
+  "sidebarCoffeeDesc": "Saidia Msingi wa AiGovOps"
 }

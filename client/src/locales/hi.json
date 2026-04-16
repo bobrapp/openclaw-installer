@@ -20,7 +20,7 @@
   "hostHardening": "हार्डनिंग",
   "hostScripts": "स्क्रिप्ट",
   "footerSubtitle": "OpenClaw/Moltbot गाइडेड सेटअप",
-  "footerHumans": "इंसानों द्वारा बनाया, इंसानों के लिए ❤️",
+  "footerHumans": "मनुष्यों के लिए, मनुष्यों द्वारा — AI के साथ, मानवता की भलाई के लिए",
   "headerSoundOn": "ध्वनि चालू — म्यूट करने के लिए क्लिक करें",
   "headerSoundOff": "ध्वनि बंद — सक्षम करने के लिए क्लिक करें",
   "headerLanguage": "भाषा",
@@ -123,5 +123,7 @@
   "navSetup": "सेटअप",
   "navMonitor": "निगरानी",
   "navCommunity": "समुदाय",
-  "navResources": "संसाधन"
+  "navResources": "संसाधन",
+  "sidebarCoffee": "हमें एक कॉफ़ी दिलाइए",
+  "sidebarCoffeeDesc": "AiGovOps फाउंडेशन का समर्थन करें"
 }

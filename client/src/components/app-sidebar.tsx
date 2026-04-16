@@ -1,4 +1,4 @@
-import { Wand2, Shield, FileCode2, ChevronRight } from "lucide-react";
+import { Wand2, Shield, FileCode2, ChevronRight, Coffee } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -192,7 +192,20 @@ export function AppSidebar() {
         />
       </SidebarContent>
       <SidebarFooter className="px-4 py-3 border-t border-sidebar-border">
-        <div className="space-y-2">
+        <div className="space-y-3">
+          {/* Buy Us a Coffee CTA */}
+          <a
+            href="https://www.aigovopsfoundation.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 hover:bg-primary/10 border border-primary/10 hover:border-primary/20 transition-all group cursor-pointer"
+          >
+            <Coffee className="h-4 w-4 text-amber-700 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-foreground">{t.sidebarCoffee}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{t.sidebarCoffeeDesc}</p>
+            </div>
+          </a>
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
               {t.footerSubtitle}
@@ -200,7 +213,7 @@ export function AppSidebar() {
             <SoundToggle />
           </div>
           <Link href="/humans" className="group">
-            <p className="text-xs text-muted-foreground/60 group-hover:text-primary transition-colors">
+            <p className="text-[10px] leading-relaxed text-muted-foreground/60 group-hover:text-primary transition-colors">
               {t.footerHumans}
             </p>
           </Link>

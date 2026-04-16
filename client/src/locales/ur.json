@@ -24,7 +24,7 @@
   "hostHardening": "سختی",
   "hostScripts": "اسکرپٹس",
   "footerSubtitle": "OpenClaw/Moltbot گائیڈڈ سیٹ اپ",
-  "footerHumans": "انسانوں نے بنایا، انسانوں کے لیے ❤️",
+  "footerHumans": "انسانوں کے لیے، انسانوں کے ذریعے — AI کے ساتھ، انسانیت کی بھلائی کے لیے",
   "headerSoundOn": "آواز آن — خاموش کرنے کے لیے کلک کریں",
   "headerSoundOff": "آواز بند — فعال کرنے کے لیے کلک کریں",
   "headerLanguage": "زبان",
@@ -123,5 +123,7 @@
   "error": "خرابی",
   "notFound": "صفحہ نہیں ملا",
   "notFoundDesc": "آپ جو صفحہ تلاش کر رہے ہیں وہ موجود نہیں ہے۔",
-  "goHome": "ہوم پر جائیں"
+  "goHome": "ہوم پر جائیں",
+  "sidebarCoffee": "ہمیں ایک کافی پلائیں",
+  "sidebarCoffeeDesc": "AiGovOps فاؤنڈیشن کی حمایت کریں"
 }

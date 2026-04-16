@@ -24,7 +24,7 @@
   "hostHardening": "تقوية",
   "hostScripts": "نصوص برمجية",
   "footerSubtitle": "إعداد موجّه OpenClaw/Moltbot",
-  "footerHumans": "صنعه البشر، من أجل البشر ❤️",
+  "footerHumans": "صُنع للبشر، بأيدي البشر — بالذكاء الاصطناعي، من أجل خير الإنسانية",
   "headerSoundOn": "الصوت مفعّل — انقر لكتم الصوت",
   "headerSoundOff": "الصوت مكتوم — انقر للتفعيل",
   "headerLanguage": "اللغة",
@@ -123,5 +123,7 @@
   "error": "خطأ",
   "notFound": "الصفحة غير موجودة",
   "notFoundDesc": "الصفحة التي تبحث عنها غير موجودة.",
-  "goHome": "الرئيسية"
+  "goHome": "الرئيسية",
+  "sidebarCoffee": "اشترِ لنا قهوة",
+  "sidebarCoffeeDesc": "ادعم مؤسسة AiGovOps"
 }

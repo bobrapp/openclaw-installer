@@ -20,7 +20,7 @@
   "hostHardening": "Härtung",
   "hostScripts": "Skripte",
   "footerSubtitle": "OpenClaw/Moltbot Geführte Einrichtung",
-  "footerHumans": "Von Menschen gebaut, für Menschen ❤️",
+  "footerHumans": "Für Menschen gemacht, von Menschen — mit KI, zum Wohl der Menschheit",
   "headerSoundOn": "Ton an — klicken zum Stummschalten",
   "headerSoundOff": "Ton aus — klicken zum Aktivieren",
   "headerLanguage": "Sprache",
@@ -123,5 +123,7 @@
   "navSetup": "Einrichtung",
   "navMonitor": "Überwachung",
   "navCommunity": "Gemeinschaft",
-  "navResources": "Ressourcen"
+  "navResources": "Ressourcen",
+  "sidebarCoffee": "Spendiere uns einen Kaffee",
+  "sidebarCoffeeDesc": "Unterstützen Sie die AiGovOps Foundation"
 }
