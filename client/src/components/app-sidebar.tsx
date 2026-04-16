@@ -1,4 +1,4 @@
-import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart, BookOpen, Activity, Server, Sparkles, Store, ChevronRight } from "lucide-react";
+import { Wand2, Shield, FileCode2, ChevronRight } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -17,49 +17,22 @@ import { BreathingLogo } from "@/components/breathing-logo";
 import { SoundToggle } from "@/components/sound-toggle";
 import { useI18n } from "@/lib/i18n";
 import type { Translations } from "@/lib/i18n";
-import type { LucideIcon } from "lucide-react";
+import { resolveIcon } from "@/lib/icon-map";
+import { getRoutesByGroup, type RouteEntry } from "@/lib/routes";
 
+/* ─── NavItem built from RouteEntry ─── */
 interface NavItem {
   title: string;
   url: string;
-  icon: LucideIcon;
+  icon: string;
 }
 
-/* ─── Grouped navigation ─── */
-function getNavGroups(t: Translations) {
-  return {
-    setup: {
-      label: t.navSetup || "Setup",
-      items: [
-        { title: t.navHostSelection, url: "/", icon: Home },
-        { title: t.navCompareFrameworks, url: "/compare", icon: GitCompareArrows },
-        { title: t.navPreflightRunner, url: "/preflight", icon: Play },
-      ],
-    },
-    monitor: {
-      label: t.navMonitor || "Monitor",
-      items: [
-        { title: t.navInstallLogs, url: "/logs", icon: ScrollText },
-        { title: t.navAuditLog, url: "/audit", icon: Lock },
-      ],
-    },
-    community: {
-      label: t.navCommunity || "Community",
-      items: [
-        { title: t.navAgentPatterns, url: "/patterns", icon: Sparkles },
-        { title: t.navMarketplace, url: "/marketplace", icon: Store },
-      ],
-    },
-    resources: {
-      label: t.navResources || "Resources",
-      items: [
-        { title: t.navFoundation, url: "/foundation", icon: Heart },
-        { title: t.navReleaseDashboard, url: "/releases", icon: Activity },
-        { title: t.navHostingDeals, url: "/hosting", icon: Server },
-        { title: t.navHowIBuiltThis, url: "/how-i-built-this", icon: BookOpen },
-      ],
-    },
-  };
+function routesToNavItems(routes: RouteEntry[], t: Translations): NavItem[] {
+  return routes.map((r) => ({
+    title: r.label(t as unknown as Record<string, string>),
+    url: r.path,
+    icon: r.icon,
+  }));
 }
 
 function getHostItems(t: Translations) {
@@ -89,24 +62,30 @@ function NavGroup({
     <Collapsible defaultOpen={defaultOpen || hasActive} className="group/collapsible">
       <SidebarGroup>
         <CollapsibleTrigger asChild>
-          <SidebarGroupLabel className="cursor-pointer hover:text-foreground transition-colors flex items-center justify-between">
+          <SidebarGroupLabel
+            className="cursor-pointer hover:text-foreground transition-colors flex items-center justify-between"
+            aria-label={`${label} navigation group`}
+          >
             {label}
-            <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+            <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]/collapsible:rotate-90" aria-hidden="true" />
           </SidebarGroupLabel>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const Icon = resolveIcon(item.icon);
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={location === item.url}>
+                      <Link href={item.url}>
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </CollapsibleContent>
@@ -118,7 +97,11 @@ function NavGroup({
 export function AppSidebar() {
   const [location] = useLocation();
   const { t } = useI18n();
-  const groups = getNavGroups(t);
+
+  const setupItems = routesToNavItems(getRoutesByGroup("setup"), t);
+  const monitorItems = routesToNavItems(getRoutesByGroup("monitor"), t);
+  const communityItems = routesToNavItems(getRoutesByGroup("community"), t);
+  const resourceItems = routesToNavItems(getRoutesByGroup("resources"), t);
   const hostItems = getHostItems(t);
 
   return (
@@ -136,7 +119,12 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         {/* Setup — always open (primary flow) */}
-        <NavGroup label={groups.setup.label} items={groups.setup.items} location={location} defaultOpen={true} />
+        <NavGroup
+          label={t.navSetup || "Setup"}
+          items={setupItems}
+          location={location}
+          defaultOpen={true}
+        />
 
         {/* Hosts */}
         <SidebarGroup>
@@ -152,21 +140,21 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.hostId}>
                     <SidebarMenuButton asChild isActive={isActive}>
                       <Link href={wizardUrl}>
-                        <Wand2 className="h-4 w-4" />
+                        <Wand2 className="h-4 w-4" aria-hidden="true" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                     {isActive && (
-                      <div className="ml-7 mt-1 space-y-0.5">
+                      <div className="ms-7 mt-1 space-y-0.5">
                         <SidebarMenuButton asChild size="sm" isActive={location === hardenUrl}>
                           <Link href={hardenUrl} className="text-xs">
-                            <Shield className="h-3 w-3" />
+                            <Shield className="h-3 w-3" aria-hidden="true" />
                             <span>{t.hostHardening}</span>
                           </Link>
                         </SidebarMenuButton>
                         <SidebarMenuButton asChild size="sm" isActive={location === scriptsUrl}>
                           <Link href={scriptsUrl} className="text-xs">
-                            <FileCode2 className="h-3 w-3" />
+                            <FileCode2 className="h-3 w-3" aria-hidden="true" />
                             <span>{t.hostScripts}</span>
                           </Link>
                         </SidebarMenuButton>
@@ -180,13 +168,28 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Monitor */}
-        <NavGroup label={groups.monitor.label} items={groups.monitor.items} location={location} defaultOpen={true} />
+        <NavGroup
+          label={t.navMonitor || "Monitor"}
+          items={monitorItems}
+          location={location}
+          defaultOpen={true}
+        />
 
         {/* Community — Patterns + Marketplace */}
-        <NavGroup label={groups.community.label} items={groups.community.items} location={location} defaultOpen={true} />
+        <NavGroup
+          label={t.navCommunity || "Community"}
+          items={communityItems}
+          location={location}
+          defaultOpen={true}
+        />
 
         {/* Resources — collapsed by default */}
-        <NavGroup label={groups.resources.label} items={groups.resources.items} location={location} defaultOpen={false} />
+        <NavGroup
+          label={t.navResources || "Resources"}
+          items={resourceItems}
+          location={location}
+          defaultOpen={false}
+        />
       </SidebarContent>
       <SidebarFooter className="px-4 py-3 border-t border-sidebar-border">
         <div className="space-y-2">

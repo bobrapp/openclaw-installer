@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import {
   Check,
   Copy,
-  ExternalLink,
   Globe,
   Heart,
   Plug,
@@ -25,16 +24,18 @@ import { useI18n } from "@/lib/i18n";
 import { resolveIcon } from "@/lib/icon-map";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { ConfigCard } from "@/components/config-card";
+import { PageHero } from "@/components/page-hero";
+import { PageFooter } from "@/components/page-footer";
 import { celebrate } from "@/lib/celebrations";
 import { playSound } from "@/lib/sound-engine";
 import {
   allMarketplaceSkills,
-  skillCategories,
   donationTiers,
   curators,
   type MarketplaceSkill,
   type SkillCategory,
 } from "@/data/marketplace-skills";
+import { getSkills, getSkillCategories } from "@/lib/data-access";
 
 /* ─── Compatibility badge colors ─── */
 const compatColors: Record<string, string> = {
@@ -96,28 +97,36 @@ function SkillCard({ skill }: { skill: MarketplaceSkill }) {
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 w-6 p-0 shrink-0"
+          className="h-6 w-6 p-0 shrink-0 focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => {
             copy(skill.installCmd);
             playSound("click");
           }}
+          aria-label={`Copy install command for ${skill.name}`}
           data-testid={`button-copy-cmd-${skill.id}`}
         >
           {copied ? (
-            <Check className="h-3 w-3 text-emerald-500" />
+            <Check className="h-3 w-3 text-emerald-500" aria-hidden="true" />
           ) : (
-            <Copy className="h-3 w-3" />
+            <Copy className="h-3 w-3" aria-hidden="true" />
           )}
         </Button>
       </div>
 
       {/* MCP Endpoint */}
       <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-        <Plug className="h-3 w-3" />
+        <Plug className="h-3 w-3" aria-hidden="true" />
         <span className="font-mono">{skill.mcpEndpoint}</span>
       </div>
     </ConfigCard>
   );
+}
+
+interface SkillCategoryDef {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: string;
 }
 
 /* ─── Category Section ─── */
@@ -125,21 +134,21 @@ function CategorySection({
   category,
   skills,
 }: {
-  category: (typeof skillCategories)[number];
+  category: SkillCategoryDef;
   skills: MarketplaceSkill[];
 }) {
   const Icon = resolveIcon(category.icon);
   if (skills.length === 0) return null;
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4" aria-labelledby={`cat-heading-${category.id}`}>
       <div className="flex items-center gap-3 pb-2 border-b border-border">
-        <Icon className="h-5 w-5 text-primary" />
+        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">{category.title}</h2>
+          <h2 id={`cat-heading-${category.id}`} className="text-lg font-semibold tracking-tight">{category.title}</h2>
           <p className="text-xs text-muted-foreground">{category.subtitle}</p>
         </div>
-        <Badge variant="outline" className="ml-auto text-xs">
+        <Badge variant="outline" className="ms-auto text-xs">
           {skills.length}
         </Badge>
       </div>
@@ -160,11 +169,11 @@ function DonationSection() {
       <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6">
         <div className="text-center space-y-3 mb-6">
           <div className="flex items-center justify-center gap-2">
-            <Heart className="h-5 w-5 text-primary" />
+            <Heart className="h-5 w-5 text-primary" aria-hidden="true" />
             <h2 className="text-lg font-semibold tracking-tight">
               {t.mktDonationTitle || "Buy the Foundation a Drink"}
             </h2>
-            <Heart className="h-5 w-5 text-primary" />
+            <Heart className="h-5 w-5 text-primary" aria-hidden="true" />
           </div>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
             {t.mktDonationDesc || "Every skill in this marketplace is free and open-source. If ClawXXX helps your team, consider supporting the AiGovOps Foundation with a small donation — pick your local favorite."}
@@ -177,10 +186,11 @@ function DonationSection() {
               href={tier.stripeStub}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex flex-col items-center gap-1.5 p-3 rounded-lg border border-border bg-card hover:border-primary/30 hover:shadow-sm transition-all text-center"
+              className="group flex flex-col items-center gap-1.5 p-3 rounded-lg border border-border bg-card hover:border-primary/30 hover:shadow-sm transition-all text-center focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               data-testid={`button-donate-${tier.id}`}
+              aria-label={`Donate $${tier.amount} — ${tier.drink} (${tier.region})`}
             >
-              <span className="text-2xl group-hover:scale-110 transition-transform">
+              <span className="text-2xl group-hover:scale-110 transition-transform" aria-hidden="true">
                 {tier.emoji}
               </span>
               <span className="text-sm font-medium">{tier.drink}</span>
@@ -205,7 +215,7 @@ function CuratorSection() {
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3 pb-2 border-b border-border">
-        <Shield className="h-5 w-5 text-primary" />
+        <Shield className="h-5 w-5 text-primary" aria-hidden="true" />
         <div>
           <h2 className="text-lg font-semibold tracking-tight">
             {t.mktCuratorsTitle || "Community Curators"}
@@ -219,7 +229,7 @@ function CuratorSection() {
         {curators.map((curator) => (
           <Card key={curator.email} className="hover:border-primary/30 transition-all">
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm" aria-hidden="true">
                 {curator.name
                   .split(" ")
                   .map((n) => n[0])
@@ -230,7 +240,7 @@ function CuratorSection() {
                 <p className="text-xs text-muted-foreground">{curator.role}</p>
                 <a
                   href={`mailto:${curator.email}`}
-                  className="text-xs text-primary hover:underline truncate block"
+                  className="text-xs text-primary hover:underline truncate block focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   {curator.email}
                 </a>
@@ -240,7 +250,7 @@ function CuratorSection() {
         ))}
         <Card className="hover:border-primary/30 transition-all border-dashed">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground" aria-hidden="true">
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
@@ -250,7 +260,7 @@ function CuratorSection() {
               </p>
               <a
                 href="mailto:skills@aigovops.community?subject=ClawXXX%20Skill%20Submission"
-                className="text-xs text-primary hover:underline"
+                className="text-xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 skills@aigovops.community
               </a>
@@ -267,22 +277,12 @@ export default function Marketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<SkillCategory | "all">("all");
   const { t } = useI18n();
+  const skillCategories = getSkillCategories();
 
-  const filtered = useMemo(() => {
-    return allMarketplaceSkills.filter((skill) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        skill.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        skill.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        skill.provider.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesCategory =
-        activeCategory === "all" || skill.category === activeCategory;
-
-      return matchesSearch && matchesCategory;
-    });
-  }, [searchQuery, activeCategory]);
+  const filtered = useMemo(
+    () => getSkills({ category: activeCategory, search: searchQuery }),
+    [searchQuery, activeCategory]
+  );
 
   const categoryFilters = useMemo(() => {
     return [
@@ -293,55 +293,38 @@ export default function Marketplace() {
         count: allMarketplaceSkills.filter((s) => s.category === cat.id).length,
       })),
     ];
-  }, [t]);
+  }, [t, skillCategories]);
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-10">
       {/* Hero */}
-      <div className="text-center space-y-3 py-4">
-        <div className="flex items-center justify-center gap-2">
-          <Store className="h-5 w-5 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight" data-testid="text-marketplace-title">
-            {t.marketplaceTitle || "Skills Marketplace"}
-          </h1>
-          <Store className="h-5 w-5 text-primary" />
-        </div>
-        <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {t.marketplaceSubtitle || "MCP-compatible connections, AI provider skills, and community packages — install with one command, configure with standard YAML."}
-        </p>
-        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
-          <span className="flex items-center gap-1">
-            <Plug className="h-3 w-3" />
-            {t.marketplaceMcpNative || "MCP Native"}
-          </span>
-          <span className="flex items-center gap-1">
-            <Shield className="h-3 w-3" />
-            {t.marketplaceGovernanceReady || "Governance Ready"}
-          </span>
-          <span className="flex items-center gap-1">
-            <Globe className="h-3 w-3" />
-            {t.marketplaceOpenSource || "Open Source"}
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            {allMarketplaceSkills.length} {t.marketplaceSkillCount || "skills"}
-          </span>
-        </div>
-      </div>
+      <PageHero
+        icon={<Store className="h-5 w-5 text-primary" aria-hidden="true" />}
+        title={t.marketplaceTitle || "Skills Marketplace"}
+        subtitle={t.marketplaceSubtitle || "MCP-compatible connections, AI provider skills, and community packages — install with one command, configure with standard YAML."}
+        badges={[
+          { icon: <Plug className="h-3 w-3" aria-hidden="true" />, label: t.marketplaceMcpNative || "MCP Native" },
+          { icon: <Shield className="h-3 w-3" aria-hidden="true" />, label: t.marketplaceGovernanceReady || "Governance Ready" },
+          { icon: <Globe className="h-3 w-3" aria-hidden="true" />, label: t.marketplaceOpenSource || "Open Source" },
+          { icon: <Users className="h-3 w-3" aria-hidden="true" />, label: `${allMarketplaceSkills.length} ${t.marketplaceSkillCount || "skills"}` },
+        ]}
+        testId="text-marketplace-title"
+      />
 
       {/* Search + Filters */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={t.marketplaceSearch || "Search skills, providers, or tags..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="ps-10"
             data-testid="input-marketplace-search"
+            aria-label={t.marketplaceSearch || "Search skills, providers, or tags"}
           />
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
           {categoryFilters.map((cat) => (
             <Button
               key={cat.id}
@@ -352,12 +335,13 @@ export default function Marketplace() {
                 setActiveCategory(cat.id);
                 playSound("click");
               }}
+              aria-pressed={activeCategory === cat.id}
               data-testid={`button-filter-${cat.id}`}
             >
               {cat.label}
               <Badge
                 variant="secondary"
-                className="ml-1.5 text-[10px] h-4 min-w-[1rem] px-1"
+                className="ms-1.5 text-[10px] h-4 min-w-[1rem] px-1"
               >
                 {cat.count}
               </Badge>
@@ -367,28 +351,30 @@ export default function Marketplace() {
       </div>
 
       {/* Skill grid — by category or flat if filtered */}
-      {activeCategory === "all" && searchQuery === "" ? (
-        skillCategories.map((cat) => (
-          <CategorySection
-            key={cat.id}
-            category={cat}
-            skills={allMarketplaceSkills.filter((s) => s.category === cat.id)}
-          />
-        ))
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filtered.map((skill) => (
-            <SkillCard key={skill.id} skill={skill} />
-          ))}
-          {filtered.length === 0 && (
-            <div className="col-span-2 text-center py-12 text-muted-foreground">
-              <Search className="h-8 w-8 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">{t.mktNoResults || "No skills match your search."}</p>
-              <p className="text-xs mt-1">{t.mktNoResultsHint || "Try a different query or browse all categories."}</p>
-            </div>
-          )}
-        </div>
-      )}
+      <div aria-live="polite" aria-atomic="false">
+        {activeCategory === "all" && searchQuery === "" ? (
+          skillCategories.map((cat) => (
+            <CategorySection
+              key={cat.id}
+              category={cat}
+              skills={allMarketplaceSkills.filter((s) => s.category === cat.id)}
+            />
+          ))
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {filtered.map((skill) => (
+              <SkillCard key={skill.id} skill={skill} />
+            ))}
+            {filtered.length === 0 && (
+              <div className="col-span-2 text-center py-12 text-muted-foreground" role="status">
+                <Search className="h-8 w-8 mx-auto mb-3 opacity-40" aria-hidden="true" />
+                <p className="text-sm">{t.mktNoResults || "No skills match your search."}</p>
+                <p className="text-xs mt-1">{t.mktNoResultsHint || "Try a different query or browse all categories."}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Donation */}
       <DonationSection />
@@ -397,22 +383,10 @@ export default function Marketplace() {
       <CuratorSection />
 
       {/* Footer */}
-      <div className="text-center py-6 border-t border-border">
-        <p className="text-xs text-muted-foreground">
-          {t.marketplaceFooter || "All skills follow MCP (Model Context Protocol) standards. Configs are portable across any MCP-compatible host."}
-        </p>
-        <p className="text-xs text-muted-foreground/60 mt-1">
-          {t.mktCuratedBy || "Curated by the"}{" "}
-          <a
-            href="https://www.aigovopsfoundation.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-primary transition-colors"
-          >
-            AiGovOps Foundation
-          </a>
-        </p>
-      </div>
+      <PageFooter
+        text={t.marketplaceFooter || "All skills follow MCP (Model Context Protocol) standards. Configs are portable across any MCP-compatible host."}
+        foundationCredit={t.mktCuratedBy || "Curated by the"}
+      />
     </div>
   );
 }

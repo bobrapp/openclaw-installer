@@ -10,6 +10,8 @@
     "check": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:all": "vitest run && playwright test",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
@@ -74,8 +76,11 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.1.18",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/better-sqlite3": "^7.6.12",
     "@types/canvas-confetti": "^1.9.0",
     "@types/express": "^5.0.0",
@@ -87,12 +92,15 @@
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.8",
     "esbuild": "^0.25.0",
+    "jsdom": "^29.0.2",
+    "playwright": "^1.59.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.5",
     "typescript": "5.6.3",
     "vite": "^7.3.0",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "yaml": "^2.8.3"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

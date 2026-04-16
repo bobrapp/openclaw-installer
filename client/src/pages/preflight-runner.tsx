@@ -30,6 +30,7 @@ export default function PreflightRunner() {
   const [checks, setChecks] = useState<CheckResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast, celebrate: showToast, dismiss } = useCelebration();
@@ -38,6 +39,7 @@ export default function PreflightRunner() {
   const runPreflight = useCallback(() => {
     setChecks([]);
     setSummary(null);
+    setRunError(null);
     setIsRunning(true);
 
     const url = `${API_BASE}/api/preflight/run/${hostTarget}`;
@@ -82,6 +84,7 @@ export default function PreflightRunner() {
     es.onerror = () => {
       es.close();
       setIsRunning(false);
+      setRunError("Connection to preflight service failed. Please try again.");
     };
   }, [hostTarget, t]);
 
@@ -91,21 +94,22 @@ export default function PreflightRunner() {
     }
     setChecks([]);
     setSummary(null);
+    setRunError(null);
     setIsRunning(false);
   };
 
   const statusIcon = (status: string) => {
     switch (status) {
       case "pass":
-        return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+        return <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden="true" />;
       case "warn":
-        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+        return <AlertTriangle className="h-4 w-4 text-amber-500" aria-hidden="true" />;
       case "fail":
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />;
       case "running":
-        return <Loader2 className="h-4 w-4 text-primary animate-spin" />;
+        return <Loader2 className="h-4 w-4 text-primary animate-spin" aria-label="Running" role="status" />;
       default:
-        return <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" />;
+        return <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30" aria-hidden="true" />;
     }
   };
 
@@ -118,12 +122,17 @@ export default function PreflightRunner() {
     }
   };
 
+  const completedCount = checks.filter((c) => c.status !== "pending").length;
+  const progressPercent = checks.length > 0
+    ? (completedCount / Math.max(checks.length, 1)) * 100
+    : 0;
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Play className="h-5 w-5 text-primary" />
+            <Play className="h-5 w-5 text-primary" aria-hidden="true" />
             <h1 className="text-xl font-bold tracking-tight" data-testid="text-runner-title">
               {t.preflightTitle}
             </h1>
@@ -142,7 +151,7 @@ export default function PreflightRunner() {
           <div className="flex items-center gap-4">
             <div className="flex-1 max-w-xs">
               <Select value={hostTarget} onValueChange={setHostTarget} disabled={isRunning}>
-                <SelectTrigger data-testid="select-host-target">
+                <SelectTrigger data-testid="select-host-target" aria-label="Select host target">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -157,22 +166,23 @@ export default function PreflightRunner() {
               onClick={runPreflight}
               disabled={isRunning}
               data-testid="button-run-preflight"
+              aria-label={isRunning ? "Running preflight checks..." : t.preflightRun}
             >
               {isRunning ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 me-2 animate-spin" aria-hidden="true" />
                   {t.preflightRun}...
                 </>
               ) : (
                 <>
-                  <Play className="h-4 w-4 mr-2" />
+                  <Play className="h-4 w-4 me-2" aria-hidden="true" />
                   {t.preflightRun}
                 </>
               )}
             </Button>
             {(checks.length > 0 || summary) && (
-              <Button variant="outline" size="sm" onClick={reset} data-testid="button-reset-runner">
-                <RotateCcw className="h-3 w-3 mr-1" />
+              <Button variant="outline" size="sm" onClick={reset} data-testid="button-reset-runner" aria-label={t.preflightReset}>
+                <RotateCcw className="h-3 w-3 me-1" aria-hidden="true" />
                 {t.preflightReset}
               </Button>
             )}
@@ -180,28 +190,40 @@ export default function PreflightRunner() {
         </CardContent>
       </Card>
 
+      {/* Error message */}
+      {runError && (
+        <div className="mb-6 p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400 text-sm" role="alert">
+          {runError}
+        </div>
+      )}
+
       {checks.length > 0 && (
         <Card className="mb-6">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">Check Results</CardTitle>
-              <span className="text-xs text-muted-foreground">
-                {checks.filter((c) => c.status !== "pending").length} / {checks.length} complete
+              <span className="text-xs text-muted-foreground" aria-live="polite" role="status">
+                {completedCount} / {checks.length} complete
               </span>
             </div>
             {/* Progress bar */}
-            <div className="w-full bg-muted rounded-full h-1.5 mt-2">
+            <div
+              className="w-full bg-muted rounded-full h-1.5 mt-2"
+              role="progressbar"
+              aria-valuenow={completedCount}
+              aria-valuemin={0}
+              aria-valuemax={checks.length}
+              aria-label="Preflight check progress"
+            >
               <div
                 className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                style={{
-                  width: `${(checks.filter((c) => c.status !== "pending").length / Math.max(checks.length, 1)) * 100}%`,
-                }}
+                style={{ width: `${progressPercent}%` }}
               />
             </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="max-h-[400px]" ref={scrollRef}>
-              <div className="space-y-1">
+              <div className="space-y-1" aria-live="polite" aria-label="Check results">
                 {checks.map((check, i) => (
                   <div
                     key={i}
@@ -227,12 +249,16 @@ export default function PreflightRunner() {
       {summary && (
         <Card data-testid="card-summary">
           <CardContent className="pt-6">
-            <div className={`text-center py-6 rounded-lg ${summary.result === "READY" ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
+            <div
+              className={`text-center py-6 rounded-lg ${summary.result === "READY" ? "bg-emerald-500/10" : "bg-red-500/10"}`}
+              role={summary.result !== "READY" ? "alert" : "status"}
+              aria-live="polite"
+            >
               <div className="flex items-center justify-center gap-2 mb-3">
                 {summary.result === "READY" ? (
-                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  <CheckCircle2 className="h-8 w-8 text-emerald-500" aria-hidden="true" />
                 ) : (
-                  <XCircle className="h-8 w-8 text-red-500" />
+                  <XCircle className="h-8 w-8 text-red-500" aria-hidden="true" />
                 )}
                 <span className={`text-xl font-bold ${summary.result === "READY" ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
                   {summary.result === "READY" ? "Ready to Proceed" : "Blocked \u2014 Fix Failures"}
@@ -240,15 +266,15 @@ export default function PreflightRunner() {
               </div>
               <div className="flex items-center justify-center gap-6 text-sm">
                 <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden="true" />
                   {summary.passed} passed
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  <AlertTriangle className="h-4 w-4 text-amber-500" aria-hidden="true" />
                   {summary.warned} warnings
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
                   {summary.failed} failed
                 </span>
               </div>
@@ -264,7 +290,7 @@ export default function PreflightRunner() {
         <Card>
           <CardContent className="py-12">
             <div className="flex flex-col items-center justify-center text-center">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4" aria-hidden="true">
                 <Play className="h-6 w-6 text-primary" />
               </div>
               <p className="text-sm font-medium mb-1">{t.preflightNoRun}</p>

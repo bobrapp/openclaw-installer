@@ -4,6 +4,7 @@
  */
 import type { LucideIcon } from "lucide-react";
 import {
+  Activity,
   Anchor,
   Bird,
   BookOpen,
@@ -22,6 +23,7 @@ import {
   Dog,
   Drum,
   Feather,
+  FileCode2,
   FileText,
   Fish,
   Flame,
@@ -30,6 +32,7 @@ import {
   Gamepad2,
   Gem,
   GitBranch,
+  GitCompareArrows,
   Globe,
   GraduationCap,
   Hammer,
@@ -37,7 +40,9 @@ import {
   Handshake,
   HardDrive,
   Heart,
+  Home,
   Layers,
+  Lock,
   Mail,
   Map,
   MessageSquare,
@@ -48,9 +53,11 @@ import {
   PartyPopper,
   Pen,
   Phone,
+  Play,
   Plug,
   Ribbon,
   Scale,
+  ScrollText,
   Search,
   Server,
   Shield,
@@ -63,6 +70,7 @@ import {
   Target,
   TicketCheck,
   Users,
+  Wand2,
   Wheat,
   Wind,
   Wrench,
@@ -70,13 +78,14 @@ import {
 } from "lucide-react";
 
 export const iconMap: Record<string, LucideIcon> = {
-  Anchor, Bird, BookOpen, Brain, Brush, Calendar, CircleDot, Clock, Cloud,
-  Clover, Compass, Container, Cpu, CreditCard, Database, Dog, Drum, Feather,
-  FileText, Fish, Flame, Flower, Footprints, Gamepad2, Gem, GitBranch, Globe,
-  GraduationCap, Hammer, HandHeart, Handshake, HardDrive, Heart, Layers, Mail,
-  Map, MessageSquare, Mountain, Music, Network, Palette, PartyPopper, Pen, Phone,
-  Plug, Ribbon, Scale, Search, Server, Shield, ShieldCheck, Snowflake, Sparkles,
-  Sprout, Store, Sunrise, Target, TicketCheck, Users, Wheat, Wind, Wrench, Zap,
+  Activity, Anchor, Bird, BookOpen, Brain, Brush, Calendar, CircleDot, Clock,
+  Cloud, Clover, Compass, Container, Cpu, CreditCard, Database, Dog, Drum, Feather,
+  FileCode2, FileText, Fish, Flame, Flower, Footprints, Gamepad2, Gem, GitBranch,
+  GitCompareArrows, Globe, GraduationCap, Hammer, HandHeart, Handshake, HardDrive,
+  Heart, Home, Layers, Lock, Mail, Map, MessageSquare, Mountain, Music, Network,
+  Palette, PartyPopper, Pen, Phone, Play, Plug, Ribbon, Scale, ScrollText, Search,
+  Server, Shield, ShieldCheck, Snowflake, Sparkles, Sprout, Store, Sunrise, Target,
+  TicketCheck, Users, Wand2, Wheat, Wind, Wrench, Zap,
 };
 
 /** Resolve an icon name to a component. Falls back to HandHeart. Warns in dev mode. */

@@ -13,7 +13,6 @@ import {
   Copy,
   Download,
   Globe,
-  HandHeart,
   Heart,
   Search,
   Shield,
@@ -24,6 +23,9 @@ import { useI18n } from "@/lib/i18n";
 import { resolveIcon } from "@/lib/icon-map";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { getPatternConfig } from "@/data/config-loader";
+import { PageHero } from "@/components/page-hero";
+import { PageFooter } from "@/components/page-footer";
+import { communityPatterns } from "@/data/community-patterns";
 
 /* ─── Types ─── */
 interface Pattern {
@@ -131,11 +133,6 @@ const corePatterns: Pattern[] = [
 ];
 
 /* ─────────────────────────────────────────────────────────────────────
- * Community Patterns — imported from generated data
- * ───────────────────────────────────────────────────────────────────── */
-import { communityPatterns } from "@/data/community-patterns";
-
-/* ─────────────────────────────────────────────────────────────────────
  * Organize into categories
  * ───────────────────────────────────────────────────────────────────── */
 const categoryDefs: { id: string; title: string; subtitle: string; icon: string; ids: string[] }[] = [
@@ -190,8 +187,8 @@ const categoryDefs: { id: string; title: string; subtitle: string; icon: string;
   },
 ];
 
-const allPatterns: Pattern[] = [...corePatterns, ...communityPatterns];
-const patternMap = new Map(allPatterns.map((p) => [p.id, p]));
+const localAllPatterns: Pattern[] = [...corePatterns, ...communityPatterns as Pattern[]];
+const patternMap = new Map(localAllPatterns.map((p) => [p.id, p]));
 
 const categories: PatternCategory[] = categoryDefs.map((def) => ({
   id: def.id,
@@ -214,7 +211,7 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
     >
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
-          <div className={`h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center ${pattern.color} group-hover:scale-110 transition-transform`}>
+          <div className={`h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center ${pattern.color} group-hover:scale-110 transition-transform`} aria-hidden="true">
             <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1">
@@ -236,7 +233,7 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
 
         <div className="bg-muted/50 rounded-lg p-3 border border-border/50">
           <p className="text-xs font-medium text-primary flex items-center gap-1.5 mb-1">
-            <Heart className="h-3 w-3" />
+            <Heart className="h-3 w-3" aria-hidden="true" />
             {t.patternsWhyMatters}
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed">{pattern.whyItMatters}</p>
@@ -244,7 +241,7 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
 
         {/* Config preview */}
         <details className="group/details">
-          <summary className="text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+          <summary className="text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded">
             {t.patternsViewConfig}
           </summary>
           <pre className="mt-2 p-3 bg-card border border-border rounded-md text-xs font-mono overflow-auto max-h-48 text-muted-foreground">
@@ -253,12 +250,24 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
         </details>
 
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => copy(pattern.config, `claw-${pattern.id}`)} data-testid={`button-download-${pattern.id}`}>
-            <Download className="h-3 w-3 mr-1.5" />
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => copy(pattern.config, `claw-${pattern.id}`)}
+            data-testid={`button-download-${pattern.id}`}
+            aria-label={`Download YAML config for ${pattern.name}`}
+          >
+            <Download className="h-3 w-3 me-1.5" aria-hidden="true" />
             {t.patternsDownloadYaml}
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => copy(pattern.config)} data-testid={`button-copy-${pattern.id}`}>
-            {copied ? <Check className="h-3 w-3 mr-1.5 text-emerald-500" /> : <Copy className="h-3 w-3 mr-1.5" />}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => copy(pattern.config)}
+            data-testid={`button-copy-${pattern.id}`}
+            aria-label={copied ? `Copied config for ${pattern.name}` : `Copy config for ${pattern.name}`}
+          >
+            {copied ? <Check className="h-3 w-3 me-1.5 text-emerald-500" aria-hidden="true" /> : <Copy className="h-3 w-3 me-1.5" aria-hidden="true" />}
             {copied ? t.patternsCopied : t.patternsCopy}
           </Button>
         </div>
@@ -271,14 +280,14 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
 function CategorySection({ category }: { category: PatternCategory }) {
   const Icon = resolveIcon(category.icon);
   return (
-    <section className="space-y-4">
+    <section className="space-y-4" aria-labelledby={`cat-heading-${category.id}`}>
       <div className="flex items-center gap-3 pb-2 border-b border-border">
-        <Icon className="h-5 w-5 text-primary" />
+        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">{category.title}</h2>
+          <h2 id={`cat-heading-${category.id}`} className="text-lg font-semibold tracking-tight">{category.title}</h2>
           <p className="text-xs text-muted-foreground">{category.subtitle}</p>
         </div>
-        <Badge variant="outline" className="ml-auto text-xs">
+        <Badge variant="outline" className="ms-auto text-xs">
           {category.patterns.length}
         </Badge>
       </div>
@@ -325,50 +334,33 @@ export default function Patterns() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-10">
       {/* Hero */}
-      <div className="text-center space-y-3 py-4">
-        <div className="flex items-center justify-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <h1 className="text-xl font-bold tracking-tight" data-testid="text-patterns-title">
-            {t.patternsTitle}
-          </h1>
-          <Sparkles className="h-5 w-5 text-primary" />
-        </div>
-        <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {t.patternsSubtitle}
-        </p>
-        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
-          <span className="flex items-center gap-1">
-            <Globe className="h-3 w-3" />
-            {t.patternsOpenSource}
-          </span>
-          <span className="flex items-center gap-1">
-            <Heart className="h-3 w-3" />
-            {t.patternsHumanFirst}
-          </span>
-          <span className="flex items-center gap-1">
-            <Shield className="h-3 w-3" />
-            {t.patternsGovernanceReady}
-          </span>
-          <span className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            {allPatterns.length} {t.patternsTotal || "patterns"}
-          </span>
-        </div>
-      </div>
+      <PageHero
+        icon={<Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />}
+        title={t.patternsTitle}
+        subtitle={t.patternsSubtitle}
+        badges={[
+          { icon: <Globe className="h-3 w-3" aria-hidden="true" />, label: t.patternsOpenSource },
+          { icon: <Heart className="h-3 w-3" aria-hidden="true" />, label: t.patternsHumanFirst },
+          { icon: <Shield className="h-3 w-3" aria-hidden="true" />, label: t.patternsGovernanceReady },
+          { icon: <Users className="h-3 w-3" aria-hidden="true" />, label: `${localAllPatterns.length} ${t.patternsTotal || "patterns"}` },
+        ]}
+        testId="text-patterns-title"
+      />
 
       {/* Search + Category filter */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder={t.patternsSearch || "Search patterns by name, description, or audience..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="ps-10"
             data-testid="input-patterns-search"
+            aria-label={t.patternsSearch || "Search patterns by name, description, or audience"}
           />
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
           {[{ id: "all", title: t.patternsAllCategories || "All" }, ...categoryDefs.map((c) => ({ id: c.id, title: c.title }))].map((cat) => (
             <Button
               key={cat.id}
@@ -386,34 +378,24 @@ export default function Patterns() {
       </div>
 
       {/* Category sections */}
-      {filteredCategories.map((cat) => (
-        <CategorySection key={cat.id} category={cat} />
-      ))}
+      <div aria-live="polite" aria-atomic="false">
+        {filteredCategories.map((cat) => (
+          <CategorySection key={cat.id} category={cat} />
+        ))}
 
-      {totalVisible === 0 && (
-        <div className="text-center py-12 text-muted-foreground">
-          <Search className="h-8 w-8 mx-auto mb-3 opacity-40" />
-          <p className="text-sm">{t.patternsNoResults || "No patterns match your search."}</p>
-        </div>
-      )}
+        {totalVisible === 0 && (
+          <div className="text-center py-12 text-muted-foreground" role="status">
+            <Search className="h-8 w-8 mx-auto mb-3 opacity-40" aria-hidden="true" />
+            <p className="text-sm">{t.patternsNoResults || "No patterns match your search."}</p>
+          </div>
+        )}
+      </div>
 
       {/* Footer note */}
-      <div className="text-center py-6 border-t border-border">
-        <p className="text-xs text-muted-foreground">
-          {t.patternsFooter}
-        </p>
-        <p className="text-xs text-muted-foreground/60 mt-1">
-          {t.patternsFoundationCredit}{" "}
-          <a
-            href="https://www.aigovopsfoundation.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline hover:text-primary transition-colors"
-          >
-            AiGovOps Foundation
-          </a>
-        </p>
-      </div>
+      <PageFooter
+        text={t.patternsFooter}
+        foundationCredit={t.patternsFoundationCredit}
+      />
     </div>
   );
 }

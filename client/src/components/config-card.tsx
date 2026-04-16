@@ -68,6 +68,7 @@ export function ConfigCard({
             className={`h-10 w-10 rounded-xl bg-card border border-border flex items-center justify-center ${
               iconColor || "text-primary"
             } group-hover:scale-110 transition-transform`}
+            aria-hidden="true"
           >
             <Icon className="h-5 w-5" />
           </div>
@@ -100,30 +101,37 @@ export function ConfigCard({
             variant="ghost"
             className="text-xs w-full justify-between"
             onClick={() => setShowConfig(!showConfig)}
+            aria-expanded={showConfig}
+            aria-controls={`config-preview-${id}`}
           >
             <span>{t.mktViewConfig || t.patternsViewConfig || "View YAML Config"}</span>
-            {showConfig ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {showConfig ? (
+              <ChevronUp className="h-3 w-3" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-3 w-3" aria-hidden="true" />
+            )}
           </Button>
           {showConfig && (
-            <div className="mt-2 relative">
+            <div id={`config-preview-${id}`} className="mt-2 relative">
               <pre className="p-3 bg-card border border-border rounded-md text-xs font-mono overflow-auto max-h-56 text-muted-foreground">
                 {config}
               </pre>
               <Button
                 size="sm"
                 variant="outline"
-                className="absolute top-2 right-2 h-7 text-[10px]"
+                className="absolute top-2 end-2 h-7 text-[10px] focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={handleCopy}
+                aria-label={copied ? `Copied config for ${name}` : `Copy config for ${name}`}
                 data-testid={`button-copy-config-${id}`}
               >
                 {copied ? (
                   <>
-                    <Check className="h-3 w-3 mr-1 text-emerald-500" />
+                    <Check className="h-3 w-3 me-1 text-emerald-500" aria-hidden="true" />
                     {t.mktCopied || t.patternsCopied || "Copied"}
                   </>
                 ) : (
                   <>
-                    <Copy className="h-3 w-3 mr-1" />
+                    <Copy className="h-3 w-3 me-1" aria-hidden="true" />
                     {t.mktCopy || t.patternsCopy || "Copy"}
                   </>
                 )}
@@ -142,19 +150,25 @@ export function ConfigCard({
               playSound("click");
               celebrate("Ready to install", "subtle");
             }}
+            aria-label={`Install ${name}`}
             data-testid={`button-install-${id}`}
           >
-            <Download className="h-3 w-3 mr-1.5" />
+            <Download className="h-3 w-3 me-1.5" aria-hidden="true" />
             {t.mktInstall || t.patternsDownloadYaml || "Install"}
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="text-xs"
+            className="text-xs focus-visible:ring-2 focus-visible:ring-ring"
             onClick={handleCopy}
+            aria-label={copied ? `Copied config for ${name}` : `Copy config for ${name}`}
             data-testid={`button-download-config-${id}`}
           >
-            {copied ? <Check className="h-3 w-3 mr-1.5 text-emerald-500" /> : <Copy className="h-3 w-3 mr-1.5" />}
+            {copied ? (
+              <Check className="h-3 w-3 me-1.5 text-emerald-500" aria-hidden="true" />
+            ) : (
+              <Copy className="h-3 w-3 me-1.5" aria-hidden="true" />
+            )}
             {t.mktConfig || "Config"}
           </Button>
         </div>

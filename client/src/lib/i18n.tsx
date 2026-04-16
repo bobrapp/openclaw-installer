@@ -2,9 +2,16 @@
  * i18n — Internationalization system for OpenClaw Installer
  * 15 languages + Braille display mode
  * Uses React Context. No localStorage (sandboxed iframe).
- * Translations loaded from per-language JSON files in /locales/.
+ * Language files are split into per-language JSON in src/locales/.
  */
-import { createContext, useContext, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react";
+import enTranslations from "@/locales/en.json";
 
 // ── Language codes and metadata ──
 export type LangCode =
@@ -37,30 +44,179 @@ export const languages: LangMeta[] = [
   { code: "brl", name: "Braille",              nativeName: "⠃⠗⠇",            dir: "ltr", flag: "⠃" },
 ];
 
-// ── Translation type (keys shared across all languages) ──
-export type Translations = Record<string, string>;
+// ── Translation keys ──
+// Every UI string gets a key here. Organized by section.
+export interface Translations {
+  // App chrome
+  appName: string;
+  installerVersion: string;
 
-// ── Import all locale JSON files ──
-import en from "@/locales/en.json";
-import fr from "@/locales/fr.json";
-import de from "@/locales/de.json";
-import zh from "@/locales/zh.json";
-import pt from "@/locales/pt.json";
-import hi from "@/locales/hi.json";
-import es from "@/locales/es.json";
-import ar from "@/locales/ar.json";
-import ru from "@/locales/ru.json";
-import tr from "@/locales/tr.json";
-import ur from "@/locales/ur.json";
-import ps from "@/locales/ps.json";
-import sw from "@/locales/sw.json";
-import chr from "@/locales/chr.json";
-import brl from "@/locales/brl.json";
+  // Sidebar nav
+  navNavigation: string;
+  navHosts: string;
+  navHostSelection: string;
+  navCompareFrameworks: string;
+  navPreflightRunner: string;
+  navInstallLogs: string;
+  navAuditLog: string;
+  navFoundation: string;
+  navHowIBuiltThis: string;
+  navReleaseDashboard: string;
+  navHostingDeals: string;
+  navAgentPatterns: string;
+  navSetup: string;
+  navMonitor: string;
+  navCommunity: string;
+  navResources: string;
 
-// ── All translations map ──
-const allTranslations: Record<LangCode, Translations> = {
-  en, fr, de, zh, pt, hi, es, ar, ru, tr, ur, ps, sw, chr, brl,
-};
+  // Sidebar hosts
+  hostMacOS: string;
+  hostDigitalOcean: string;
+  hostAzureVM: string;
+  hostGenericVPS: string;
+  hostHardening: string;
+  hostScripts: string;
+
+  // Sidebar footer
+  footerSubtitle: string;
+  footerHumans: string;
+
+  // Header
+  headerSoundOn: string;
+  headerSoundOff: string;
+  headerLanguage: string;
+
+  // Home page
+  homeTitle: string;
+  homeSubtitle: string;
+  homePreflightChecks: string;
+  homePreflightDesc: string;
+  homeDryRun: string;
+  homeDryRunDesc: string;
+  homeHardening: string;
+  homeHardeningDesc: string;
+  homeStartSetup: string;
+
+  // Patterns page
+  patternsTitle: string;
+  patternsSubtitle: string;
+  patternsOpenSource: string;
+  patternsHumanFirst: string;
+  patternsGovernanceReady: string;
+  patternsWhyMatters: string;
+  patternsDownloadYaml: string;
+  patternsCopy: string;
+  patternsCopied: string;
+  patternsViewConfig: string;
+  patternsFooter: string;
+  patternsFoundationCredit: string;
+  patternsTotal?: string;
+  patternsSearch?: string;
+  patternsAllCategories?: string;
+  patternsNoResults?: string;
+
+  // Marketplace page
+  navMarketplace: string;
+  marketplaceTitle: string;
+  marketplaceSubtitle: string;
+  marketplaceMcpNative: string;
+  marketplaceGovernanceReady: string;
+  marketplaceOpenSource: string;
+  marketplaceSkillCount: string;
+  marketplaceSearch: string;
+  marketplaceFooter: string;
+  mktFeatured: string;
+  mktByProvider: string;
+  mktViewConfig: string;
+  mktInstall: string;
+  mktConfig: string;
+  mktCopy: string;
+  mktCopied: string;
+  mktAllSkills: string;
+  mktNoResults: string;
+  mktNoResultsHint: string;
+  mktCuratedBy: string;
+  mktDonationTitle: string;
+  mktDonationDesc: string;
+  mktDonationPowered: string;
+  mktCuratorsTitle: string;
+  mktCuratorsDesc: string;
+  mktSubmitSkill: string;
+  mktSubmitSkillDesc: string;
+
+  // Pattern names and taglines
+  patGreeterName: string;
+  patGreeterTag: string;
+  patGuardianName: string;
+  patGuardianTag: string;
+  patStorytellerName: string;
+  patStorytellerTag: string;
+  patTeacherName: string;
+  patTeacherTag: string;
+  patPeacekeeperName: string;
+  patPeacekeeperTag: string;
+  patCelebratorName: string;
+  patCelebratorTag: string;
+
+  // Humans page
+  humansFound: string;
+  humansBehind: string;
+  humansMadeBy: string;
+  humansCofounder: string;
+  humansBobDesc: string;
+  humansKenDesc: string;
+  humansBuiltWith: string;
+  humansMission: string;
+  humansMissionText: string;
+  humansLearnMore: string;
+  humansGratitudeWall: string;
+  humansWelcome: string;
+
+  // Preflight
+  preflightTitle: string;
+  preflightSubtitle: string;
+  preflightRun: string;
+  preflightReset: string;
+  preflightNoRun: string;
+  preflightSelectHost: string;
+
+  // Releases
+  releasesTitle: string;
+  releasesSubtitle: string;
+  releasesRefresh: string;
+  releasesGratitude: string;
+  releasesGratitudeDesc: string;
+
+  // Celebrations
+  celebPreflight1: string;
+  celebPreflight2: string;
+  celebPreflight3: string;
+  celebInstall1: string;
+  celebInstall2: string;
+  celebGeneral1: string;
+  celebGeneral2: string;
+  celebGeneral3: string;
+
+  // Misc
+  loading: string;
+  error: string;
+  notFound: string;
+  notFoundDesc: string;
+  goHome: string;
+}
+
+// ── Dynamic language loader ──
+// English is always bundled synchronously; all other languages load on demand.
+async function loadLanguage(code: LangCode): Promise<Translations> {
+  if (code === "en") return enTranslations as Translations;
+  try {
+    const mod = await import(`../locales/${code}.json`);
+    return mod.default as Translations;
+  } catch {
+    // Fall back to English if the locale file cannot be loaded
+    return enTranslations as Translations;
+  }
+}
 
 // ── Context ──
 interface I18nContextType {
@@ -69,31 +225,39 @@ interface I18nContextType {
   t: Translations;
   dir: "ltr" | "rtl";
   langMeta: LangMeta;
+  loading: boolean;
 }
 
-const I18nContext = createContext<I18nContextType>({
+export const I18nContext = createContext<I18nContextType>({
   lang: "en",
   setLang: () => {},
-  t: en,
+  t: enTranslations as Translations,
   dir: "ltr",
   langMeta: languages[0],
+  loading: false,
 });
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
+export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<LangCode>("en");
+  const [t, setT] = useState<Translations>(enTranslations as Translations);
+  const [loading, setLoading] = useState(false);
 
   const setLang = useCallback((code: LangCode) => {
-    setLangState(code);
-    const meta = languages.find((l) => l.code === code) || languages[0];
-    document.documentElement.dir = meta.dir;
-    document.documentElement.lang = code === "brl" ? "en" : code;
+    setLoading(true);
+    loadLanguage(code).then((translations) => {
+      setT(translations);
+      setLangState(code);
+      const meta = languages.find((l) => l.code === code) || languages[0];
+      document.documentElement.dir = meta.dir;
+      document.documentElement.lang = code === "brl" ? "en" : code;
+      setLoading(false);
+    });
   }, []);
 
   const meta = languages.find((l) => l.code === lang) || languages[0];
-  const t = allTranslations[lang] || en;
 
   return (
-    <I18nContext.Provider value={{ lang, setLang, t, dir: meta.dir, langMeta: meta }}>
+    <I18nContext.Provider value={{ lang, setLang, t, dir: meta.dir, langMeta: meta, loading }}>
       {children}
     </I18nContext.Provider>
   );
