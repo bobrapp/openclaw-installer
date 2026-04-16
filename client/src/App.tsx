@@ -22,6 +22,7 @@ import Releases from "@/pages/releases";
 import HostingDeals from "@/pages/hosting-deals";
 import NotFound from "@/pages/not-found";
 import Patterns from "@/pages/patterns";
+import Marketplace from "@/pages/marketplace";
 import Humans from "@/pages/humans";
 import { AmbientBackground } from "@/components/ambient-background";
 import { I18nProvider } from "@/lib/i18n";
@@ -43,6 +44,7 @@ function AppRouter() {
       <Route path="/releases" component={Releases} />
       <Route path="/hosting" component={HostingDeals} />
       <Route path="/patterns" component={Patterns} />
+      <Route path="/marketplace" component={Marketplace} />
       <Route path="/humans" component={Humans} />
       <Route component={NotFound} />
     </Switch>

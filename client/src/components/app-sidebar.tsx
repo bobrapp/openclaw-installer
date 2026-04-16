@@ -1,4 +1,4 @@
-import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart, BookOpen, FileDown, Activity, Server, Sparkles } from "lucide-react";
+import { Home, Wand2, Shield, ScrollText, FileCode2, GitCompareArrows, Play, Lock, Heart, BookOpen, FileDown, Activity, Server, Sparkles, Store } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -30,6 +30,7 @@ function getNavItems(t: Translations) {
     { title: t.navReleaseDashboard, url: "/releases", icon: Activity },
     { title: t.navHostingDeals, url: "/hosting", icon: Server },
     { title: t.navAgentPatterns, url: "/patterns", icon: Sparkles },
+    { title: t.navMarketplace, url: "/marketplace", icon: Store },
   ];
 }
 
