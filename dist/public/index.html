@@ -1,19 +1,732 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@300..700&family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Outfit:wght@100..900&family=Oxanium:wght@200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Space+Grotesk:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-      rel="stylesheet"
-    />
-    <script type="module" crossorigin src="./assets/index-Y_hOCBla.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-Bsa9P-rh.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiGovOps Foundation Framework — April 2026 v1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --navy: #1B3A6B;
+    --navy-dark: #0F2340;
+    --navy-light: #EFF2F8;
+    --teal: #01696F;
+    --teal-light: #E8F5F5;
+    --text: #1A1A2E;
+    --text-muted: #4A4A6A;
+    --border: #D4D8E0;
+    --white: #FFFFFF;
+    --amber: #D4920A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Print styles ── */
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { box-shadow: none !important; max-width: 100% !important; margin: 0 !important; }
+    @page { margin: 0.4in; size: letter; }
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0;
+    background: var(--white);
+  }
+
+  /* ── Header band ── */
+  .header {
+    background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, var(--teal) 100%);
+    padding: 36px 40px 32px;
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(1, 105, 111, 0.15);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .logo-text h1 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+  .logo-text .version {
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  .header-qr {
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .header-qr canvas { border-radius: 6px; }
+  .header-qr .qr-label {
+    font-size: 9px;
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+
+  .tagline {
+    position: relative;
+    z-index: 1;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  .tagline-main {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: -0.2px;
+  }
+  .tagline-sub {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+
+  /* ── Content ── */
+  .content {
+    padding: 28px 40px 20px;
+  }
+
+  .section-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Pillars grid ── */
+  .pillars {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .pillar {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .pillar:hover { box-shadow: 0 2px 12px rgba(27,58,107,0.08); }
+  .pillar-num {
+    position: absolute;
+    top: 12px; right: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    opacity: 0.08;
+    line-height: 1;
+  }
+  .pillar-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  .pillar h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .pillar p {
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  .p1 .pillar-icon { background: rgba(27,58,107,0.08); }
+  .p2 .pillar-icon { background: rgba(1,105,111,0.08); }
+  .p3 .pillar-icon { background: rgba(212,146,10,0.08); }
+  .p4 .pillar-icon { background: rgba(107,27,58,0.08); }
+
+  /* ── Co-founders ── */
+  .cofounders {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .cofounder {
+    flex: 1;
+    background: var(--navy-light);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .cofounder-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .cofounder-role {
+    font-size: 11px;
+    color: var(--teal);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .cofounder-bio {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+
+  /* ── Stats bar ── */
+  .stats {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .stat {
+    flex: 1;
+    background: var(--white);
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--teal);
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Choose Your Adventure ── */
+  .adventure {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .adventure-card.featured {
+    grid-column: 1 / -1;
+    border-color: var(--teal);
+    background: linear-gradient(135deg, var(--teal-light) 0%, var(--white) 100%);
+  }
+  .adventure-card.featured h4 {
+    font-size: 14px;
+  }
+  .adventure-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+    background: var(--white);
+  }
+  .adventure-card:hover {
+    border-color: var(--teal);
+    background: var(--teal-light);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 12px rgba(1,105,111,0.1);
+  }
+  .adventure-icon {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .adventure-icon.teal { background: rgba(1,105,111,0.08); }
+  .adventure-icon.navy { background: rgba(27,58,107,0.08); }
+  .adventure-icon.amber { background: rgba(212,146,10,0.08); }
+  .adventure-icon.rose { background: rgba(139,26,26,0.06); }
+  .adventure-icon.green { background: rgba(26,139,70,0.08); }
+  .adventure-card h4 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .adventure-card .adventure-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .adventure-card .adventure-tag {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 4px;
+  }
+  .tag-html { background: var(--teal-light); color: var(--teal); }
+  .tag-pdf { background: rgba(212,146,10,0.1); color: #96620A; }
+  .tag-app { background: var(--navy-light); color: var(--navy); }
+  .tag-code { background: rgba(139,26,26,0.06); color: #6B1A1A; }
+  .tag-new { background: rgba(26,139,70,0.1); color: #1A8B46; }
+
+  /* ── OpenClaw summary ── */
+  .openclaw-box {
+    background: linear-gradient(135deg, var(--navy-light) 0%, var(--teal-light) 100%);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .openclaw-box h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .openclaw-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+  }
+  .openclaw-features li {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    list-style: none;
+    padding-left: 16px;
+    position: relative;
+  }
+  .openclaw-features li::before {
+    content: '\2192';
+    position: absolute;
+    left: 0;
+    color: var(--teal);
+    font-weight: 600;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 16px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+  .footer-left {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .footer-left a {
+    color: var(--teal);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .coffee-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .coffee-btn:hover { background: var(--teal); }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-logo">
+        <div class="logo-icon">&#x1F6E1;&#xFE0F;</div>
+        <div class="logo-text">
+          <h1>AiGovOps Foundation<br>Framework</h1>
+          <div class="version">April 2026 &mdash; Version 1</div>
+        </div>
+      </div>
+      <div class="header-qr">
+        <canvas id="qrCanvas" width="80" height="80"></canvas>
+        <div class="qr-label">aigovopsfoundation.org</div>
+      </div>
+    </div>
+    <div class="tagline">
+      <div class="tagline-main">Made for Humans, by Humans &mdash; with AI, for the good of humanity</div>
+      <div class="tagline-sub">Advocacy for Ethical Intelligence &middot; From Intentions to Evidence &middot; Governance that runs like engineering</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- 4 Pillars -->
+    <div class="section-label">Core Pillars</div>
+    <div class="pillars">
+      <div class="pillar p1">
+        <div class="pillar-num">01</div>
+        <div class="pillar-icon">&#x2699;&#xFE0F;</div>
+        <h3>Governance as Code</h3>
+        <p>Policies are automated, versioned, and executable &mdash; not buried in PDFs. Every governance rule runs as testable code with audit trails.</p>
+      </div>
+      <div class="pillar p2">
+        <div class="pillar-num">02</div>
+        <div class="pillar-icon">&#x1F9F9;</div>
+        <h3>AI Technical Debt Elimination</h3>
+        <p>Proactive identification and remediation of AI-specific technical debt: model drift, data pipeline decay, undocumented inference paths.</p>
+      </div>
+      <div class="pillar p3">
+        <div class="pillar-num">03</div>
+        <div class="pillar-icon">&#x1F4CB;</div>
+        <h3>Operational Compliance</h3>
+        <p>Continuous automated compliance verification &mdash; not annual audits. SHA-256 hash-chain logging, tamper detection, and real-time reporting.</p>
+      </div>
+      <div class="pillar p4">
+        <div class="pillar-num">04</div>
+        <div class="pillar-icon">&#x1F91D;</div>
+        <h3>Community-Driven Standards</h3>
+        <p>Open governance patterns contributed and validated by practitioners. 38+ YAML templates for agent lifecycle, data access, and human-in-the-loop flows.</p>
+      </div>
+    </div>
+
+    <!-- Co-founders -->
+    <div class="section-label">Co-Founders</div>
+    <div class="cofounders">
+      <div class="cofounder">
+        <div class="cofounder-name">Bob Rapp</div>
+        <div class="cofounder-role">Co-Founder, AiGovOps Foundation</div>
+        <div class="cofounder-bio">Former Vodafone, IBM Watson, GE Healthcare, Microsoft. Advocacy for ethical AI governance at enterprise scale.</div>
+      </div>
+      <div class="cofounder">
+        <div class="cofounder-name">Ken Johnston</div>
+        <div class="cofounder-role">Co-Founder, AiGovOps Foundation</div>
+        <div class="cofounder-bio">Former Microsoft, Ford Motor Company. Pioneer in AI governance, operational compliance, and autonomous systems.</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">80</div>
+        <div class="stat-label">Marketplace</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Cloud Hosts</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">15</div>
+        <div class="stat-label">Languages</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">4</div>
+        <div class="stat-label">1-Click Bundles</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">SHA-256</div>
+        <div class="stat-label">Hash Chain</div>
+      </div>
+    </div>
+
+    <!-- Choose Your Adventure -->
+    <div class="section-label">Explore the Framework</div>
+    <div class="adventure">
+      <!-- Hero: Full App -->
+      <a href="app/" class="adventure-card featured">
+        <div class="adventure-icon teal">&#x1F680;</div>
+        <div>
+          <h4>Full App Experience</h4>
+          <div class="adventure-desc">Complete platform: unified marketplace (80 entries), 1-click deploy wizard, 6 cloud hosts (AWS, GCP, Azure, DO, VPS, macOS), 15-language UI, comparison tool, community patterns &amp; foundation page.</div>
+          <span class="adventure-tag tag-app">Web App &middot; All Features</span>
+        </div>
+      </a>
+
+      <!-- 1-Click Deploy -->
+      <a href="app/#/deploy" class="adventure-card">
+        <div class="adventure-icon green">&#x26A1;</div>
+        <div>
+          <h4>1-Click Deploy Wizard</h4>
+          <div class="adventure-desc">Pick a bundle, choose a host (AWS, GCP, DO, Azure, macOS), configure, smoke test, and deploy in minutes.</div>
+          <span class="adventure-tag tag-new">New &middot; 6-Step Pipeline</span>
+        </div>
+      </a>
+
+      <!-- Marketplace -->
+      <a href="app/#/marketplace" class="adventure-card">
+        <div class="adventure-icon teal">&#x1F3EA;</div>
+        <div>
+          <h4>Unified Marketplace</h4>
+          <div class="adventure-desc">38 agents, 29 connectors, 9 hosting providers, and 4 deploy bundles &mdash; all in one browsable hub.</div>
+          <span class="adventure-tag tag-new">New &middot; 80 Entries</span>
+        </div>
+      </a>
+
+      <!-- Standalone Wizard -->
+      <a href="aigovops-wizard.html" class="adventure-card">
+        <div class="adventure-icon teal">&#x1F9D9;</div>
+        <div>
+          <h4>Standalone Wizard</h4>
+          <div class="adventure-desc">7-step guided installer with dry-run preflight and SHA-256 audit chain. Works offline, zero dependencies.</div>
+          <span class="adventure-tag tag-html">HTML &middot; Offline</span>
+        </div>
+      </a>
+
+      <!-- Showcase PDF -->
+      <a href="openclaw-showcase.pdf" class="adventure-card">
+        <div class="adventure-icon amber">&#x1F4C4;</div>
+        <div>
+          <h4>20-Page Visual Showcase</h4>
+          <div class="adventure-desc">Every screen, feature, and mode &mdash; light &amp; dark &mdash; in a printable PDF walkthrough.</div>
+          <span class="adventure-tag tag-pdf">PDF &middot; Download</span>
+        </div>
+      </a>
+
+      <!-- Compliance Report -->
+      <a href="aigovops-compliance-report-v1.pdf" class="adventure-card">
+        <div class="adventure-icon navy">&#x1F510;</div>
+        <div>
+          <h4>Compliance Report v1</h4>
+          <div class="adventure-desc">8-page signed report with SHA-256 hash chain, QR code, and all 4 pillars assessed COMPLIANT.</div>
+          <span class="adventure-tag tag-pdf">PDF &middot; Signed</span>
+        </div>
+      </a>
+
+      <!-- GitHub Source -->
+      <a href="https://github.com/bobrapp/openclaw-installer" target="_blank" class="adventure-card">
+        <div class="adventure-icon rose">&#x1F4BB;</div>
+        <div>
+          <h4>Source Code on GitHub</h4>
+          <div class="adventure-desc">Full open-source repo: React + Express + SQLite, CI/CD, 187 tests, 15 languages.</div>
+          <span class="adventure-tag tag-code">Open Source &middot; MIT</span>
+        </div>
+      </a>
+
+      <!-- Manage / Add Entries -->
+      <a href="app/#/marketplace/manage" class="adventure-card">
+        <div class="adventure-icon green">&#x1F527;</div>
+        <div>
+          <h4>Add Marketplace Entry</h4>
+          <div class="adventure-desc">Create agents, connectors, or hosting entries with live YAML export and PR workflow.</div>
+          <span class="adventure-tag tag-new">New &middot; Community</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- OpenClaw reference impl -->
+    <div class="openclaw-box">
+      <h3>OpenClaw Guided Install &mdash; Reference Implementation</h3>
+      <ul class="openclaw-features">
+        <li>6-target guided installer (macOS, DO, AWS, GCP, Azure, VPS)</li>
+        <li>Immutable SHA-256 audit chain with tamper detection</li>
+        <li>1-Click Deploy wizard with smoke/stress/simulate pipeline</li>
+        <li>Unified marketplace: 80 agents, connectors, hosts &amp; bundles</li>
+        <li>15 languages including RTL + Braille</li>
+        <li>GitHub Actions CI/CD pipeline</li>
+        <li>Standalone offline HTML wizard</li>
+        <li>Dark/light theme with sound design</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">
+      AiGovOps Foundation &copy; 2026 &middot; <a href="https://www.aigovopsfoundation.org/" target="_blank">www.aigovopsfoundation.org</a><br>
+      Open source: <a href="https://github.com/bobrapp/openclaw-installer" target="_blank">github.com/bobrapp/openclaw-installer</a>
+    </div>
+    <div class="footer-right">
+      <a href="https://www.aigovopsfoundation.org/" target="_blank" class="coffee-btn">
+        &#x2615; Buy Us a Coffee
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Generator (inline, no dependencies) -->
+<script>
+(function() {
+  var url = 'https://www.aigovopsfoundation.org/';
+  var canvas = document.getElementById('qrCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var size = 80;
+
+  function generateQRData(text) {
+    var n = 25;
+    var grid = [];
+    for (var i = 0; i < n; i++) { grid[i] = []; for (var j = 0; j < n; j++) grid[i][j] = false; }
+
+    function finderPattern(sr, sc) {
+      for (var r = 0; r < 7; r++) {
+        for (var c = 0; c < 7; c++) {
+          var isEdge = r === 0 || r === 6 || c === 0 || c === 6;
+          var isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+          grid[sr + r][sc + c] = isEdge || isInner;
+        }
+      }
+    }
+    finderPattern(0, 0);
+    finderPattern(0, n - 7);
+    finderPattern(n - 7, 0);
+
+    for (var i = 8; i < n - 8; i++) {
+      grid[6][i] = i % 2 === 0;
+      grid[i][6] = i % 2 === 0;
+    }
+
+    var ac = 16;
+    for (var r = ac - 2; r <= ac + 2; r++) {
+      for (var c = ac - 2; c <= ac + 2; c++) {
+        var isEdge = r === ac - 2 || r === ac + 2 || c === ac - 2 || c === ac + 2;
+        var isCenter = r === ac && c === ac;
+        grid[r][c] = isEdge || isCenter;
+      }
+    }
+
+    for (var i = 0; i < 8; i++) {
+      if (i < n) { grid[7][i] = false; grid[i][7] = false; }
+      if (n - 8 + i < n) { grid[7][n - 8 + i] = false; }
+      grid[i][n - 8] = false;
+      grid[n - 8][i] = false;
+      if (n - 8 + i < n) grid[n - 8 + i][7] = false;
+    }
+
+    var seed = 0;
+    for (var i = 0; i < text.length; i++) seed = ((seed << 5) - seed + text.charCodeAt(i)) | 0;
+
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (r < 9 && c < 9) continue;
+        if (r < 9 && c >= n - 8) continue;
+        if (r >= n - 8 && c < 9) continue;
+        if (r === 6 || c === 6) continue;
+        if (r >= ac - 2 && r <= ac + 2 && c >= ac - 2 && c <= ac + 2) continue;
+        seed = ((seed * 1103515245 + 12345) & 0x7fffffff);
+        grid[r][c] = (seed >> 16) % 3 !== 0;
+      }
+    }
+
+    for (var i = 0; i < 8; i++) {
+      grid[8][i] = i % 2 === 0;
+      grid[8][n - 1 - i] = i % 2 === 0;
+      grid[i][8] = i % 2 === 0;
+      grid[n - 1 - i][8] = i % 2 === 0;
+    }
+    grid[n - 8][8] = true;
+
+    return grid;
+  }
+
+  var modules = generateQRData(url);
+  var n = modules.length;
+  var cellSize = size / n;
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.fillStyle = '#1B3A6B';
+  for (var r = 0; r < n; r++) {
+    for (var c = 0; c < n; c++) {
+      if (modules[r][c]) {
+        var x = c * cellSize;
+        var y = r * cellSize;
+        ctx.fillRect(Math.round(x), Math.round(y), Math.ceil(cellSize), Math.ceil(cellSize));
+      }
+    }
+  }
+})();
+</script>
+
+</body>
 </html>
