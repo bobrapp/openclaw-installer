@@ -132,7 +132,7 @@ def get_font_for_lang(lang_code):
         "zh":  ("NotoSansCJK-Regular", "NotoSansCJK-Bold"),
         "ar":  ("NotoNaskhArabic-Regular", "NotoNaskhArabic-Bold"),
         "ps":  ("NotoNaskhArabic-Regular", "NotoNaskhArabic-Bold"),
-        "ur":  ("NotoNastaliqUrdu-Regular", "NotoNastaliqUrdu-Bold"),
+        "ur":  ("NotoNaskhArabic-Regular", "NotoNaskhArabic-Bold"),
         "hi":  ("NotoSansDevanagari-Regular", "NotoSansDevanagari-Bold"),
         "chr": ("NotoSansCherokee-Regular", "NotoSansCherokee-Bold"),
         "brl": ("Helvetica", "Helvetica-Bold"),
