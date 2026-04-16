@@ -32,7 +32,7 @@ All three council members independently identified and agreed on these critical 
 **Status in v2.0:** Documented as mandatory requirement. Implementation is a personal action item for founders.
 
 ### 4. Marketplace Represents Major Unmanaged Risk (All 3 models — High)
-**Finding:** 80 marketplace entries (agents, connectors, hosting, bundles) create a large attack surface with no automated vetting, signing, or sandboxing.
+**Finding:** 87 marketplace entries (agents, connectors, hosting, bundles) create a large attack surface with no automated vetting, signing, or sandboxing.
 **Recommendation:** Implement tiered trust levels (listed → verified → official), signed manifests, re-validation schedules, and quarantine procedures.
 **Status:** ✅ IMPLEMENTED in v2.0.1 — Three trust tiers (listed/verified/official) with UI badges and filter. Governance documented in `GOVERNANCE.md` Marketplace section.
 

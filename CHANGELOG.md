@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] — 2026-04-16 — "Global Deploy"
+
+Massive expansion of hosting targets, build catalog, global deals matrix, and end-to-end validation.
+
+### Added — Host Targets (6 → 16)
+- Railway (PaaS, GitHub-connected, free tier + $5/mo hobby)
+- Render (PaaS, Docker, auto-scaling, free tier)
+- Fly.io (edge containers, global low-latency, from $3/mo)
+- Hetzner Cloud (EU, best price/performance, from €3.79/mo)
+- Oracle Cloud (always-free ARM: 4 OCPU, 24GB RAM)
+- OVHcloud (EU sovereignty, GDPR, CA + APAC regions)
+- Tencent Cloud Lighthouse (China/Asia, OpenClaw template)
+- Alibaba Cloud ECS (Asia, Middle East, Africa)
+- Vultr Cloud (32 global locations, from $6/mo)
+- Kamatera (24 DCs, Middle East + Asia, from $4/mo)
+
+### Added — Build Catalog (#/builds)
+- 13 OpenClaw build variants compared: Core, AlphaClaw, ClawHost, ClawTank, DigitalOcean 1-Click, Tencent Lighthouse, Railway, Render, Fly.io, Hetzner, Oracle Cloud, Ollama Local, AiGovOps Guided Install
+- Search/filter by category (self-hosted/managed/PaaS/local), difficulty, price range
+- "Recommended for you" picks, side-by-side comparison table
+
+### Added — Global Hosting Deals (#/hosting-global)
+- 16-country coverage: top 10 cloud spend + top 10 population countries
+- By Country and By Provider tab views with expandable detail cards
+- 51 provider recommendations with pricing, free tier status, latency estimates
+- CSS world map with coverage dots, comparison table
+
+### Added — 7 New Marketplace Hosting Entries
+- Railway, Fly.io, Oracle Cloud Free, OVHcloud, Tencent Lighthouse, Alibaba Cloud ECS, Kamatera
+- Total marketplace entries: 87 (was 80)
+
+### Added — E2E Validation Suite
+- `scripts/e2e-validate.sh` — 754-line shellcheck-clean script testing 9 validation steps across all 16 hosts
+- Steps: prerequisites, preflight, install, rollback, hardening, health, state, deploy-smoke, audit-chain
+- Colored pass/warn/fail matrix, JSON report output, configurable API URL and passphrase
+- `.github/workflows/e2e-validate.yml` — CI workflow (push, PR, weekly schedule)
+
+### Changed
+- Conference handout hub: 10 adventure cards (was 8), updated feature list
+- Sidebar: added Build Catalog, Global Hosting, Hosting Deals routes
+- All count references updated: 6 hosts → 16, 80 marketplace → 87
+
+---
+
 ## [2.0.1] — 2026-04-16 — "Larry's World" Model Council Patch
 
 Implements ALL consensus recommendations from the 3-model security council (Gemini 3.1 Pro, GPT-5.4, Claude Opus 4.6).
@@ -53,7 +97,7 @@ Implements ALL consensus recommendations from the 3-model security council (Gemi
 - **Disaster recovery documentation** — Mirror setup, backup verification, and restore procedures
 
 ### Added — Features
-- **Unified Marketplace** — 80 entries across 5 tabs: Agents (38), Connectors (29), Hosting (9), 1-Click Deploy (4)
+- **Unified Marketplace** — 87 entries across 5 tabs: Agents (38), Connectors (29), Hosting (16), 1-Click Deploy (4)
 - **1-Click Deploy Wizard** — 6-step pipeline: Select Bundle → Choose Host → Configure → Review → Deploy → Complete
 - **Manage Marketplace Entries** — Create agents, connectors, or hosting entries with live YAML export
 - **AWS EC2 & Google Cloud** host targets (added to existing macOS, DigitalOcean, Azure, Generic VPS)

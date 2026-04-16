@@ -15,7 +15,7 @@ import { z } from "zod";
 
 // ─── Input validation constants ─────────────────────────────────────
 // Whitelist of valid host targets — prevents path traversal & invalid lookup
-const VALID_HOST_TARGETS = ["macos", "digitalocean", "aws-ec2", "google-cloud", "azure-vm", "generic-vps"] as const;
+const VALID_HOST_TARGETS = ["macos", "digitalocean", "aws-ec2", "google-cloud", "azure-vm", "generic-vps", "railway", "render", "fly-io", "hetzner", "oracle-cloud", "ovhcloud", "tencent", "alibaba", "vultr", "kamatera"] as const;
 const hostTargetSchema = z.enum(VALID_HOST_TARGETS);
 
 // Severity & status enums for tighter insert validation
@@ -696,6 +696,76 @@ function getHostConfigs() {
       icon: "terminal",
       description: "Manual installation on any Ubuntu/Debian VPS with systemd, UFW, and Tailscale.",
       steps: ["Environment Check", "Dependencies", "SSH & Firewall", "Configuration", "Install", "Verify"],
+    },
+    {
+      id: "railway",
+      name: "Railway",
+      icon: "train",
+      description: "Deploy via Railway PaaS with GitHub-connected auto-deploys, free tier, and zero-config Docker builds.",
+      steps: ["Environment Check", "GitHub Connect", "Railway Config", "Deploy", "Verify"],
+    },
+    {
+      id: "render",
+      name: "Render",
+      icon: "cloud",
+      description: "Deploy to Render with Docker, auto-scaling, free tier, and managed TLS. Great for beginners.",
+      steps: ["Environment Check", "Render Account", "Service Config", "Deploy", "Verify"],
+    },
+    {
+      id: "fly-io",
+      name: "Fly.io",
+      icon: "globe",
+      description: "Deploy to Fly.io edge containers for global low-latency. Machines API with auto-stop and scale-to-zero.",
+      steps: ["Environment Check", "flyctl Setup", "App Config", "Deploy", "Verify"],
+    },
+    {
+      id: "hetzner",
+      name: "Hetzner Cloud",
+      icon: "server",
+      description: "Deploy to Hetzner Cloud in EU/US with best price/performance. From €3.79/mo for CX22.",
+      steps: ["Environment Check", "Dependencies", "SSH & Firewall", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "oracle-cloud",
+      name: "Oracle Cloud",
+      icon: "database",
+      description: "Deploy to Oracle Cloud always-free ARM instance (4 OCPU, 24GB RAM). Best free tier in cloud.",
+      steps: ["Environment Check", "OCI CLI Setup", "Compartment & VCN", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "ovhcloud",
+      name: "OVHcloud",
+      icon: "shield",
+      description: "Deploy to OVHcloud for EU data sovereignty and GDPR compliance. Regions in EU, CA, APAC.",
+      steps: ["Environment Check", "Dependencies", "SSH & Firewall", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "tencent",
+      name: "Tencent Cloud",
+      icon: "cloud",
+      description: "Deploy via Tencent Cloud Lighthouse with OpenClaw template. Optimized for China and Asia-Pacific.",
+      steps: ["Environment Check", "Lighthouse Setup", "Security Group", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "alibaba",
+      name: "Alibaba Cloud",
+      icon: "cloud",
+      description: "Deploy to Alibaba Cloud ECS. Largest cloud in Asia with regions across Asia, Middle East, and Africa.",
+      steps: ["Environment Check", "ECS Setup", "Security Group", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "vultr",
+      name: "Vultr",
+      icon: "server",
+      description: "Deploy to Vultr Cloud Compute in 32 locations worldwide. From $6/mo with high-performance NVMe.",
+      steps: ["Environment Check", "Dependencies", "SSH & Firewall", "Configuration", "Deploy", "Verify"],
+    },
+    {
+      id: "kamatera",
+      name: "Kamatera",
+      icon: "globe",
+      description: "Deploy to Kamatera with 24 data centers including Middle East and Asia. Custom configs from $4/mo.",
+      steps: ["Environment Check", "Dependencies", "SSH & Firewall", "Configuration", "Deploy", "Verify"],
     },
   ];
 }

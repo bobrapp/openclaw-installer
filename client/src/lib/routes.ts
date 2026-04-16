@@ -84,6 +84,20 @@ export const allRoutes: RouteEntry[] = [
 
   // ── Community ──
   {
+    path: "/builds",
+    label: (t) => t.navBuilds || "Build Catalog",
+    icon: "Boxes",
+    group: "community",
+    lazy: () => import("@/pages/builds"),
+  },
+  {
+    path: "/hosting-global",
+    label: (t) => t.navHostingGlobal || "Global Hosting",
+    icon: "Globe",
+    group: "community",
+    lazy: () => import("@/pages/hosting-global"),
+  },
+  {
     path: "/marketplace",
     label: (t) => t.unifiedMarketplaceTitle || "Marketplace",
     icon: "Store",
@@ -114,6 +128,13 @@ export const allRoutes: RouteEntry[] = [
     lazy: () => import("@/pages/releases"),
   },
 
+  {
+    path: "/hosting",
+    label: (t) => t.navHostingDeals || "Hosting Deals",
+    icon: "Server",
+    group: "resources",
+    lazy: () => import("@/pages/hosting-deals"),
+  },
   {
     path: "/how-i-built-this",
     label: (t) => t.navHowIBuiltThis || "How I Built This",
