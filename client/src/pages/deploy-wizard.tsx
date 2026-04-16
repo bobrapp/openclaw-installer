@@ -4,6 +4,7 @@
  * AiGovOps palette: navy #1B3A6B, teal #01696F
  */
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -682,19 +683,9 @@ function Step4Review({
   onEditStep: (step: WizardStep) => void;
   t: Translations;
 }) {
-  const [copied, setCopied] = useState(false);
+  const { copy, copied } = useCopyToClipboard({ fallbackFilename: "deploy-config", sound: false });
   const hostMeta = HOST_TARGETS.find((h) => h.id === hostId);
   const fields = HOST_REQUIRED_INPUTS[hostId] || [];
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(yaml);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // ignore
-    }
-  };
 
   const maskSecret = (field: InputField, val: string) =>
     field.secret ? "••••••" : val || "(not set)";
@@ -808,7 +799,7 @@ function Step4Review({
             variant="ghost"
             size="sm"
             className="h-6 text-xs"
-            onClick={handleCopy}
+            onClick={() => copy(yaml)}
             data-testid="review-copy-yaml"
           >
             {copied ? (

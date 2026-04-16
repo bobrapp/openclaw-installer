@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] — 2026-04-16 — "Council Complete"
+
+All 20 Model Council improvements implemented. Three-model review (Claude Opus 4.6, GPT-5.4, Gemini 3.1 Pro) is now 20/20 complete.
+
+### Fixed — Final 4 Council Items
+- **#5** Deploy wizard clipboard: replaced raw `navigator.clipboard.writeText()` with `useCopyToClipboard` hook (safe in sandboxed iframe)
+- **#10** Server error handling: wrapped all 12 API endpoints in try/catch with labeled `console.error` logging and structured 500 responses; Zod body validation already present on all POST/PATCH routes
+- **#18** home.tsx local iconMap: already cleaned up in prior batch (verified — uses `resolveHostIcon` from shared `host-utils.ts`)
+- **#20** ErrorBoundary chunk-retry: auto-detects lazy-chunk/dynamic-import failures and triggers one automatic page reload; shows specialized "Page failed to load" UI with Reload button on persistent failures
+
+### Council Scorecard (20/20)
+| # | Improvement | Status |
+|---|-------------|--------|
+| 1 | Hoist `React.lazy()` out of render loop | Done (v2.2.0) |
+| 2 | `getQueryFn` → `apiRequest` + AbortSignal | Done (v2.2.0) |
+| 3 | Memoize I18nContext.Provider value | Done (v2.2.0) |
+| 4 | Fix broken DELETE /api/logs → archive | Done (v2.2.0) |
+| 5 | Clipboard → useCopyToClipboard hook | Done (v2.3.0) |
+| 6 | Cache /api/releases GitHub fan-out | Done (v2.2.0) |
+| 7 | Core patterns deduplication | Done (v2.2.0) |
+| 8 | HostConfig extraction to host-utils.ts | Done (v2.2.0) |
+| 9 | validate-data.ts dev-only import | Done (v2.2.0) |
+| 10 | Server error handling + Zod validation | Done (v2.3.0) |
+| 11 | React Query loading/error states | Done (v2.2.0) |
+| 12 | CelebrationToast stale closure fix | Done (v2.2.0) |
+| 13 | Canvas particles pause in bg/light | Done (v2.2.0) |
+| 14 | ARIA labels on interactive buttons | Done (v2.2.0) |
+| 15 | Language switching race condition | Done (v2.2.0) |
+| 16 | OwnerAuthContext + 30-min timeout | Done (v2.2.0) |
+| 17 | Debounce search + canvas resize | Done (v2.2.0) |
+| 18 | home.tsx iconMap → global resolveIcon | Done (v2.2.0) |
+| 19 | Dead code cleanup | Done (v2.2.0) |
+| 20 | Per-route ErrorBoundary + chunk retry | Done (v2.3.0) |
+
+---
+
 ## [2.2.2] — 2026-04-16 — "Polyglot"
 
 Standalone wizard now ships a 15-language locale switcher with full RTL and Cherokee support.

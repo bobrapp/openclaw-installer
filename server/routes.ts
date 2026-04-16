@@ -136,76 +136,116 @@ export function registerRoutes(server: Server, app: Express) {
 
   // === LOGS ===
   app.get("/api/logs", (req, res) => {
-    const rawHost = req.query.host as string | undefined;
-    // Validate host query param against whitelist if provided
-    const hostParsed = rawHost ? hostTargetSchema.safeParse(rawHost) : null;
-    const host = hostParsed?.success ? hostParsed.data : undefined;
-    const logs = storage.getLogs(host);
-    res.json(logs);
+    try {
+      const rawHost = req.query.host as string | undefined;
+      // Validate host query param against whitelist if provided
+      const hostParsed = rawHost ? hostTargetSchema.safeParse(rawHost) : null;
+      const host = hostParsed?.success ? hostParsed.data : undefined;
+      const logs = storage.getLogs(host);
+      res.json(logs);
+    } catch (err) {
+      console.error('[GET /api/logs]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to retrieve logs" });
+    }
   });
 
   app.post("/api/logs", mutateLimiter, requireOwner, (req, res) => {
-    const parsed = refinedInsertLogSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: "Invalid log data", details: parsed.error.flatten() });
+    try {
+      const parsed = refinedInsertLogSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid log data", details: parsed.error.flatten() });
+      }
+      const log = storage.addLog(parsed.data);
+      res.json(log);
+    } catch (err) {
+      console.error('[POST /api/logs]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to create log entry" });
     }
-    const log = storage.addLog(parsed.data);
-    res.json(log);
   });
 
   // DELETE /api/logs removed — violates immutability.
   // Audit-logged archive endpoint instead (requires owner auth).
   app.post("/api/logs/archive", mutateLimiter, requireOwner, (_req, res) => {
-    const count = storage.getLogs().length;
-    storage.addAuditLog({
-      user: "owner",
-      prompt: "Archived install logs",
-      results: `${count} log entries archived by owner request`,
-    });
-    storage.clearLogs();
-    res.json({ ok: true, archived: count });
+    try {
+      const count = storage.getLogs().length;
+      storage.addAuditLog({
+        user: "owner",
+        prompt: "Archived install logs",
+        results: `${count} log entries archived by owner request`,
+      });
+      storage.clearLogs();
+      res.json({ ok: true, archived: count });
+    } catch (err) {
+      console.error('[POST /api/logs/archive]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to archive logs" });
+    }
   });
 
   // === INSTALL STATE ===
   app.get("/api/state", (_req, res) => {
-    const state = storage.getOrCreateState();
-    res.json(state);
+    try {
+      const state = storage.getOrCreateState();
+      res.json(state);
+    } catch (err) {
+      console.error('[GET /api/state]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to retrieve install state" });
+    }
   });
 
   app.patch("/api/state/:id", mutateLimiter, requireOwner, (req, res) => {
-    const id = parseInt(req.params.id as string);
-    if (isNaN(id) || id < 1 || id > 2147483647) return res.status(400).json({ error: "Invalid ID" });
-    const parsed = patchStateSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: "Invalid state data", details: parsed.error.flatten() });
+    try {
+      const id = parseInt(req.params.id as string);
+      if (isNaN(id) || id < 1 || id > 2147483647) return res.status(400).json({ error: "Invalid ID" });
+      const parsed = patchStateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid state data", details: parsed.error.flatten() });
+      }
+      const state = storage.updateState(id, parsed.data);
+      res.json(state);
+    } catch (err) {
+      console.error('[PATCH /api/state/:id]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to update install state" });
     }
-    const state = storage.updateState(id, parsed.data);
-    res.json(state);
   });
 
   app.post("/api/state/reset", mutateLimiter, requireOwner, (_req, res) => {
-    storage.addAuditLog({
-      user: "owner",
-      prompt: "Wizard state reset",
-      results: "Install state cleared by owner request",
-    });
-    const state = storage.resetState();
-    res.json(state);
+    try {
+      storage.addAuditLog({
+        user: "owner",
+        prompt: "Wizard state reset",
+        results: "Install state cleared by owner request",
+      });
+      const state = storage.resetState();
+      res.json(state);
+    } catch (err) {
+      console.error('[POST /api/state/reset]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to reset install state" });
+    }
   });
 
   // === HARDENING CHECKS ===
   app.get("/api/hardening/:hostTarget", (req, res) => {
-    const htParsed = hostTargetSchema.safeParse(req.params.hostTarget);
-    if (!htParsed.success) return res.status(400).json({ error: "Invalid host target" });
-    const checks = storage.getHardeningChecks(htParsed.data);
-    res.json(checks);
+    try {
+      const htParsed = hostTargetSchema.safeParse(req.params.hostTarget);
+      if (!htParsed.success) return res.status(400).json({ error: "Invalid host target" });
+      const checks = storage.getHardeningChecks(htParsed.data);
+      res.json(checks);
+    } catch (err) {
+      console.error('[GET /api/hardening]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to retrieve hardening checks" });
+    }
   });
 
   app.patch("/api/hardening/toggle/:id", mutateLimiter, requireOwner, (req, res) => {
-    const id = parseInt(req.params.id as string);
-    if (isNaN(id) || id < 1 || id > 2147483647) return res.status(400).json({ error: "Invalid ID" });
-    const check = storage.toggleHardeningCheck(id);
-    res.json(check);
+    try {
+      const id = parseInt(req.params.id as string);
+      if (isNaN(id) || id < 1 || id > 2147483647) return res.status(400).json({ error: "Invalid ID" });
+      const check = storage.toggleHardeningCheck(id);
+      res.json(check);
+    } catch (err) {
+      console.error('[PATCH /api/hardening/toggle/:id]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to toggle hardening check" });
+    }
   });
 
   // === PREFLIGHT CHECK SCRIPTS ===
@@ -297,21 +337,31 @@ export function registerRoutes(server: Server, app: Express) {
 
   // === AUDIT LOGS (Immutable Hash Chain) ===
   app.get("/api/audit/logs", (req, res) => {
-    const passphrase = req.headers["x-owner-passphrase"] as string;
-    if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
-      return res.status(401).json({ error: "Unauthorized — owner passphrase required" });
+    try {
+      const passphrase = req.headers["x-owner-passphrase"] as string;
+      if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
+        return res.status(401).json({ error: "Unauthorized — owner passphrase required" });
+      }
+      const logs = storage.getAuditLogs();
+      res.json(logs);
+    } catch (err) {
+      console.error('[GET /api/audit/logs]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to retrieve audit logs" });
     }
-    const logs = storage.getAuditLogs();
-    res.json(logs);
   });
 
   app.get("/api/audit/verify", (req, res) => {
-    const passphrase = req.headers["x-owner-passphrase"] as string;
-    if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
-      return res.status(401).json({ error: "Unauthorized" });
+    try {
+      const passphrase = req.headers["x-owner-passphrase"] as string;
+      if (!passphrase || !storage.verifyOwnerPassphrase(passphrase)) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      const result = storage.verifyAuditChain();
+      res.json(result);
+    } catch (err) {
+      console.error('[GET /api/audit/verify]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to verify audit chain" });
     }
-    const result = storage.verifyAuditChain();
-    res.json(result);
   });
 
   // === OWNER AUTH ===
@@ -320,26 +370,36 @@ export function registerRoutes(server: Server, app: Express) {
   });
 
   app.post("/api/owner/set-passphrase", mutateLimiter, (req, res) => {
-    const ppParsed = passphraseSchema.safeParse(req.body?.passphrase);
-    if (!ppParsed.success) {
-      return res.status(400).json({ error: "Passphrase must be 6–256 characters" });
+    try {
+      const ppParsed = passphraseSchema.safeParse(req.body?.passphrase);
+      if (!ppParsed.success) {
+        return res.status(400).json({ error: "Passphrase must be 6–256 characters" });
+      }
+      const passphrase = ppParsed.data;
+      if (storage.hasOwnerPassphrase()) {
+        return res.status(400).json({ error: "Passphrase already set. Cannot change." });
+      }
+      storage.setOwnerPassphrase(passphrase);
+      storage.addAuditLog({ user: "owner", prompt: "Owner passphrase configured", results: "success" });
+      res.json({ ok: true });
+    } catch (err) {
+      console.error('[POST /api/owner/set-passphrase]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to set passphrase" });
     }
-    const passphrase = ppParsed.data;
-    if (storage.hasOwnerPassphrase()) {
-      return res.status(400).json({ error: "Passphrase already set. Cannot change." });
-    }
-    storage.setOwnerPassphrase(passphrase);
-    storage.addAuditLog({ user: "owner", prompt: "Owner passphrase configured", results: "success" });
-    res.json({ ok: true });
   });
 
   app.post("/api/owner/verify", mutateLimiter, rateLimitVerify, (req, res) => {
-    const ppParsed = passphraseSchema.safeParse(req.body?.passphrase);
-    if (!ppParsed.success) {
-      return res.json({ valid: false });
+    try {
+      const ppParsed = passphraseSchema.safeParse(req.body?.passphrase);
+      if (!ppParsed.success) {
+        return res.json({ valid: false });
+      }
+      const valid = storage.verifyOwnerPassphrase(ppParsed.data);
+      res.json({ valid });
+    } catch (err) {
+      console.error('[POST /api/owner/verify]', err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Verification failed" });
     }
-    const valid = storage.verifyOwnerPassphrase(ppParsed.data);
-    res.json({ valid });
   });
 
   // === PDF AUDIT REPORT EXPORT ===

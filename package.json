@@ -1,6 +1,6 @@
 {
   "name": "openclaw-installer",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "Guided macOS/cloud installer for OpenClaw — preflight checks, dependency validation, 1-click deploy, hardening checklist, and rollback support. 16 host targets, 87 marketplace entries, 15 languages.",
   "license": "Apache-2.0 WITH Commons-Clause",
   "type": "module",
