@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] — 2026-04-16 — "Rosetta"
+
+Complete i18n: all 504 missing translations generated across 14 languages, plus 8 quality fixes.
+
+### Fixed — Translation Quality
+- **French**: `mktCuratedBy` "Curé par la" → "Organisé par la" (false cognate — "curé" means priest)
+- **French**: `mktConfig` "Config" → "Configuration"
+- **German**: `homeTitle` "by AiGovOps" → "von AiGovOps"
+- **Chinese**: `mktByProvider` "提供者" → "按提供商" (noun → prepositional phrase)
+- **Russian**: `mktCuratedBy` "Собрано" → "Курируется" (collected → curated)
+- **Portuguese**: `marketplaceSkillCount` "skills" → "habilidades"
+- **Portuguese**: `mktConfig` "Config" → "Configuração"
+- **Spanish**: `mktConfig` "Config" → "Configuración"
+
+### Added — 504 Translations (36 keys × 14 languages)
+Marketplace management, 1-Click Deploy wizard, and Unified Marketplace strings:
+- **Romance**: French, Spanish, Portuguese
+- **Germanic**: German
+- **Slavic**: Russian
+- **Turkic**: Turkish
+- **CJK**: Simplified Chinese
+- **Indic**: Hindi
+- **Bantu**: Swahili
+- **RTL**: Arabic, Urdu, Pashto
+- **Indigenous**: Cherokee (ᏣᎳᎩ syllabary)
+- **Accessibility**: Braille (Grade 1 UEB)
+
+All 15 locales now at 165 keys with zero placeholders.
+
+---
+
 ## [2.2.0] — 2026-04-16 — "Ironclad"
 
 Full hardening pass: CVE patch, canary tokens, Docker, 208 new tests, accessibility, localization QA, npm/Homebrew distribution, and community readiness.
