@@ -29,21 +29,21 @@ export default function Home() {
       {/* Feature summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
-          <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+          <Shield className="h-5 w-5 text-primary mt-0.5 shrink-0" aria-hidden="true" />
           <div>
             <p className="text-sm font-medium">{t.homePreflightChecks}</p>
             <p className="text-xs text-muted-foreground">{t.homePreflightDesc}</p>
           </div>
         </div>
         <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
-          <FileCode2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+          <FileCode2 className="h-5 w-5 text-primary mt-0.5 shrink-0" aria-hidden="true" />
           <div>
             <p className="text-sm font-medium">{t.homeDryRun}</p>
             <p className="text-xs text-muted-foreground">{t.homeDryRunDesc}</p>
           </div>
         </div>
         <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border">
-          <Terminal className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+          <Terminal className="h-5 w-5 text-primary mt-0.5 shrink-0" aria-hidden="true" />
           <div>
             <p className="text-sm font-medium">{t.homeHardening}</p>
             <p className="text-xs text-muted-foreground">{t.homeHardeningDesc}</p>
@@ -75,7 +75,7 @@ export default function Home() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-                      <Icon className="h-4 w-4 text-primary" />
+                      <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
                     </div>
                     <div>
                       <CardTitle className="text-base">{host.name}</CardTitle>
@@ -97,12 +97,12 @@ export default function Home() {
                     <Link href={`/wizard/${host.id}`}>
                       <Button size="sm" data-testid={`button-start-${host.id}`}>
                         {t.homeStartSetup}
-                        <ArrowRight className="ml-1 h-3 w-3" />
+                        <ArrowRight className="ml-1 h-3 w-3" aria-hidden="true" />
                       </Button>
                     </Link>
                     <Link href={`/hardening/${host.id}`}>
                       <Button size="sm" variant="outline" data-testid={`button-harden-${host.id}`}>
-                        <Shield className="mr-1 h-3 w-3" />
+                        <Shield className="mr-1 h-3 w-3" aria-hidden="true" />
                         {t.hostHardening}
                       </Button>
                     </Link>

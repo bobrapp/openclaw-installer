@@ -34,14 +34,13 @@ export function PageHero({
     <div className="text-center space-y-3 py-4">
       {/* Title row */}
       <div className="flex items-center justify-center gap-2">
-        {icon}
+        <span aria-hidden="true">{icon}</span>
         <h1
           className="text-xl font-bold tracking-tight"
           {...(testId ? { "data-testid": testId } : {})}
         >
           {title}
         </h1>
-        {icon}
       </div>
 
       {/* Subtitle */}

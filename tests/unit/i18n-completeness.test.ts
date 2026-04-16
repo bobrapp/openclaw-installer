@@ -25,7 +25,7 @@ const locales = loadLocales();
 const localeCodes = Object.keys(locales).sort();
 const enKeys = Object.keys(locales['en'] || {}).sort();
 
-const EXPECTED_MIN_KEYS = 125;
+const EXPECTED_MIN_KEYS = 165;
 const EXPECTED_LOCALE_COUNT = 15;
 
 // ─── Expected locales ──────────────────────────────────────────────────────

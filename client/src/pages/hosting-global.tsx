@@ -298,6 +298,11 @@ function CountryCard({ deal }: { deal: DisplayRegionalDeal }) {
       <CardHeader
         className="cursor-pointer select-none py-3 px-4"
         onClick={() => setExpanded((v) => !v)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setExpanded((v) => !v); } }}
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        aria-label={`${deal.countryName} — click to ${expanded ? "collapse" : "expand"} provider details`}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -313,12 +318,12 @@ function CountryCard({ deal }: { deal: DisplayRegionalDeal }) {
               </div>
               <CardDescription className="text-xs mt-0.5">
                 <span className="mr-3">
-                  <Users className="inline w-3 h-3 mr-0.5" />
+                  <Users className="inline w-3 h-3 mr-0.5" aria-hidden="true" />
                   {deal.population} pop.
                 </span>
                 {deal.cloudSpendRank != null && (
                 <span className="mr-3">
-                  <BarChart3 className="inline w-3 h-3 mr-0.5" />
+                  <BarChart3 className="inline w-3 h-3 mr-0.5" aria-hidden="true" />
                   Cloud Rank #{deal.cloudSpendRank}
                 </span>
                 )}
@@ -337,7 +342,7 @@ function CountryCard({ deal }: { deal: DisplayRegionalDeal }) {
                 return best || p.priceFrom;
               }, deal.providers[0]?.priceFrom ?? "")}
             </span>
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {expanded ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <ChevronDown className="w-4 h-4" aria-hidden="true" />}
           </div>
         </div>
       </CardHeader>
@@ -361,12 +366,12 @@ function CountryCard({ deal }: { deal: DisplayRegionalDeal }) {
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-x-3">
                     <span>
-                      <MapPin className="inline w-3 h-3 mr-0.5" />
+                      <MapPin className="inline w-3 h-3 mr-0.5" aria-hidden="true" />
                       {p.region}
                     </span>
                     {p.latencyMs !== undefined && (
                       <span>
-                        <Zap className="inline w-3 h-3 mr-0.5" />
+                        <Zap className="inline w-3 h-3 mr-0.5" aria-hidden="true" />
                         ~{p.latencyMs}ms
                       </span>
                     )}
@@ -393,7 +398,7 @@ function ProviderCard({ summary }: { summary: ProviderSummary }) {
         <div className="flex items-start justify-between gap-2">
           <div>
             <CardTitle className="text-base flex items-center gap-2">
-              <Server className="w-4 h-4 text-teal-400" />
+              <Server className="w-4 h-4 text-teal-400" aria-hidden="true" />
               {summary.providerName}
             </CardTitle>
             <CardDescription className="text-xs mt-1">
@@ -474,15 +479,15 @@ function ComparisonTable({ deals }: { deals: DisplayRegionalDeal[] }) {
                 <td className="px-4 py-2.5 font-medium">{cheapestPrice || "—"}</td>
                 <td className="px-4 py-2.5 text-center">
                   {hasFreeTier ? (
-                    <CheckCircle className="w-4 h-4 text-teal-400 mx-auto" />
+                    <CheckCircle className="w-4 h-4 text-teal-400 mx-auto" aria-label="Yes" role="img" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-muted-foreground/40 mx-auto" />
+                    <XCircle className="w-4 h-4 text-muted-foreground/40 mx-auto" aria-label="No" role="img" />
                   )}
                 </td>
                 <td className="px-4 py-2.5 text-muted-foreground">
                   {fastestProv ? (
                     <span>
-                      <Zap className="inline w-3 h-3 mr-0.5 text-amber-400" />
+                      <Zap className="inline w-3 h-3 mr-0.5 text-amber-400" aria-hidden="true" />
                       {fastestProv.latencyMs ?? "—"}ms — {fastestProv.providerName}
                     </span>
                   ) : "—"}
@@ -522,7 +527,7 @@ export default function HostingGlobalPage() {
       <section className="border-b border-border/60 bg-gradient-to-br from-[#1B3A6B]/20 via-background to-[#01696F]/10 px-4 py-12 sm:py-16">
         <div className="max-w-5xl mx-auto text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Globe className="w-7 h-7 text-teal-400" />
+            <Globe className="w-7 h-7 text-teal-400" aria-hidden="true" />
             <Badge variant="outline" className="text-xs border-teal-500/40 text-teal-400">
               Global Coverage
             </Badge>
@@ -537,10 +542,10 @@ export default function HostingGlobalPage() {
           {/* Stat cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
             {[
-              { label: "Countries", value: stats.totalCountries, icon: <Globe className="w-4 h-4" /> },
-              { label: "Providers", value: stats.totalProviders, icon: <Server className="w-4 h-4" /> },
-              { label: "Coverage", value: `${stats.coveragePercent}%`, icon: <BarChart3 className="w-4 h-4" /> },
-              { label: "Free Tiers", value: deals.filter((d) => d.providers.some((p) => p.freeTier)).length, icon: <DollarSign className="w-4 h-4" /> },
+              { label: "Countries", value: stats.totalCountries, icon: <Globe className="w-4 h-4" aria-hidden="true" /> },
+              { label: "Providers", value: stats.totalProviders, icon: <Server className="w-4 h-4" aria-hidden="true" /> },
+              { label: "Coverage", value: `${stats.coveragePercent}%`, icon: <BarChart3 className="w-4 h-4" aria-hidden="true" /> },
+              { label: "Free Tiers", value: deals.filter((d) => d.providers.some((p) => p.freeTier)).length, icon: <DollarSign className="w-4 h-4" aria-hidden="true" /> },
             ].map((s) => (
               <Card key={s.label} className="border border-border/60 bg-card/60">
                 <CardContent className="py-4 px-3 text-center">
@@ -590,7 +595,7 @@ export default function HostingGlobalPage() {
         {/* ── World Map Section ── */}
         <section>
           <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-teal-400" />
+            <MapPin className="w-5 h-5 text-teal-400" aria-hidden="true" />
             Data Center Coverage Map
           </h2>
           <Card className="border border-border/60 overflow-hidden">
@@ -599,6 +604,8 @@ export default function HostingGlobalPage() {
               <div
                 className="relative w-full bg-[#0f1923] rounded-lg"
                 style={{ paddingBottom: "50%", minHeight: "200px" }}
+                role="img"
+                aria-label="World map showing data center coverage dots for covered countries"
               >
                 {/* Continent outlines — purely decorative CSS blocks */}
                 {/* North America */}
@@ -641,7 +648,7 @@ export default function HostingGlobalPage() {
         {/* ── Comparison Table ── */}
         <section>
           <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-teal-400" />
+            <BarChart3 className="w-5 h-5 text-teal-400" aria-hidden="true" />
             Country Comparison
           </h2>
           <ComparisonTable deals={deals} />

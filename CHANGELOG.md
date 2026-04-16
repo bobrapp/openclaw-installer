@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] — 2026-04-16 — "Ironclad"
+
+Full hardening pass: CVE patch, canary tokens, Docker, 208 new tests, accessibility, localization QA, npm/Homebrew distribution, and community readiness.
+
+### Fixed — Security
+- **CVE-2026-39356**: Upgraded `drizzle-orm` to 0.45.2 (SQL injection via improperly escaped identifiers)
+- npm audit now returns 0 vulnerabilities
+
+### Added — Canary Token System
+- `scripts/canary-check.sh` — SHA-256 integrity monitoring for 21 critical files
+- Three modes: `--init` (baseline), `--verify` (check with colored output), `--update` (diff + refresh)
+- `scripts/canary-webhook.sh` — Alert via webhook or local log on tampering detection
+- `.github/workflows/canary-check.yml` — CI workflow: push + daily schedule, auto-creates GitHub issue on tampering
+- `docs/INCIDENT-RESPONSE.md` updated with Scenario 7: Canary Token Alerts
+
+### Added — Docker Support
+- `Dockerfile` — Multi-stage build (builder + runtime), non-root user, health check
+- `docker-compose.yml` — Production stack with SQLite volume persistence
+- `docker-compose.dev.yml` — Development override with hot reload
+- `.dockerignore` — Build context exclusions
+- `docs/DOCKER.md` — Full quick-start guide including multi-arch builds
+
+### Added — Test Coverage (208 new tests)
+- `tests/unit/routes-validation.test.ts` — 74 tests for Zod schema validation
+- `tests/unit/marketplace-data.test.ts` — 33 tests for marketplace data integrity
+- `tests/unit/hosting-regions.test.ts` — 23 tests for regional hosting data
+- `tests/unit/builds-data.test.ts` — 34 tests for build catalog data
+- `tests/unit/security-headers.test.ts` — 44 tests for security configuration
+- Total: 338 passing unit tests (was 130)
+
+### Added — Community & Distribution
+- `CONTRIBUTING.md` — Full contributor guide (260 lines)
+- `CODE_OF_CONDUCT.md` — Contributor Covenant v2.1
+- `.github/ISSUE_TEMPLATE/bug_report.md` — Bug report template with 16 host targets
+- `.github/ISSUE_TEMPLATE/feature_request.md` — Feature request template
+- `.github/ISSUE_TEMPLATE/security_vulnerability.md` — Security vulnerability report
+- `.github/PULL_REQUEST_TEMPLATE.md` — PR template with CLA/DCO checkboxes
+- `bin/openclaw.mjs` — CLI entry point (`openclaw start|preflight|validate|canary-verify`)
+- `Formula/openclaw.rb` — Homebrew formula
+- `docs/DISTRIBUTION.md` — npm, Homebrew, Docker, and source install guide
+- `package.json` — Added bin, files, repository, keywords, engines, description, contributors
+
+### Improved — Accessibility (24 fixes)
+- Added skip navigation link and `id="main-content"` landmark
+- Added global `focus-visible` ring in CSS
+- Fixed heading hierarchy and semantic HTML (converted step indicators to `<ol>`)
+- Added `aria-label`, `aria-pressed`, `aria-hidden`, `role="group"` across 9 files
+- Added keyboard support on interactive cards (CountryCard)
+- All decorative icons now have `aria-hidden="true"`
+
+### Improved — Localization
+- All 14 non-English locales now have 165 keys (was 129, 36 keys were missing)
+- Missing keys filled with `[NEEDS TRANSLATION]` placeholders
+- Flagged quality issues: French "curé" false cognate, German untranslated "by", Chinese provider vs. "by"
+
+### Changed
+- `README.md` — Full refresh with badges, quick starts (npm, Docker, VPS, PaaS), architecture diagram, route table, docs index
+- i18n completeness test updated to expect 165 keys
+
+---
+
 ## [2.1.0] — 2026-04-16 — "Global Deploy"
 
 Massive expansion of hosting targets, build catalog, global deals matrix, and end-to-end validation.

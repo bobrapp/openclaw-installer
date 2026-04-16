@@ -495,11 +495,12 @@ function AgentGroupSection({
   patterns: PatternEntry[];
 }) {
   if (patterns.length === 0) return null;
+  const headingId = `agent-group-${title.toLowerCase().replace(/\s+/g, "-")}`;
   return (
-    <section className="space-y-4">
+    <section className="space-y-4" aria-labelledby={headingId}>
       <div className="flex items-center gap-3 pb-2 border-b border-border">
         <Sparkles className="h-5 w-5 text-primary" aria-hidden="true" />
-        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        <h2 id={headingId} className="text-lg font-semibold tracking-tight">{title}</h2>
         <Badge variant="outline" className="ms-auto text-xs">
           {patterns.length}
         </Badge>

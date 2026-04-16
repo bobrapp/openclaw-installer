@@ -156,14 +156,14 @@ function StepIndicator({
   t: Translations;
 }) {
   return (
-    <div className="flex items-center justify-center gap-1 mb-8 flex-wrap">
+    <ol className="flex items-center justify-center gap-1 mb-8 flex-wrap" aria-label="Wizard steps">
       {STEP_LABELS.map((key, i) => {
         const step = (i + 1) as WizardStep;
         const isActive = step === current;
         const isDone = step < current;
 
         return (
-          <div key={step} className="flex items-center">
+          <li key={step} className="flex items-center" aria-current={isActive ? "step" : undefined}>
             <div
               className={[
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
@@ -173,23 +173,24 @@ function StepIndicator({
                   ? "bg-[#01696F]/20 text-[#01696F] dark:text-teal-400"
                   : "bg-muted text-muted-foreground",
               ].join(" ")}
+              aria-label={`Step ${step}: ${t[key] || STEP_FALLBACKS[i]}${isDone ? " (completed)" : isActive ? " (current)" : ""}`}
             >
               {isDone ? (
-                <Check className="h-3 w-3" />
+                <Check className="h-3 w-3" aria-hidden="true" />
               ) : (
-                <span className="w-4 text-center">{step}</span>
+                <span className="w-4 text-center" aria-hidden="true">{step}</span>
               )}
-              <span className="hidden sm:inline">
+              <span className="hidden sm:inline" aria-hidden="true">
                 {t[key] || STEP_FALLBACKS[i]}
               </span>
             </div>
             {i < 5 && (
-              <ChevronRight className="h-3 w-3 text-muted-foreground mx-0.5" />
+              <ChevronRight className="h-3 w-3 text-muted-foreground mx-0.5" aria-hidden="true" />
             )}
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }
 
@@ -263,7 +264,7 @@ function BundleCard({
           </div>
         </div>
         {selected && (
-          <CheckCircle2 className="h-5 w-5 text-[#01696F] shrink-0" />
+          <CheckCircle2 className="h-5 w-5 text-[#01696F] shrink-0" aria-hidden="true" />
         )}
       </div>
     </button>
@@ -414,7 +415,7 @@ function Step2ChooseHost({
                   </div>
                 </div>
                 {isSelected && (
-                  <CheckCircle2 className="h-5 w-5 text-[#01696F] shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-[#01696F] shrink-0" aria-hidden="true" />
                 )}
               </div>
             </button>
@@ -629,7 +630,7 @@ function Step3CollectInputs({
       )}
       {validated && Object.keys(errors).length === 0 && (
         <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-          <CheckCircle2 className="h-4 w-4" />
+          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
           All required fields are valid.
         </div>
       )}

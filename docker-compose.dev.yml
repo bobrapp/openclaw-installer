@@ -1,0 +1,56 @@
+# =============================================================================
+# OpenClaw Guided Install — Development Compose Override
+# AiGovOps Foundation  |  License: Apache-2.0 WITH Commons-Clause
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# This override:
+#   - Mounts source directories for hot-reload (tsx watches server/*)
+#   - Runs `npm run dev` instead of the compiled bundle
+#   - Exposes Node.js inspector on port 9229 for debugger attach
+#   - Binds to 0.0.0.0 so Vite HMR is reachable from the host
+# =============================================================================
+
+services:
+  openclaw-installer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder          # use the builder stage (has devDependencies)
+
+    command: ["npm", "run", "dev"]
+
+    environment:
+      NODE_ENV: development
+      PORT: "5000"
+      HOST: "0.0.0.0"
+      # Enable Node.js inspector for VS Code / Chrome DevTools
+      NODE_OPTIONS: "--inspect=0.0.0.0:9229"
+
+    ports:
+      - "5000:5000"
+      - "9229:9229"   # Node.js debugger
+
+    volumes:
+      # Mount source for live reload — server restarts on file changes via tsx
+      - ./client:/build/client:ro
+      - ./server:/build/server:ro
+      - ./shared:/build/shared:ro
+      - ./public:/build/public:ro
+      # Persist node_modules inside container (avoids host/container conflicts)
+      - dev_node_modules:/build/node_modules
+      # Dev DB lives in a named volume
+      - dev_data:/data
+
+    restart: "no"
+
+    # Relax resource limits for development
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+volumes:
+  dev_node_modules:
+  dev_data:

@@ -202,6 +202,103 @@
 
 ---
 
+## Scenario 7: Canary Token Alerts
+
+### What Canary Tokens Monitor
+
+The OpenClaw Canary Token System (`scripts/canary-check.sh`) maintains SHA-256 checksums of the following critical files in `.canary-manifest.json`:
+
+| File | Why It's Critical |
+|------|-------------------|
+| `LICENSE` | Defines the CC BY-NC 4.0 terms — tampering could enable unauthorized commercial use |
+| `NOTICE` | Attribution and copyright notice required by the license |
+| `GOVERNANCE.md` | Project governance rules and voting procedures |
+| `CODEOWNERS` | Controls who must approve PRs — removing entries bypasses review requirements |
+| `.github/workflows/*.yml` | All CI/CD pipeline definitions — tampering could introduce supply-chain attacks |
+| `package.json` | Dependency manifest — unexpected changes may introduce malicious packages |
+| `server/routes.ts` | Core server routing — tampering could introduce backdoors or data exfiltration |
+| `shared/schema.ts` | Database schema — tampering could corrupt data integrity or access controls |
+
+The system operates in two layers:
+
+1. **Local / cron** — `scripts/canary-webhook.sh` runs every 30 minutes (configurable) and fires a webhook or writes to `logs/canary-alerts.log`.
+2. **CI** — `.github/workflows/canary-check.yml` runs on every push to `master` and nightly at 06:00 UTC. If tampering is detected, a GitHub issue is automatically created with the `[SECURITY]` label.
+
+### Responding to a Canary Alert
+
+1. **IMMEDIATE (0–10 min)**
+   - [ ] Do not dismiss the alert. Treat every canary alert as a real incident until proven otherwise.
+   - [ ] Note the exact timestamp and list of tampered files from the alert payload.
+   - [ ] Declare a provisional security hold: no merges, no releases until cleared.
+   - [ ] Notify both co-founders (Ken Johnston, Bob Rapp) via Signal.
+
+2. **INVESTIGATION (10–60 min)**
+   - [ ] Run locally on a clean clone:
+     ```bash
+     git clone git@github.com:aigovops/openclaw-installer.git /tmp/openclaw-forensic
+     cd /tmp/openclaw-forensic
+     bash scripts/canary-check.sh --verify
+     ```
+   - [ ] For each tampered file, run:
+     ```bash
+     git log --follow -p -- <file>
+     ```
+     to identify the commit that introduced the change.
+   - [ ] Check the GitHub audit log (Settings → Audit log) for unauthorized activity.
+   - [ ] Cross-reference against the SHA-256 hash chain audit log and Sigstore cosign release signatures.
+
+3. **TRIAGE**
+   - **Authorized change?** A co-founder recently updated the file intentionally → proceed to *Update the Manifest* below.
+   - **Unauthorized change?** The file was modified without a legitimate commit → treat as Scenario 1 (Compromised Account) or Scenario 2 (Malicious Code). Follow those runbooks immediately.
+   - **CI-only false positive?** The manifest was committed for CI use and differs from a local manifest → verify that the committed manifest matches expected hashes, then regenerate local.
+
+4. **RESOLUTION**
+   - [ ] Revert unauthorized changes via `git revert <sha>`.
+   - [ ] Rotate any secrets or tokens that may have been exposed by the tampered file.
+   - [ ] Re-run `bash scripts/canary-check.sh --verify` — must return exit code 0 before lifting the security hold.
+   - [ ] Update the manifest (see below) after all files are restored to a known-good state.
+   - [ ] Close the auto-created `[SECURITY]` GitHub issue with a summary of findings.
+
+### Updating the Manifest After Legitimate Changes
+
+When a critical file is intentionally changed (e.g., a new workflow is added, GOVERNANCE.md is updated), the canary manifest must be refreshed:
+
+```bash
+# 1. Review what changed
+bash scripts/canary-check.sh --update
+# (shows which files changed before rewriting the manifest)
+
+# 2. If the changes are expected, commit the new manifest
+git add .canary-manifest.json
+git commit -m "chore: update canary manifest after <brief description of change>"
+git push
+```
+
+> **Two-person rule:** Manifest updates that follow a security incident require sign-off from both co-founders before merging.
+
+### Canary System Files
+
+| File | Purpose |
+|------|---------|
+| `scripts/canary-check.sh` | Core checksum tool (`--init`, `--verify`, `--update`) |
+| `scripts/canary-webhook.sh` | Alert dispatcher for cron use |
+| `.github/workflows/canary-check.yml` | CI integration with auto-issue creation |
+| `.canary-manifest.json` | Baseline checksum store (gitignored locally; commit for CI) |
+| `logs/canary-alerts.log` | Local fallback alert log (gitignored) |
+
+### Configuring Webhook Alerts
+
+Set the `CANARY_WEBHOOK_URL` environment variable in your crontab or shell environment to POST alerts to a Slack incoming webhook, Microsoft Teams connector, or any HTTP endpoint that accepts JSON:
+
+```bash
+export CANARY_WEBHOOK_URL="https://hooks.slack.com/services/..."
+*/30 * * * * CANARY_WEBHOOK_URL="${CANARY_WEBHOOK_URL}" /path/to/scripts/canary-webhook.sh
+```
+
+Without `CANARY_WEBHOOK_URL`, alerts are written to `logs/canary-alerts.log`.
+
+---
+
 ## Communication Templates
 
 ### Security Advisory (GitHub)

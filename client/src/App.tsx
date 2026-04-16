@@ -76,13 +76,20 @@ export default function App() {
           <TooltipProvider>
             <Router hook={useHashLocation}>
               <SidebarProvider style={style as React.CSSProperties}>
+                {/* Skip navigation link — visible on focus for keyboard users */}
+                <a
+                  href="#main-content"
+                  className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:text-sm focus:font-medium focus:shadow-lg"
+                >
+                  Skip to main content
+                </a>
                 <Suspense fallback={null}>
                   <AmbientBackground />
                 </Suspense>
                 <div className="flex h-screen w-full relative">
                   <AppSidebar />
                   <div className="flex flex-col flex-1 min-w-0">
-                    <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 backdrop-blur-sm">
+                    <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-card/50 backdrop-blur-sm" aria-label="Application header">
                       <div className="flex items-center gap-3">
                         <SidebarTrigger data-testid="button-sidebar-toggle" aria-label="Toggle sidebar" />
                         <div className="flex items-center gap-2">
@@ -99,7 +106,7 @@ export default function App() {
                         <ThemeToggle />
                       </div>
                     </header>
-                    <main className="flex-1 overflow-auto">
+                    <main id="main-content" className="flex-1 overflow-auto">
                       <AppRouter />
                     </main>
                   </div>

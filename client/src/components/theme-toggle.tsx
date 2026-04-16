@@ -13,7 +13,7 @@ export function ThemeToggle() {
       data-testid="button-theme-toggle"
       className="h-8 w-8"
     >
-      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {theme === "dark" ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
     </Button>
   );
 }

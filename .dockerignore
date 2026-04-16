@@ -1,0 +1,62 @@
+# =============================================================================
+# .dockerignore — OpenClaw Guided Install
+# Excludes files that should not be sent to the Docker build context.
+# =============================================================================
+
+# Dependencies (reinstalled inside the image)
+node_modules/
+.npm/
+.yarn/
+
+# Version control
+.git/
+.gitignore
+.github/
+
+# Built artifacts (rebuilt inside the image)
+dist/
+
+# Database files (should never be baked into the image)
+*.db
+*.db-shm
+*.db-wal
+data/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+.playwright/
+
+# CI / deploy metadata
+.canary-manifest.json
+release-artifacts/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Python cache (scripts/)
+__pycache__/
+*.py[cod]
+*.pyo
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Playwright standalone config (not needed in image)
+playwright.standalone.config.ts

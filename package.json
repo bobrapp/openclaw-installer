@@ -1,8 +1,54 @@
 {
   "name": "openclaw-installer",
-  "version": "2.1.0",
+  "version": "2.2.0",
+  "description": "Guided macOS/cloud installer for OpenClaw — preflight checks, dependency validation, 1-click deploy, hardening checklist, and rollback support. 16 host targets, 87 marketplace entries, 15 languages.",
   "license": "Apache-2.0 WITH Commons-Clause",
   "type": "module",
+  "bin": {
+    "openclaw": "./bin/openclaw.mjs"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "scripts/",
+    "public/*.html",
+    "public/*.pdf",
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bobrapp/openclaw-installer.git"
+  },
+  "homepage": "https://github.com/bobrapp/openclaw-installer",
+  "bugs": {
+    "url": "https://github.com/bobrapp/openclaw-installer/issues"
+  },
+  "keywords": [
+    "openclaw",
+    "installer",
+    "aigovops",
+    "ai-governance",
+    "macos",
+    "cloud-deploy",
+    "devops",
+    "hardening",
+    "security",
+    "compliance"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "contributors": [
+    "Ken Johnston <ken@aigovopsfoundation.org>",
+    "Bob Rapp <bobrapp@hotmail.com>"
+  ],
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "tsx script/build.ts",
@@ -51,7 +97,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^3.6.0",
-    "drizzle-orm": "^0.39.3",
+    "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.7.0",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.0.1",

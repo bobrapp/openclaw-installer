@@ -317,7 +317,7 @@ function StarCount({ count }: { count: number }) {
     count >= 1000 ? `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k` : String(count);
   return (
     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+      <Star className="h-3 w-3 fill-amber-400 text-amber-400" aria-hidden="true" />
       {fmt}
     </span>
   );
@@ -326,7 +326,7 @@ function StarCount({ count }: { count: number }) {
 function UserCount({ label }: { label: string }) {
   return (
     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-      <Users className="h-3 w-3" />
+      <Users className="h-3 w-3" aria-hidden="true" />
       {label}
     </span>
   );
@@ -335,7 +335,7 @@ function UserCount({ label }: { label: string }) {
 function CommitCount({ count }: { count: number }) {
   return (
     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-      <GitBranch className="h-3 w-3" />
+      <GitBranch className="h-3 w-3" aria-hidden="true" />
       {count} commits
     </span>
   );
@@ -408,7 +408,7 @@ function BuildCard({ build, recommended }: { build: Build; recommended?: boolean
 
         {/* Regions */}
         <div className="flex items-start gap-1.5">
-          <Globe className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+          <Globe className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
           <span className="text-xs text-muted-foreground leading-snug">
             {build.regions.join(", ")}
           </span>
@@ -457,7 +457,7 @@ function RecommendedSection() {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="h-4 w-4 text-[#01696F]" />
+        <Sparkles className="h-4 w-4 text-[#01696F]" aria-hidden="true" />
         <h2 className="text-sm font-semibold">Recommended for you</h2>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -497,7 +497,7 @@ function ComparisonTable({ builds }: { builds: Build[] }) {
   return (
     <div className="mt-10">
       <div className="flex items-center gap-2 mb-3">
-        <Filter className="h-4 w-4 text-[#01696F]" />
+        <Filter className="h-4 w-4 text-[#01696F]" aria-hidden="true" />
         <h2 className="text-sm font-semibold">Side-by-side comparison</h2>
       </div>
 
@@ -573,11 +573,11 @@ function ComparisonTable({ builds }: { builds: Build[] }) {
         >
           {expanded ? (
             <>
-              <ChevronUp className="h-3 w-3 mr-1" /> Show less
+              <ChevronUp className="h-3 w-3 mr-1" aria-hidden="true" /> Show less
             </>
           ) : (
             <>
-              <ChevronDown className="h-3 w-3 mr-1" /> Show all {builds.length} builds
+              <ChevronDown className="h-3 w-3 mr-1" aria-hidden="true" /> Show all {builds.length} builds
             </>
           )}
         </Button>
@@ -636,10 +636,10 @@ export default function BuildsPage() {
         {/* Stats */}
         <div className="flex flex-wrap gap-3 mt-4">
           {[
-            { icon: <Layers className="h-3.5 w-3.5" />, label: `${BUILDS.length} builds` },
-            { icon: <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />, label: "188k+ GitHub stars" },
-            { icon: <Server className="h-3.5 w-3.5" />, label: "4 categories" },
-            { icon: <Globe className="h-3.5 w-3.5" />, label: "Global coverage" },
+            { icon: <Layers className="h-3.5 w-3.5" aria-hidden="true" />, label: `${BUILDS.length} builds` },
+            { icon: <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />, label: "188k+ GitHub stars" },
+            { icon: <Server className="h-3.5 w-3.5" aria-hidden="true" />, label: "4 categories" },
+            { icon: <Globe className="h-3.5 w-3.5" aria-hidden="true" />, label: "Global coverage" },
           ].map(({ icon, label }) => (
             <div
               key={label}
@@ -665,11 +665,12 @@ export default function BuildsPage() {
             placeholder="Search builds by name or feature…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search builds by name or feature"
           />
         </div>
 
         {/* Category filter */}
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex gap-1 flex-wrap" role="group" aria-label="Filter by category">
           {CATEGORIES.map((c) => (
             <Button
               key={c.value}
@@ -681,6 +682,7 @@ export default function BuildsPage() {
                   : ""
               }`}
               onClick={() => setActiveCategory(c.value)}
+              aria-pressed={activeCategory === c.value}
             >
               {c.label}
             </Button>
@@ -690,8 +692,8 @@ export default function BuildsPage() {
 
       {/* Difficulty + Price filters */}
       <div className="flex flex-wrap gap-3 mb-6 -mt-2">
-        <div className="flex gap-1 flex-wrap items-center">
-          <span className="text-xs text-muted-foreground mr-1">Difficulty:</span>
+        <div className="flex gap-1 flex-wrap items-center" role="group" aria-label="Filter by difficulty">
+          <span className="text-xs text-muted-foreground mr-1" aria-hidden="true">Difficulty:</span>
           {DIFFICULTIES.map((d) => (
             <Button
               key={d.value}
@@ -699,13 +701,14 @@ export default function BuildsPage() {
               size="sm"
               className="text-xs h-7 px-2"
               onClick={() => setActiveDifficulty(d.value)}
+              aria-pressed={activeDifficulty === d.value}
             >
               {d.label}
             </Button>
           ))}
         </div>
-        <div className="flex gap-1 flex-wrap items-center">
-          <span className="text-xs text-muted-foreground mr-1">Price:</span>
+        <div className="flex gap-1 flex-wrap items-center" role="group" aria-label="Filter by price range">
+          <span className="text-xs text-muted-foreground mr-1" aria-hidden="true">Price:</span>
           {PRICE_RANGES.map((p) => (
             <Button
               key={p.value}
@@ -713,6 +716,7 @@ export default function BuildsPage() {
               size="sm"
               className="text-xs h-7 px-2"
               onClick={() => setActivePriceRange(p.value)}
+              aria-pressed={activePriceRange === p.value}
             >
               {p.label}
             </Button>

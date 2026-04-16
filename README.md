@@ -1,99 +1,63 @@
 # OpenClaw Guided Install by AiGovOps
 
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](CHANGELOG.md)
 [![License: Apache 2.0 + Commons Clause](https://img.shields.io/badge/License-Apache%202.0%20%2B%20Commons%20Clause-blue.svg)](LICENSE)
 [![CI](https://github.com/bobrapp/openclaw-installer/actions/workflows/ci.yml/badge.svg)](https://github.com/bobrapp/openclaw-installer/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/bobrapp/openclaw-installer/actions/workflows/codeql.yml/badge.svg)](https://github.com/bobrapp/openclaw-installer/actions/workflows/codeql.yml)
+[![Docker Ready](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker)](deploy/)
 
-A guided macOS/cloud installer for **OpenClaw** that checks permissions, missing dependencies, low-privilege constraints, logging, and rollback steps before it changes anything. Packaged as a web UI plus shell scripts, with a production-hardening checklist and observability defaults.
+A guided, production-hardened installer for **OpenClaw** — the open-source AI agent framework — with a 7-step wizard, 16 host targets, 87 marketplace entries, 15 languages, and cryptographically immutable audit logging.
 
-Built with **AiGovOps Foundation** immutable logging — every action is cryptographically secured in a SHA-256 hash chain.
+Built and maintained by the [AiGovOps Foundation](https://www.aigovopsfoundation.org/) as the reference implementation of its Governance-as-Code standard.
 
 > **© 2024–2026 AiGovOps Foundation — Ken Johnston & Bob Rapp, Co-Founders**
 > Licensed under Apache 2.0 with Commons Clause. Free for non-commercial use.
 > "AiGovOps", "OpenClaw", and the AiGovOps Foundation logo are trademarks of the AiGovOps Foundation. See [NOTICE](NOTICE) for details.
 
+---
+
 ## Features
 
 ### Guided Installation Wizard
-- **4 host targets**: macOS (Local), DigitalOcean, Azure VM, Generic VPS
-- **6-step wizard** per host: Environment Check → Dependencies → Permissions/Firewall → Configuration → Install → Verify
-- **Auto-generated shell scripts**: Preflight, Install (with DRY_RUN mode), and Rollback scripts per host
-- **Production hardening checklist**: 40+ security checks across network, permissions, secrets, logging, and observability
+- **16 host targets** — macOS, DigitalOcean, Azure VM, Generic VPS, Railway, Render, Fly.io, Hetzner Cloud, Oracle Cloud Free, OVHcloud, Tencent Cloud Lighthouse, Alibaba Cloud ECS, Vultr Cloud, Kamatera, and more
+- **7-step wizard** — Welcome → Environment Check → Dependencies → Permissions/Firewall → Configuration → Install → Verify
+- **13 build variants** — Core, AlphaClaw, ClawHost, ClawTank, DigitalOcean 1-Click, Tencent Lighthouse, Railway, Render, Fly.io, Hetzner, Oracle Cloud, Ollama Local, AiGovOps Guided Install
+- **Auto-generated shell scripts** — Preflight, Install (with `DRY_RUN` mode), and Rollback per host
+- **Production hardening checklist** — 40+ security checks across network, permissions, secrets, logging, and observability
 
-### Preflight Runner (Live)
-- **Streams check results in real-time** via Server-Sent Events (SSE)
-- Executes host-specific checks (macOS version, Node.js, Homebrew, disk space, Tailscale, firewall, SSH config, etc.)
-- Results auto-logged to both the install log and the immutable audit chain
+### Marketplace
+- **87 marketplace entries** across 5 tabs: Agents (38), Connectors (29), Hosting (16), 1-Click Deploy (4)
+- Trust tiers: Official (Foundation-authored), Verified (reviewed and tested), Listed (community-submitted)
+- Search, filter, and one-click install for all entries
+
+### Internationalization
+- **15 languages** — English, French, German, Simplified Chinese, Portuguese, Hindi, Spanish, Arabic, Russian, Turkish, Urdu, Pashto, Swahili, Cherokee, and Braille display mode
+- Full RTL layout support for Arabic, Urdu, and Pashto
+
+### Immutable Audit Logging
+- **SHA-256 hash chain** — Each entry hashes the previous, creating a tamper-evident record
+- **One-click chain verification** — Detects any modification instantly
+- **Owner-only access** — Protected by a one-time passphrase (SHA-256 hashed, never stored in plaintext)
+- **Signed PDF export** — Branded compliance artifact with hash chain table, QR code, and co-founder attribution
+
+### E2E Validation
+- `scripts/e2e-validate.sh` — 754-line ShellCheck-clean script testing 9 validation steps across all 16 hosts
+- Automated CI workflow runs on push, PR, and weekly schedule
+
+### Live Preflight Runner
+- Streams check results in real-time via Server-Sent Events (SSE)
+- Host-specific checks: OS version, Node.js, disk space, firewall, SSH config, and more
+- Results logged to both install log and immutable audit chain
 
 ### Framework Comparison
-- **8 frameworks** compared: OpenClaw, NemoClaw (NVIDIA), Anthropic Computer Use, OpenAI Operator, Browser Use, Agent S2, AutoGen, CrewAI
-- Interactive radar chart, comparison table, risk matrix
-- Detailed benefit/risk/approach cards per framework
+- 8 AI frameworks compared: OpenClaw, NemoClaw (NVIDIA), Anthropic Computer Use, OpenAI Operator, Browser Use, Agent S2, AutoGen, CrewAI
+- Interactive radar chart, comparison table, and risk matrix
 
-### Immutable Audit Logging (AiGovOps Standard)
-- **SHA-256 hash chain**: Each log entry hashes the previous entry, creating a tamper-evident chain
-- Fields: `timestamp`, `date`, `user`, `prompt`, `results`, `previousHash`, `currentHash`
-- **Chain verification**: One-click integrity verification detects any tampering
-- **Owner-only access**: Secured by passphrase authentication (irreversible once set)
-- Implements the [AiGovOps Foundation](https://www.aigovopsfoundation.org/) governance-as-code standard
+---
 
-### Signed PDF Audit Report Export
-- **Export the immutable audit log as a branded PDF** compliance artifact
-- Full SHA-256 hash chain table with all entries
-- AiGovOps Foundation branding (navy/teal color scheme, shield logo)
-- QR code linking to [aigovopsfoundation.org](https://www.aigovopsfoundation.org/)
-- Co-founder attribution and digital signature metadata
-- Python-based generator using ReportLab (`scripts/generate-audit-pdf.py`)
+## Quick Start
 
-### GitHub Actions CI Pipeline
-- **Automated preflight checks on every PR** (`.github/workflows/preflight.yml`)
-- 8 checks: Node.js version, npm audit, TypeScript compilation, build, lint, test, schema validation, security scan
-- Posts pass/fail results as a GitHub commit status check
-
-### One-Click Cloud Deploy
-- **Deploy buttons** for DigitalOcean App Platform, Render, Hetzner, Vultr, Hostinger, Contabo, and IONOS
-- **Cloud-init YAML** for providers that support it (Hetzner, Vultr, DO) — auto-installs Node.js, nginx, systemd, UFW
-- **One-liner SSH install script** (`deploy/install.sh`) — deploy in ~3 minutes on any Ubuntu 22.04+ VPS
-- **GitHub Actions auto-deploy** to Hetzner and Vultr on merge to master with approval gates
-- **Deploy validation workflow** lints all deploy configs on every PR and posts readiness status
-
-### Standalone HTML Wizard
-- **Self-contained single-file installer wizard** (`public/aigovops-wizard.html`)
-- 7 steps: Welcome → Configuration → Security → Review → Dry Run → Install → Audit Log
-- Pre-filled sensible defaults per host platform (macOS, DigitalOcean, Azure VM, Generic VPS)
-- Privacy-first: all data stays in browser memory — no server calls, no cookies, no localStorage
-- Dark mode, step-by-step progress tracking, confirmation at each step
-- Works offline as a standalone HTML file
-
-### How I Built This (Project Timeline)
-- **9-phase narrative** of the entire project build from research to deployment
-- Documents every decision, every architecture choice, every lesson learned
-- Stats: 9 Phases, 4 Host Targets, 40+ Hardening Checks, 8 Frameworks Compared
-
-### AiGovOps Foundation Attribution
-- Credits co-founders **Bob Rapp** and **Ken Johnston**
-- Links to [www.aigovopsfoundation.org](https://www.aigovopsfoundation.org/)
-- "Buy Us a Coffee" donation call-to-action
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19, Tailwind CSS v3, shadcn/ui, Recharts, wouter |
-| Backend | Express.js, Server-Sent Events (SSE) |
-| Database | SQLite (better-sqlite3) + Drizzle ORM |
-| Crypto | Node.js `crypto` module (SHA-256) |
-| PDF Export | Python 3, ReportLab, qrcode, Pillow |
-| CI/CD | GitHub Actions (CI, deploy-validate, deploy-hetzner, deploy-vultr) |
-| Build | Vite, esbuild, TypeScript |
-
-## Getting Started
-
-### Prerequisites
-- Node.js 20+ 
-- npm or pnpm
-
-### Install & Run
+### npm (local development)
 
 ```bash
 git clone https://github.com/bobrapp/openclaw-installer.git
@@ -102,330 +66,176 @@ npm install
 npm run dev
 ```
 
-The app starts at `http://localhost:5000`.
+Open `http://localhost:5000`.
 
-### Production Build
+### Docker
 
 ```bash
-npm run build
-NODE_ENV=production node dist/index.cjs
+docker build -t openclaw-installer .
+docker run -p 5000:5000 openclaw-installer
 ```
 
-## Project Structure
-
-```
-openclaw-installer/
-├── client/
-│   └── src/
-│       ├── components/         # UI components (sidebar, theme)
-│       ├── pages/
-│       │   ├── home.tsx        # Host selection
-│       │   ├── wizard.tsx      # 6-step installation wizard
-│       │   ├── hardening.tsx   # Production hardening checklist
-│       │   ├── scripts.tsx     # Shell script viewer/downloader
-│       │   ├── logs.tsx        # Install log viewer
-│       │   ├── compare.tsx     # Framework comparison (8 frameworks)
-│       │   ├── preflight-runner.tsx  # Live preflight check executor
-│       │   ├── audit-log.tsx   # Immutable audit log viewer + PDF export (owner-only)
-│       │   ├── how-i-built-this.tsx  # 9-phase project build timeline
-│       │   └── foundation.tsx  # AiGovOps Foundation attribution
-│       └── lib/
-│           └── queryClient.ts  # API client with deployment proxy support
-├── server/
-│   ├── routes.ts               # API routes + SSE + script generators
-│   ├── storage.ts              # SQLite storage + audit chain + owner auth
-│   └── index.ts                # Express server entry
-├── scripts/
-│   └── generate-audit-pdf.py   # Branded PDF audit report generator
-├── public/
-│   └── aigovops-wizard.html    # Standalone 7-step wizard (50KB, self-contained)
-├── .github/
-│   ├── actions/
-│   │   └── post-deploy-status/ # Reusable action: PR comments + commit status
-│   └── workflows/
-│       ├── ci.yml              # Full CI: build + test + lint + security audit
-│       ├── preflight.yml       # Preflight checks with 8 checks + commit status
-│       ├── deploy-pages.yml    # GitHub Pages deployment
-│       ├── deploy-validate.yml # Lint deploy configs on PR
-│       ├── deploy-hetzner.yml  # Auto-deploy to Hetzner Cloud
-│       ├── deploy-vultr.yml    # Auto-deploy to Vultr Cloud
-│       └── release.yml         # Tagged release automation
-├── deploy/
-│   ├── install.sh              # One-liner VPS install script
-│   └── cloud-init.yaml         # Cloud-init config for VPS providers
-├── .do/
-│   └── deploy.template.yaml   # DigitalOcean App Platform spec
-├── render.yaml                 # Render PaaS deploy config
-├── shared/
-│   └── schema.ts               # Drizzle ORM schema (5 tables)
-└── README.md
-```
-
-## Database Schema
-
-### `install_logs`
-Append-only installation log entries. No PII stored.
-
-### `install_state`
-Tracks wizard progress (current step, host target, config values, rollback scripts).
-
-### `hardening_checks`
-40+ security/hardening checklist items, categorized by host target and severity.
-
-### `audit_logs` (Immutable Hash Chain)
-| Column | Description |
-|--------|-------------|
-| `timestamp` | ISO 8601 timestamp |
-| `date` | YYYY-MM-DD date |
-| `user` | Anonymized operator identifier |
-| `prompt` | Action or command executed |
-| `results` | Outcome of the action |
-| `previous_hash` | SHA-256 hash of the prior entry (genesis = "0") |
-| `current_hash` | SHA-256(timestamp\|user\|prompt\|results\|previousHash) |
-
-### `owner_auth`
-Stores the SHA-256 hash of the owner passphrase. Set once, cannot be changed.
-
-## How the Crypto Hash Chain Works
-
-1. The **first entry** (genesis) uses `previousHash = "0"`
-2. Each subsequent entry sets `previousHash` to the `currentHash` of the prior entry
-3. `currentHash = SHA-256(timestamp | user | prompt | results | previousHash)`
-4. Any modification to any entry breaks the chain — the "Verify Chain" button detects this instantly
-
-```
-Entry #1: prevHash="0"        → hash=SHA256("...|0")        = abc123...
-Entry #2: prevHash="abc123.." → hash=SHA256("...|abc123..") = def456...
-Entry #3: prevHash="def456.." → hash=SHA256("...|def456..") = ghi789...
-```
-
-## API Endpoints
-
-### Installation
-- `GET /api/hosts` — Host configurations
-- `GET /api/state` — Current install state
-- `PATCH /api/state/:id` — Update install state
-- `GET /api/logs` — Install log entries
-- `POST /api/logs` — Add log entry
-- `GET /api/hardening/:hostTarget` — Hardening checklist
-
-### Scripts
-- `GET /api/scripts/preflight/:hostTarget` — Preflight check script
-- `GET /api/scripts/install/:hostTarget` — Install script (with DRY_RUN)
-- `GET /api/scripts/rollback/:hostTarget` — Rollback script
-
-### Preflight Runner
-- `GET /api/preflight/run/:hostTarget` — SSE stream of live check results
-
-### Audit Log (Owner-only)
-- `GET /api/audit/logs` — Fetch audit entries (requires `x-owner-passphrase` header)
-- `GET /api/audit/verify` — Verify hash chain integrity
-- `GET /api/audit/export-pdf` — Export signed PDF audit report (requires `x-owner-passphrase`)
-- `GET /api/owner/has-passphrase` — Check if owner passphrase is configured
-- `POST /api/owner/set-passphrase` — Set owner passphrase (one-time only)
-- `POST /api/owner/verify` — Verify a passphrase
-
-### Wizard
-- `GET /api/wizard-html` — Serve standalone wizard HTML
-- `GET /aigovops-wizard.html` — Direct access to standalone wizard
-
-## Security Model
-
-- **No PII** stored in any log
-- **Localhost-only binding** recommended (127.0.0.1)
-- **Tailscale** for secure remote access (never expose ports publicly)
-- **macOS Keychain** for secrets (not .env files)
-- **Owner passphrase** protects audit log access (SHA-256 hashed, set once)
-- **Immutable hash chain** ensures log integrity
-- **Hardened systemd units** for cloud deployments (ProtectSystem, PrivateTmp, NoNewPrivileges)
-
-## AiGovOps Foundation
-
-This project implements standards from the [AiGovOps Foundation](https://www.aigovopsfoundation.org/):
-- **Governance as Code** — Automated policy enforcement
-- **AI Technical Debt Elimination** — Systematic reduction of AI system debt
-- **Operational Compliance** — Runtime monitoring and regulatory adherence
-- **Community-Driven Standards** — Open-source governance frameworks
-
-### Co-Founders
-- **Bob Rapp** — Co-Founder, AiGovOps Foundation
-- **Ken Johnston** — Co-Founder, AiGovOps Foundation
-
-## Version History
-
-### April 2026 v1.0 — AiGovOps Foundation Framework Release
-
-This release establishes OpenClaw Guided Install as the reference implementation for the AiGovOps Foundation's Governance-as-Code standard.
-
-#### Core Platform
-- **15-language internationalization** — English, French, German, Simplified Chinese, Portuguese, Hindi, Spanish, Arabic, Russian, Turkish, Urdu, Pashto, Swahili, Cherokee, and Braille display mode
-- **RTL layout support** — Arabic, Urdu, and Pashto with proper bidirectional rendering via logical CSS properties
-- **4 host targets** — macOS (Local), DigitalOcean, Azure VM, Generic VPS with host-specific scripts
-- **6-step installation wizard** — Environment Check → Dependencies → Permissions → Configuration → Install → Verify
-- **Standalone HTML wizard** — Self-contained 50KB offline-capable installer (`public/aigovops-wizard.html`)
-
-#### Governance & Compliance
-- **SHA-256 hash-chain audit log** — Tamper-evident, cryptographically linked immutable record of all actions
-- **Signed PDF compliance report** — Branded export with hash chain table, QR code, co-founder attribution, and digital signature metadata
-- **38 governance agent patterns** — YAML-based templates (Greeter, Guardian, Storyteller, Teacher, Peacekeeper, Celebrator + community patterns)
-- **Framework comparison** — Interactive radar chart comparing 8 AI governance frameworks across 8 dimensions
-- **Production hardening checklist** — 40+ security checks across network, permissions, secrets, logging, and observability
-
-#### CI/CD & Infrastructure
-- **GitHub Actions CI pipeline** (`ci.yml`) — Automated TypeScript check, build, Vitest unit tests, Playwright E2E tests, security audit, and standalone wizard validation on every push/PR
-- **Preflight CI** (`preflight.yml`) — 8 automated checks with commit status reporting
-- **Deploy validation** (`deploy-validate.yml`) — Lints all deploy configs on every PR
-- **Auto-deploy workflows** — Hetzner Cloud and Vultr with approval gates, health checks, and single-server reuse
-- **GitHub Pages deployment** — Zero-config static hosting at [bobrapp.github.io/openclaw-installer](https://bobrapp.github.io/openclaw-installer/)
-
-#### Quality (AI Model Council)
-- **2 rounds of frontier AI review** — Claude Opus 4.6, GPT-5.4, and Gemini 3.1 Pro independently reviewed the full codebase
-- **40 consensus improvements** implemented across 121 file changes (+5,094 / −4,376 lines)
-- **187 automated tests** — 141 Vitest unit tests + 46 Playwright E2E tests
-- **380KB production bundle** — Code-split with React.lazy, Zod removed from prod, tree-shaken
-
-#### Marketplace & Community
-- **29 MCP Skills Marketplace** — Curated Model Context Protocol skills with one-click install
-- **Community hosting deals** — Curated VPS recommendations with deploy scripts and coupon codes
-- **"How I Built This" timeline** — 9-phase project narrative documenting every architecture decision
-- **Humans of OpenClaw** — Contributor attribution page
-
-### Initial Release
-- Guided installation wizard (4 hosts, 6-step flow)
-- Live preflight runner with SSE streaming
-- Framework comparison (8 AI agent frameworks)
-- Immutable audit logging with SHA-256 hash chain
-- Production hardening checklist (40+ checks)
-- Owner passphrase authentication
-
-## Cloud Deployment
-
-### One-Click PaaS Deploy
-
-| Provider | Method | Link |
-|----------|--------|------|
-| **Render** | One-click from `render.yaml` | [Deploy to Render](https://render.com/deploy?repo=https://github.com/bobrapp/openclaw-installer) |
-| **DigitalOcean** | One-click App Platform | [Deploy to DO](https://cloud.digitalocean.com/apps/new?repo=https://github.com/bobrapp/openclaw-installer/tree/master) |
-
-### VPS Deploy (SSH One-Liner)
+### VPS one-liner (Ubuntu 22.04+)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/install.sh | sudo bash
 ```
 
-Installs Node.js 20, nginx reverse proxy, systemd service, and UFW firewall on Ubuntu 22.04+.
+Installs Node.js 20, nginx, systemd service, and UFW firewall in ~3 minutes.
 
-### Cloud-Init (Hetzner, Vultr, DO Droplets)
+### One-click PaaS deploy
 
-Paste this URL into the "Cloud config" or "Startup script" field when creating a VPS:
+| Provider | Deploy |
+|----------|--------|
+| **Render** | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bobrapp/openclaw-installer) |
+| **DigitalOcean** | [Deploy to DigitalOcean App Platform](https://cloud.digitalocean.com/apps/new?repo=https://github.com/bobrapp/openclaw-installer/tree/master) |
+
+---
+
+## Screenshots
+
+| Wizard | Marketplace | Audit Log |
+|--------|-------------|-----------|
+| ![Wizard](docs/screenshots/wizard.png) | ![Marketplace](docs/screenshots/marketplace.png) | ![Audit](docs/screenshots/audit.png) |
+
+> Screenshots coming soon. See the [live demo](https://bobrapp.github.io/openclaw-installer/) on GitHub Pages.
+
+---
+
+## Architecture
 
 ```
-https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/cloud-init.yaml
+openclaw-installer/
+├── client/src/
+│   ├── components/         # Sidebar, theme toggle, shared UI
+│   └── pages/              # All route pages (see Routes below)
+├── server/
+│   ├── routes.ts           # API routes + SSE + script generators
+│   ├── storage.ts          # SQLite storage + audit chain + owner auth
+│   └── index.ts            # Express entry point
+├── shared/
+│   └── schema.ts           # Drizzle ORM schema (5 tables)
+├── scripts/
+│   ├── generate-audit-pdf.py   # Branded PDF report (ReportLab)
+│   └── e2e-validate.sh         # Full E2E validation suite (16 hosts)
+├── public/
+│   └── aigovops-wizard.html    # Standalone offline wizard (50KB, no server)
+├── deploy/
+│   ├── install.sh          # VPS one-liner install
+│   └── cloud-init.yaml     # Cloud-init for Hetzner / Vultr / DO
+└── .github/
+    └── workflows/          # CI, deploy, validate, release workflows
 ```
 
-### GitHub Actions Auto-Deploy
+**Tech stack:**
 
-The repo includes automated deployment workflows for Hetzner and Vultr that trigger on every merge to `master`. Both require:
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 19, Tailwind CSS v3, shadcn/ui, Recharts, wouter |
+| Backend | Express.js, Server-Sent Events (SSE) |
+| Database | SQLite (better-sqlite3) + Drizzle ORM |
+| Validation | Zod |
+| Crypto | Node.js `crypto` (SHA-256) |
+| PDF Export | Python 3, ReportLab, qrcode, Pillow |
+| CI/CD | GitHub Actions |
+| Build | Vite, esbuild, TypeScript |
 
-1. **GitHub Environment**: Create a `production` environment in Settings → Environments with required reviewers (approval gate)
-2. **Secrets**: Add the following in Settings → Secrets → Actions:
+---
 
-| Secret | Description | Required By |
-|--------|-------------|-------------|
-| `HETZNER_API_TOKEN` | [Hetzner Cloud API token](https://docs.hetzner.cloud/#getting-started) | `deploy-hetzner.yml` |
-| `VULTR_API_KEY` | [Vultr API key](https://my.vultr.com/settings/#settingsapi) | `deploy-vultr.yml` |
+## Available Routes
 
-#### How It Works
+The app uses hash routing (`/#/route`). The root path (`/`) serves the conference handout hub.
 
-1. **PR opened** → `deploy-validate.yml` runs: ShellCheck on `install.sh`, YAML lint on all configs, dry-run build. Posts a validation summary comment to the PR.
-2. **PR merged to master** → `deploy-hetzner.yml` and `deploy-vultr.yml` trigger, but **pause for approval** (via the `production` environment protection rule).
-3. **Reviewer approves** → Workflow checks for an existing `openclaw-prod` server. If found, it rebuilds/reinstalls. If not, it creates a new server with cloud-init/startup script.
-4. **Health check** → Polls `http://<server-ip>/api/hosts` for up to 10 minutes until the app is live.
-5. **Status posted** → The reusable `post-deploy-status` action posts a formatted deployment report as a PR comment and sets a commit status check.
+| Route | Description |
+|-------|-------------|
+| `/` | Conference handout hub |
+| `/#/` | Host selection home |
+| `/#/wizard/:host` | 7-step installation wizard |
+| `/#/hardening` | Production hardening checklist |
+| `/#/scripts` | Shell script viewer and downloader |
+| `/#/logs` | Install log viewer |
+| `/#/compare` | Framework comparison (8 frameworks) |
+| `/#/preflight` | Live preflight check runner |
+| `/#/audit-log` | Immutable audit log viewer + PDF export |
+| `/#/marketplace` | 87-entry marketplace |
+| `/#/builds` | 13 build variant comparison |
+| `/#/hosting-global` | Global hosting deals (16 countries) |
+| `/#/how-i-built-this` | 9-phase project build timeline |
+| `/#/foundation` | AiGovOps Foundation attribution |
 
-#### Manual Dispatch
+---
 
-Both workflows support `workflow_dispatch` for manual runs with configurable server type, region, and a "destroy after deploy" option for cost-controlled testing.
+## Documentation
 
-#### Cost Safety
+| Document | Description |
+|----------|-------------|
+| [docs/api.md](docs/api.md) | Full API reference |
+| [docs/frontend-architecture.md](docs/frontend-architecture.md) | Frontend architecture overview |
+| [docs/INCIDENT-RESPONSE.md](docs/INCIDENT-RESPONSE.md) | 6-scenario incident runbook |
+| [docs/TOKEN-MANAGEMENT.md](docs/TOKEN-MANAGEMENT.md) | PAT lifecycle and rotation |
+| [docs/REPRODUCIBLE-BUILDS.md](docs/REPRODUCIBLE-BUILDS.md) | Build verification and attestation |
+| [docs/SESSION-SECURITY.md](docs/SESSION-SECURITY.md) | Auth model and deployment hardening |
+| [docs/DISASTER-RECOVERY.md](docs/DISASTER-RECOVERY.md) | Mirror setup and restore procedures |
+| [docs/MODEL-COUNCIL-v2.md](docs/MODEL-COUNCIL-v2.md) | AI model council review record |
+| [GOVERNANCE.md](GOVERNANCE.md) | Decision authority and trust tiers |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guide |
 
-- **Approval gate**: Deploys require manual approval — no accidental server creation
-- **Single-server logic**: Reuses existing `openclaw-prod` server instead of creating duplicates
-- **Destroy flag**: Manual dispatch includes a "destroy after" option for testing without ongoing costs
-- **Concurrency control**: Only one deploy per provider can run at a time
+---
 
-## Authentication
+## Security
 
-OpenClaw Guided Install uses a **single-owner passphrase** model. There are no user accounts or session tokens — one passphrase gates all write and sensitive-read access.
+This project uses a **single-owner passphrase** model. The passphrase is set once, SHA-256 hashed, and never stored in plaintext. All mutating API endpoints require it via the `x-owner-passphrase` header. Read-only endpoints are intentionally public.
 
-### How it works
+Key security properties:
+- No PII stored in any log
+- Localhost-only binding recommended (127.0.0.1)
+- Tamper-evident SHA-256 hash chain on all audit entries
+- Rate limiting: 100/min global, 20/min mutating, 5/min passphrase verify
+- Helmet security headers (CSP, HSTS, X-Content-Type-Options)
+- Release signing via Sigstore cosign + SLSA provenance
 
-The passphrase is set once via `POST /api/owner/set-passphrase`. The server stores a SHA-256 hash of the passphrase in the `owner_auth` table — the raw passphrase is never persisted. Once set, it cannot be changed through the API.
-
-### Setting the passphrase (first run)
-
-On first launch, `GET /api/owner/has-passphrase` returns `{ "hasPassphrase": false }`. Set your passphrase before the server is reachable from untrusted networks:
-
-```bash
-curl -X POST http://localhost:5000/api/owner/set-passphrase \
-  -H "Content-Type: application/json" \
-  -d '{"passphrase": "your-strong-passphrase"}'
-```
-
-### What it protects
-
-All **mutating endpoints** require the passphrase in the `x-owner-passphrase` header:
-
-- Adding and archiving install logs
-- Updating or resetting wizard state
-- Toggling hardening checklist items
-- Accessing and exporting the immutable audit log
-
-Read-only endpoints (host list, scripts, hardening checks, wizard UI, preflight SSE stream) are intentionally **public** — the wizard frontend needs them without a login step.
-
-### Sending the passphrase
-
-```bash
-curl http://localhost:5000/api/audit/logs \
-  -H "x-owner-passphrase: your-strong-passphrase"
-```
-
-### Rate limiting on verify
-
-`POST /api/owner/verify` is rate-limited to **5 attempts per minute per IP**. Excess attempts receive a `429 Too Many Requests` response. This endpoint is used by the UI to authenticate the session; brute-force from external IPs is blocked at this layer.
-
-### Resetting a forgotten passphrase
-
-There is no API route to reset the passphrase — this is intentional, to prevent an attacker who gains brief API access from locking you out or covering tracks. If you lose it, delete the row directly from SQLite:
-
-```bash
-sqlite3 /path/to/openclaw.db "DELETE FROM owner_auth;"
-```
-
-Afterwards, `GET /api/owner/has-passphrase` returns `false` and you can set a new passphrase via the API.
-
-### Production hardening
-
-The passphrase model is designed for a **trusted-operator** environment. For production deployments, apply additional layers:
-
-| Recommendation | How |
-|----------------|-----|
-| **HTTPS** | Provision a TLS certificate with [certbot](https://certbot.eff.org/) (Let's Encrypt) behind nginx or Caddy |
-| **Reverse proxy auth** | Add HTTP Basic Auth at the nginx layer as a second factor before requests reach the app |
-| **VPN-only access** | Use [Tailscale](https://tailscale.com/) so the server is never publicly reachable; bind Express to `127.0.0.1` |
-| **Firewall** | UFW: allow only ports 22 (SSH) and 443 (HTTPS); block 5000 externally |
-| **Secrets management** | On macOS, store the passphrase in Keychain rather than shell history or `.env` files |
+For security vulnerabilities, email **[security@aigovopsfoundation.org](mailto:security@aigovopsfoundation.org)** for critical issues, or use the [Security Vulnerability issue template](.github/ISSUE_TEMPLATE/security_vulnerability.md) for lower-severity findings.
 
 ---
 
 ## Contributing
 
-Contributions welcome. Please open an issue or pull request.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a PR.
 
-## License
+All contributors must sign the [Contributor License Agreement](.github/CLA.md) and include a `Signed-off-by` line (DCO) in their commits. The project uses a [5-tier trust model](GOVERNANCE.md) — start at Contributor tier by opening a PR.
 
-MIT
+See also: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
 ---
 
-*A work of the AiGovOps Foundation — [www.aigovopsfoundation.org](https://www.aigovopsfoundation.org/)*
+## License
+
+Licensed under the **Apache License 2.0 with Commons Clause** — free for non-commercial use.
+Commercial use requires written permission from the AiGovOps Foundation.
+
+See [LICENSE](LICENSE) for the full text.
+Commercial licensing inquiries: [legal@aigovopsfoundation.org](mailto:legal@aigovopsfoundation.org)
+
+---
+
+## Credits
+
+Created and maintained by the **AiGovOps Foundation**.
+
+| Name | Role |
+|------|------|
+| [Ken Johnston](https://www.aigovopsfoundation.org/) | Co-Founder, AiGovOps Foundation |
+| [Bob Rapp](https://github.com/bobrapp) | Co-Founder, AiGovOps Foundation |
+
+This project implements the AiGovOps Foundation's Governance-as-Code standards:
+- **Governance as Code** — Automated policy enforcement
+- **AI Technical Debt Elimination** — Systematic reduction of AI system debt
+- **Operational Compliance** — Runtime monitoring and regulatory adherence
+- **Community-Driven Standards** — Open-source governance frameworks
+
+[www.aigovopsfoundation.org](https://www.aigovopsfoundation.org/) · [Buy Us a Coffee](https://buymeacoffee.com/aigovops)
+
+---
+
+*A work of the AiGovOps Foundation — building trustworthy AI infrastructure, one commit at a time.*
