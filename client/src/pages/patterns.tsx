@@ -1,34 +1,73 @@
 /**
  * ClawXXX Patterns — "Patterns for a Human-Friendly World"
- * 6 starter agent templates as downloadable YAML configs
+ * 38 agent templates: 6 core + 32 community patterns
+ * Organized by category with section headers
  */
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { LucideIcon } from "lucide-react";
 import {
-  HandHeart,
-  Shield,
+  Anchor,
+  Bird,
   BookOpen,
-  GraduationCap,
-  Handshake,
-  PartyPopper,
-  Download,
-  Copy,
+  Brush,
   Check,
-  Sparkles,
-  Heart,
+  CircleDot,
+  Clover,
+  Compass,
+  Copy,
+  Dog,
+  Download,
+  Drum,
+  Feather,
+  Fish,
+  Flame,
+  Flower,
+  Footprints,
   Globe,
+  GraduationCap,
+  Hammer,
+  HandHeart,
+  Handshake,
+  Heart,
+  Map,
+  Music,
+  Palette,
+  PartyPopper,
+  Pen,
+  Ribbon,
+  Scale,
+  Shield,
+  Sparkles,
+  Sprout,
+  Sunrise,
+  Target,
+  Users,
+  Wheat,
+  Wind,
+  Wrench,
 } from "lucide-react";
 import { celebrate } from "@/lib/celebrations";
 import { playSound } from "@/lib/sound-engine";
 import { useI18n } from "@/lib/i18n";
 
+/* ─── Icon lookup ─── */
+const iconMap: Record<string, LucideIcon> = {
+  Anchor, Bird, BookOpen, Brush, CircleDot, Clover, Compass, Dog, Drum,
+  Feather, Fish, Flame, Flower, Footprints, Globe, GraduationCap, Hammer,
+  HandHeart, Handshake, Heart, Map, Music, Palette, PartyPopper, Pen,
+  Ribbon, Scale, Shield, Sparkles, Sprout, Sunrise, Target, Users, Wheat,
+  Wind, Wrench,
+};
+
+/* ─── Types ─── */
 interface Pattern {
   id: string;
   name: string;
   tagline: string;
-  icon: typeof HandHeart;
+  icon: string;
   color: string;
   audience: string;
   description: string;
@@ -36,12 +75,23 @@ interface Pattern {
   config: string;
 }
 
-const patterns: Pattern[] = [
+interface PatternCategory {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: string;
+  patterns: Pattern[];
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * CATEGORY 0: Core Patterns (original 6)
+ * ───────────────────────────────────────────────────────────────────── */
+const corePatterns: Pattern[] = [
   {
     id: "greeter",
     name: "The Greeter",
     tagline: "Every interaction starts with warmth",
-    icon: HandHeart,
+    icon: "HandHeart",
     color: "text-teal-500",
     audience: "Customer-facing teams, community managers",
     description:
@@ -88,7 +138,7 @@ response_templates:
     id: "guardian",
     name: "The Guardian",
     tagline: "Protecting what matters, transparently",
-    icon: Shield,
+    icon: "Shield",
     color: "text-blue-500",
     audience: "Security teams, compliance officers, DevOps",
     description:
@@ -140,7 +190,7 @@ response_templates:
     id: "storyteller",
     name: "The Storyteller",
     tagline: "Making complexity feel like a story",
-    icon: BookOpen,
+    icon: "BookOpen",
     color: "text-purple-500",
     audience: "Technical writers, educators, product teams",
     description:
@@ -168,7 +218,7 @@ behaviors:
   - summarize_before_deep_dive: true
 
 content_structure:
-  pattern: situation → complication → resolution
+  pattern: situation > complication > resolution
   max_paragraph_length: 3_sentences
   use_headers: true
   include_examples: always
@@ -192,7 +242,7 @@ response_templates:
     id: "teacher",
     name: "The Teacher",
     tagline: "Learning at your own pace, with encouragement",
-    icon: GraduationCap,
+    icon: "GraduationCap",
     color: "text-amber-500",
     audience: "Training programs, onboarding, self-learners",
     description:
@@ -221,7 +271,7 @@ behaviors:
   - never_make_learner_feel_behind: true
 
 learning_flow:
-  structure: concept → example → practice → review
+  structure: concept > example > practice > review
   max_new_concepts_per_session: 3
   spaced_repetition: true
   hands_on_exercises: true
@@ -240,7 +290,7 @@ encouragement:
     id: "peacekeeper",
     name: "The Peacekeeper",
     tagline: "Finding common ground through understanding",
-    icon: Handshake,
+    icon: "Handshake",
     color: "text-green-500",
     audience: "Mediators, community moderators, team leads",
     description:
@@ -296,7 +346,7 @@ response_templates:
     id: "celebrator",
     name: "The Celebrator",
     tagline: "Because every win deserves acknowledgment",
-    icon: PartyPopper,
+    icon: "PartyPopper",
     color: "text-pink-500",
     audience: "Teams, project managers, community builders",
     description:
@@ -352,6 +402,78 @@ response_templates:
   },
 ];
 
+/* ─────────────────────────────────────────────────────────────────────
+ * Community Patterns — imported from generated data
+ * ───────────────────────────────────────────────────────────────────── */
+import { communityPatterns } from "@/data/community-patterns";
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Organize into categories
+ * ───────────────────────────────────────────────────────────────────── */
+const categoryDefs: { id: string; title: string; subtitle: string; icon: string; ids: string[] }[] = [
+  {
+    id: "core",
+    title: "Core Patterns",
+    subtitle: "Foundational agent templates for every team",
+    icon: "Sparkles",
+    ids: ["greeter", "guardian", "storyteller", "teacher", "peacekeeper", "celebrator"],
+  },
+  {
+    id: "indigenous",
+    title: "Indigenous & First Peoples",
+    subtitle: "Honoring oral traditions, land stewardship, and intergenerational wisdom",
+    icon: "Feather",
+    ids: ["the-elder", "the-dreamkeeper", "the-pathfinder", "the-circle-keeper", "the-land-walker", "the-song-carrier", "the-bridge-builder"],
+  },
+  {
+    id: "earth",
+    title: "Earth-Centered & Nature Traditions",
+    subtitle: "Celebrating seasonal rhythms, nature connection, and ancestral practices",
+    icon: "Sprout",
+    ids: ["the-green-weaver", "the-spirit-listener", "the-season-turner", "the-hearth-keeper"],
+  },
+  {
+    id: "makers",
+    title: "Maker & Craft Cultures",
+    subtitle: "For bakers, knitters, woodworkers, potters, tinkerers, and gardeners",
+    icon: "Hammer",
+    ids: ["the-baker", "the-fiber-artist", "the-woodworker", "the-potter", "the-tinkerer", "the-garden-tender"],
+  },
+  {
+    id: "animals",
+    title: "Animal Lover Communities",
+    subtitle: "Dog lovers, birders, marine enthusiasts, and farm folk",
+    icon: "Dog",
+    ids: ["the-pack-leader", "the-bird-watcher", "the-reef-guardian", "the-barn-keeper"],
+  },
+  {
+    id: "world",
+    title: "World Hobby Cultures",
+    subtitle: "Signature crafts and traditions from the 10 most populous nations",
+    icon: "Globe",
+    ids: ["the-rangoli-maker", "the-calligrapher", "the-pitmaster", "the-batik-weaver", "the-cricket-coach", "the-drum-caller", "the-samba-heart", "the-rickshaw-poet", "the-samovar-host", "the-coffee-roaster"],
+  },
+  {
+    id: "rotary",
+    title: "Service & Ethics",
+    subtitle: "Rotary International and the Four-Way Test",
+    icon: "Scale",
+    ids: ["the-four-way-tester"],
+  },
+];
+
+const allPatterns: Pattern[] = [...corePatterns, ...communityPatterns];
+const patternMap = new Map(allPatterns.map((p) => [p.id, p]));
+
+const categories: PatternCategory[] = categoryDefs.map((def) => ({
+  id: def.id,
+  title: def.title,
+  subtitle: def.subtitle,
+  icon: def.icon,
+  patterns: def.ids.map((id) => patternMap.get(id)).filter(Boolean) as Pattern[],
+}));
+
+/* ─── Helpers ─── */
 function downloadConfig(pattern: Pattern) {
   const blob = new Blob([pattern.config], { type: "text/yaml" });
   const url = URL.createObjectURL(blob);
@@ -366,7 +488,7 @@ function downloadConfig(pattern: Pattern) {
 
 function PatternCard({ pattern }: { pattern: Pattern }) {
   const [copied, setCopied] = useState(false);
-  const Icon = pattern.icon;
+  const Icon = iconMap[pattern.icon] || HandHeart;
   const { t } = useI18n();
 
   const copyConfig = async () => {
@@ -441,10 +563,35 @@ function PatternCard({ pattern }: { pattern: Pattern }) {
   );
 }
 
+/* ─── Category Section ─── */
+function CategorySection({ category }: { category: PatternCategory }) {
+  const Icon = iconMap[category.icon] || Sparkles;
+  return (
+    <section className="space-y-4">
+      <div className="flex items-center gap-3 pb-2 border-b border-border">
+        <Icon className="h-5 w-5 text-primary" />
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">{category.title}</h2>
+          <p className="text-xs text-muted-foreground">{category.subtitle}</p>
+        </div>
+        <Badge variant="outline" className="ml-auto text-xs">
+          {category.patterns.length}
+        </Badge>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {category.patterns.map((p) => (
+          <PatternCard key={p.id} pattern={p} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ─── Main Page ─── */
 export default function Patterns() {
   const { t } = useI18n();
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-8">
+    <div className="p-6 max-w-6xl mx-auto space-y-10">
       {/* Hero */}
       <div className="text-center space-y-3 py-4">
         <div className="flex items-center justify-center gap-2">
@@ -457,7 +604,7 @@ export default function Patterns() {
         <p className="text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           {t.patternsSubtitle}
         </p>
-        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground flex-wrap">
           <span className="flex items-center gap-1">
             <Globe className="h-3 w-3" />
             {t.patternsOpenSource}
@@ -470,15 +617,17 @@ export default function Patterns() {
             <Shield className="h-3 w-3" />
             {t.patternsGovernanceReady}
           </span>
+          <span className="flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {allPatterns.length} community patterns
+          </span>
         </div>
       </div>
 
-      {/* Pattern grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {patterns.map((p) => (
-          <PatternCard key={p.id} pattern={p} />
-        ))}
-      </div>
+      {/* Category sections */}
+      {categories.map((cat) => (
+        <CategorySection key={cat.id} category={cat} />
+      ))}
 
       {/* Footer note */}
       <div className="text-center py-6 border-t border-border">
