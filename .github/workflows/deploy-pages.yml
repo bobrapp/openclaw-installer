@@ -46,6 +46,9 @@ jobs:
           # ── Standalone wizard (15-language locale switcher) ──
           cp public/aigovops-wizard.html _site/aigovops-wizard.html
 
+          # ── Compliance dashboard ──
+          cp public/dashboard.html _site/dashboard.html
+
           # ── PDFs ──
           cp public/openclaw-showcase.pdf _site/openclaw-showcase.pdf 2>/dev/null || true
           cp public/aigovops-compliance-report-v1.pdf _site/aigovops-compliance-report-v1.pdf 2>/dev/null || true
