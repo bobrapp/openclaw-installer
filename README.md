@@ -135,10 +135,13 @@ openclaw-installer/
 │   ├── actions/
 │   │   └── post-deploy-status/ # Reusable action: PR comments + commit status
 │   └── workflows/
-│       ├── preflight.yml       # CI pipeline with 8 checks + commit status
+│       ├── ci.yml              # Full CI: build + test + lint + security audit
+│       ├── preflight.yml       # Preflight checks with 8 checks + commit status
+│       ├── deploy-pages.yml    # GitHub Pages deployment
 │       ├── deploy-validate.yml # Lint deploy configs on PR
 │       ├── deploy-hetzner.yml  # Auto-deploy to Hetzner Cloud
-│       └── deploy-vultr.yml    # Auto-deploy to Vultr Cloud
+│       ├── deploy-vultr.yml    # Auto-deploy to Vultr Cloud
+│       └── release.yml         # Tagged release automation
 ├── deploy/
 │   ├── install.sh              # One-liner VPS install script
 │   └── cloud-init.yaml         # Cloud-init config for VPS providers
@@ -242,12 +245,42 @@ This project implements standards from the [AiGovOps Foundation](https://www.aig
 
 ## Version History
 
-### April 2026 v1 — AiGovOps Foundation Framework
-- GitHub Actions CI pipeline with 8 automated checks
-- Signed PDF audit report export with SHA-256 chain and QR code
-- Standalone HTML wizard (7 steps, pre-filled defaults, offline-capable)
-- "How I Built This" project timeline (9 phases)
-- Full AiGovOps Foundation branding integration
+### April 2026 v1.0 — AiGovOps Foundation Framework Release
+
+This release establishes OpenClaw Installer as the reference implementation for the AiGovOps Foundation's Governance-as-Code standard.
+
+#### Core Platform
+- **15-language internationalization** — English, French, German, Simplified Chinese, Portuguese, Hindi, Spanish, Arabic, Russian, Turkish, Urdu, Pashto, Swahili, Cherokee, and Braille display mode
+- **RTL layout support** — Arabic, Urdu, and Pashto with proper bidirectional rendering via logical CSS properties
+- **4 host targets** — macOS (Local), DigitalOcean, Azure VM, Generic VPS with host-specific scripts
+- **6-step installation wizard** — Environment Check → Dependencies → Permissions → Configuration → Install → Verify
+- **Standalone HTML wizard** — Self-contained 50KB offline-capable installer (`public/aigovops-wizard.html`)
+
+#### Governance & Compliance
+- **SHA-256 hash-chain audit log** — Tamper-evident, cryptographically linked immutable record of all actions
+- **Signed PDF compliance report** — Branded export with hash chain table, QR code, co-founder attribution, and digital signature metadata
+- **38 governance agent patterns** — YAML-based templates (Greeter, Guardian, Storyteller, Teacher, Peacekeeper, Celebrator + community patterns)
+- **Framework comparison** — Interactive radar chart comparing 8 AI governance frameworks across 8 dimensions
+- **Production hardening checklist** — 40+ security checks across network, permissions, secrets, logging, and observability
+
+#### CI/CD & Infrastructure
+- **GitHub Actions CI pipeline** (`ci.yml`) — Automated TypeScript check, build, Vitest unit tests, Playwright E2E tests, security audit, and standalone wizard validation on every push/PR
+- **Preflight CI** (`preflight.yml`) — 8 automated checks with commit status reporting
+- **Deploy validation** (`deploy-validate.yml`) — Lints all deploy configs on every PR
+- **Auto-deploy workflows** — Hetzner Cloud and Vultr with approval gates, health checks, and single-server reuse
+- **GitHub Pages deployment** — Zero-config static hosting at [bobrapp.github.io/openclaw-installer](https://bobrapp.github.io/openclaw-installer/)
+
+#### Quality (AI Model Council)
+- **2 rounds of frontier AI review** — Claude Opus 4.6, GPT-5.4, and Gemini 3.1 Pro independently reviewed the full codebase
+- **40 consensus improvements** implemented across 121 file changes (+5,094 / −4,376 lines)
+- **187 automated tests** — 141 Vitest unit tests + 46 Playwright E2E tests
+- **380KB production bundle** — Code-split with React.lazy, Zod removed from prod, tree-shaken
+
+#### Marketplace & Community
+- **29 MCP Skills Marketplace** — Curated Model Context Protocol skills with one-click install
+- **Community hosting deals** — Curated VPS recommendations with deploy scripts and coupon codes
+- **"How I Built This" timeline** — 9-phase project narrative documenting every architecture decision
+- **Humans of OpenClaw** — Contributor attribution page
 
 ### Initial Release
 - Guided installation wizard (4 hosts, 6-step flow)
