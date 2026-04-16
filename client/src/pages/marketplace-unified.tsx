@@ -20,6 +20,7 @@ import {
   Rocket,
   Search,
   Server,
+  Shield,
   Sparkles,
   Store,
 } from "lucide-react";
@@ -32,7 +33,46 @@ import { PageFooter } from "@/components/page-footer";
 import { playSound } from "@/lib/sound-engine";
 import { allMarketplaceSkills, type MarketplaceSkill, type SkillCategory } from "@/data/marketplace-skills";
 import { getSkillCategories, allPatterns, type PatternEntry } from "@/lib/data-access";
-import { hostingEntries, oneClickBundles, type MarketplaceEntry } from "@/data/marketplace-unified";
+import { hostingEntries, oneClickBundles, type MarketplaceEntry, type TrustTier } from "@/data/marketplace-unified";
+
+// ── Trust tier badge config ──
+const TRUST_TIER_CONFIG: Record<TrustTier, { label: string; className: string } | null> = {
+  official: {
+    label: "Official",
+    className: "bg-navy-700 bg-blue-900/80 text-blue-100 border-blue-700/50 text-[10px]",
+  },
+  verified: {
+    label: "Verified",
+    className: "bg-teal-600/20 text-teal-600 dark:text-teal-400 border-teal-500/30 text-[10px]",
+  },
+  listed: null,
+};
+
+/** IDs of connectors considered "verified" */
+const VERIFIED_CONNECTOR_IDS = new Set([
+  "github-connector",
+  "slack-connector",
+  "jira-connector",
+  "linear-connector",
+  "notion-connector",
+]);
+
+/** Inline trust tier badge component */
+function TrustTierBadge({ tier }: { tier?: TrustTier }) {
+  if (!tier || tier === "listed") return null;
+  const config = TRUST_TIER_CONFIG[tier];
+  if (!config) return null;
+  return (
+    <Badge
+      variant="outline"
+      className={`inline-flex items-center gap-1 shrink-0 ${config.className}`}
+    >
+      {tier === "official" && <Shield className="h-2.5 w-2.5" aria-hidden="true" />}
+      {tier === "verified" && <Check className="h-2.5 w-2.5" aria-hidden="true" />}
+      {config.label}
+    </Badge>
+  );
+}
 
 // ── Compatibility badge colors (connectors tab) ──
 const compatColors: Record<string, string> = {
@@ -61,6 +101,7 @@ const deployTypeLabel: Record<string, string> = {
 function ConnectorCard({ skill }: { skill: MarketplaceSkill }) {
   const { t } = useI18n();
   const { copy, copied } = useCopyToClipboard({ fallbackFilename: `claw-${skill.id}-cmd` });
+  const connectorTier: TrustTier = VERIFIED_CONNECTOR_IDS.has(skill.id) ? "verified" : "listed";
 
   return (
     <ConfigCard
@@ -74,6 +115,8 @@ function ConnectorCard({ skill }: { skill: MarketplaceSkill }) {
       testIdPrefix="card-connector"
       badges={
         <>
+          {/* Trust tier badge */}
+          <TrustTierBadge tier={connectorTier} />
           {/* Compatibility badges */}
           <div className="flex flex-wrap gap-1.5">
             {skill.compatibility.map((c) => (
@@ -170,6 +213,7 @@ function HostingCard({ entry }: { entry: MarketplaceEntry }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-base truncate">{entry.name}</CardTitle>
+              <TrustTierBadge tier={entry.trustTier} />
               {entry.featured && (
                 <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] shrink-0">
                   {t.mktFeatured || "Featured"}
@@ -277,6 +321,7 @@ function BundleCard({ entry }: { entry: MarketplaceEntry }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-base">{entry.name}</CardTitle>
+              <TrustTierBadge tier={entry.trustTier} />
               {entry.featured && (
                 <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] shrink-0">
                   {t.mktFeatured || "Featured"}
@@ -477,6 +522,7 @@ export default function MarketplaceUnified() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [activeConnectorCategory, setActiveConnectorCategory] = useState<SkillCategory | "all">("all");
+  const [activeTrustTier, setActiveTrustTier] = useState<TrustTier | "all">("all");
   const debouncedSearch = useDebouncedValue(searchQuery, 200);
 
   const skillCategories = getSkillCategories();
@@ -495,32 +541,49 @@ export default function MarketplaceUnified() {
     return fields.some((f) => f.toLowerCase().includes(q));
   };
 
+  // Trust tier filter helper
+  const matchesTrustTier = (
+    tier: TrustTier | undefined,
+    connectorId?: string
+  ): boolean => {
+    if (activeTrustTier === "all") return true;
+    const effectiveTier: TrustTier =
+      tier ??
+      (connectorId && VERIFIED_CONNECTOR_IDS.has(connectorId) ? "verified" : "listed");
+    return effectiveTier === activeTrustTier;
+  };
+
   // All tab — flat merged list
   const allEntries = useMemo(() => {
     const agents = allPatterns.filter((p) =>
-      matchesSearch([p.name, p.tagline, p.description, p.audience])
+      matchesSearch([p.name, p.tagline, p.description, p.audience]) &&
+      matchesTrustTier(undefined)
     );
     const connectors = allMarketplaceSkills.filter((s) =>
-      matchesSearch([s.name, s.description, s.provider, ...s.tags])
+      matchesSearch([s.name, s.description, s.provider, ...s.tags]) &&
+      matchesTrustTier(undefined, s.id)
     );
     const hosting = hostingEntries.filter((h) =>
-      matchesSearch([h.name, h.description, h.provider, ...h.tags])
+      matchesSearch([h.name, h.description, h.provider, ...h.tags]) &&
+      matchesTrustTier(h.trustTier)
     );
     const bundles = oneClickBundles.filter((b) =>
-      matchesSearch([b.name, b.description, b.provider, ...b.tags])
+      matchesSearch([b.name, b.description, b.provider, ...b.tags]) &&
+      matchesTrustTier(b.trustTier)
     );
     return [...agents, ...connectors, ...hosting, ...bundles];
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch]);
+  }, [debouncedSearch, activeTrustTier]);
 
   // Agents tab
   const filteredAgents = useMemo(
     () =>
       allPatterns.filter((p) =>
-        matchesSearch([p.name, p.tagline, p.description, p.audience])
+        matchesSearch([p.name, p.tagline, p.description, p.audience]) &&
+        matchesTrustTier(undefined)
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debouncedSearch]
+    [debouncedSearch, activeTrustTier]
   );
   const coreAgents = filteredAgents.filter((p) => CORE_AGENT_IDS.includes(p.id));
   const communityAgents = filteredAgents.filter((p) => !CORE_AGENT_IDS.includes(p.id));
@@ -532,30 +595,33 @@ export default function MarketplaceUnified() {
         const matchesCat =
           activeConnectorCategory === "all" || s.category === activeConnectorCategory;
         const matchesSrch = matchesSearch([s.name, s.description, s.provider, ...s.tags]);
-        return matchesCat && matchesSrch;
+        const matchesTier = matchesTrustTier(undefined, s.id);
+        return matchesCat && matchesSrch && matchesTier;
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debouncedSearch, activeConnectorCategory]
+    [debouncedSearch, activeConnectorCategory, activeTrustTier]
   );
 
   // Hosting tab
   const filteredHosting = useMemo(
     () =>
       hostingEntries.filter((h) =>
-        matchesSearch([h.name, h.description, h.provider, ...h.tags])
+        matchesSearch([h.name, h.description, h.provider, ...h.tags]) &&
+        matchesTrustTier(h.trustTier)
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debouncedSearch]
+    [debouncedSearch, activeTrustTier]
   );
 
   // 1-Click tab
   const filteredBundles = useMemo(
     () =>
       oneClickBundles.filter((b) =>
-        matchesSearch([b.name, b.description, b.provider, ...b.tags])
+        matchesSearch([b.name, b.description, b.provider, ...b.tags]) &&
+        matchesTrustTier(b.trustTier)
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debouncedSearch]
+    [debouncedSearch, activeTrustTier]
   );
 
   // Connector category filters
@@ -606,20 +672,44 @@ export default function MarketplaceUnified() {
         testId="text-unified-marketplace-title"
       />
 
-      {/* Search */}
-      <div className="relative">
-        <Search
-          className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-          aria-hidden="true"
-        />
-        <Input
-          placeholder="Search agents, connectors, providers, or tags..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="ps-10"
-          data-testid="input-unified-marketplace-search"
-          aria-label="Search marketplace"
-        />
+      {/* Search + Trust Tier Filter */}
+      <div className="space-y-3">
+        <div className="relative">
+          <Search
+            className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            placeholder="Search agents, connectors, providers, or tags..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="ps-10"
+            data-testid="input-unified-marketplace-search"
+            aria-label="Search marketplace"
+          />
+        </div>
+        {/* Trust tier filter */}
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by trust tier">
+          <span className="text-xs text-muted-foreground font-medium">Trust:</span>
+          {(["all", "official", "verified", "listed"] as const).map((tier) => (
+            <Button
+              key={tier}
+              size="sm"
+              variant={activeTrustTier === tier ? "default" : "outline"}
+              className="text-xs h-7"
+              onClick={() => {
+                setActiveTrustTier(tier);
+                playSound("click");
+              }}
+              aria-pressed={activeTrustTier === tier}
+              data-testid={`button-trust-filter-${tier}`}
+            >
+              {tier === "official" && <Shield className="h-3 w-3 me-1" aria-hidden="true" />}
+              {tier === "verified" && <Check className="h-3 w-3 me-1" aria-hidden="true" />}
+              {tier === "all" ? "All Tiers" : tier.charAt(0).toUpperCase() + tier.slice(1)}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Tabs */}

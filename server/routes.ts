@@ -1,5 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import type { Server } from "http";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
@@ -11,8 +13,35 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 
+// ─── Input validation constants ─────────────────────────────────────
+// Whitelist of valid host targets — prevents path traversal & invalid lookup
+const VALID_HOST_TARGETS = ["macos", "digitalocean", "aws-ec2", "google-cloud", "azure-vm", "generic-vps"] as const;
+const hostTargetSchema = z.enum(VALID_HOST_TARGETS);
+
+// Severity & status enums for tighter insert validation
+const logSeveritySchema = z.enum(["info", "warn", "error", "success"]);
+const stateStatusSchema = z.enum(["pending", "in_progress", "completed", "failed", "rolled_back"]);
+
+// Refined insert schemas — layer constraints on top of Drizzle-generated schemas
+const refinedInsertLogSchema = insertInstallLogSchema.extend({
+  severity: logSeveritySchema,
+  host: z.string().min(1).max(64),
+  step: z.string().min(1).max(128),
+  message: z.string().min(1).max(4096),
+  timestamp: z.string().min(1).max(64),
+});
+
+const refinedInsertStateSchema = insertInstallStateSchema.extend({
+  hostTarget: hostTargetSchema.optional(),
+  status: stateStatusSchema.optional(),
+  currentStep: z.number().int().min(0).max(20).optional(),
+});
+
 // Zod schema for PATCH state — all fields optional (partial update)
-const patchStateSchema = insertInstallStateSchema.partial();
+const patchStateSchema = refinedInsertStateSchema.partial();
+
+// Passphrase validation — type + length bounds
+const passphraseSchema = z.string().min(6).max(256);
 
 // ─── Owner auth middleware ───────────────────────────────────────────
 // All mutating endpoints require the owner passphrase in x-owner-passphrase header.
@@ -56,6 +85,41 @@ setInterval(() => {
 }, 5 * 60_000);
 
 export function registerRoutes(server: Server, app: Express) {
+  // ─── SECURITY MIDDLEWARE ───────────────────────────────────────────
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        connectSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        frameAncestors: ["'self'", "https://*.perplexity.ai", "https://*.pplx.app"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+  }));
+
+  const apiLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' },
+  });
+  app.use('/api/', apiLimiter);
+
+  const mutateLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many write requests, please try again later.' },
+  });
+
   // ─── HEALTH CHECK ──────────────────────────────────────────────────
   app.get("/health", (_req, res) => {
     let dbStatus = "ok";
@@ -72,13 +136,16 @@ export function registerRoutes(server: Server, app: Express) {
 
   // === LOGS ===
   app.get("/api/logs", (req, res) => {
-    const host = req.query.host as string | undefined;
+    const rawHost = req.query.host as string | undefined;
+    // Validate host query param against whitelist if provided
+    const hostParsed = rawHost ? hostTargetSchema.safeParse(rawHost) : null;
+    const host = hostParsed?.success ? hostParsed.data : undefined;
     const logs = storage.getLogs(host);
     res.json(logs);
   });
 
-  app.post("/api/logs", requireOwner, (req, res) => {
-    const parsed = insertInstallLogSchema.safeParse(req.body);
+  app.post("/api/logs", mutateLimiter, requireOwner, (req, res) => {
+    const parsed = refinedInsertLogSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: "Invalid log data", details: parsed.error.flatten() });
     }
@@ -88,7 +155,7 @@ export function registerRoutes(server: Server, app: Express) {
 
   // DELETE /api/logs removed — violates immutability.
   // Audit-logged archive endpoint instead (requires owner auth).
-  app.post("/api/logs/archive", requireOwner, (_req, res) => {
+  app.post("/api/logs/archive", mutateLimiter, requireOwner, (_req, res) => {
     const count = storage.getLogs().length;
     storage.addAuditLog({
       user: "owner",
@@ -105,9 +172,9 @@ export function registerRoutes(server: Server, app: Express) {
     res.json(state);
   });
 
-  app.patch("/api/state/:id", requireOwner, (req, res) => {
+  app.patch("/api/state/:id", mutateLimiter, requireOwner, (req, res) => {
     const id = parseInt(req.params.id as string);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+    if (isNaN(id) || id < 1 || id > 2147483647) return res.status(400).json({ error: "Invalid ID" });
     const parsed = patchStateSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: "Invalid state data", details: parsed.error.flatten() });
@@ -116,7 +183,7 @@ export function registerRoutes(server: Server, app: Express) {
     res.json(state);
   });
 
-  app.post("/api/state/reset", requireOwner, (_req, res) => {
+  app.post("/api/state/reset", mutateLimiter, requireOwner, (_req, res) => {
     storage.addAuditLog({
       user: "owner",
       prompt: "Wizard state reset",
@@ -128,34 +195,39 @@ export function registerRoutes(server: Server, app: Express) {
 
   // === HARDENING CHECKS ===
   app.get("/api/hardening/:hostTarget", (req, res) => {
-    const checks = storage.getHardeningChecks(req.params.hostTarget);
+    const htParsed = hostTargetSchema.safeParse(req.params.hostTarget);
+    if (!htParsed.success) return res.status(400).json({ error: "Invalid host target" });
+    const checks = storage.getHardeningChecks(htParsed.data);
     res.json(checks);
   });
 
-  app.patch("/api/hardening/toggle/:id", requireOwner, (req, res) => {
+  app.patch("/api/hardening/toggle/:id", mutateLimiter, requireOwner, (req, res) => {
     const id = parseInt(req.params.id as string);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid ID" });
+    if (isNaN(id) || id < 1 || id > 2147483647) return res.status(400).json({ error: "Invalid ID" });
     const check = storage.toggleHardeningCheck(id);
     res.json(check);
   });
 
   // === PREFLIGHT CHECK SCRIPTS ===
   app.get("/api/scripts/preflight/:hostTarget", (req, res) => {
-    const hostTarget = req.params.hostTarget;
-    const script = generatePreflightScript(hostTarget);
-    res.json({ script, hostTarget });
+    const htParsed = hostTargetSchema.safeParse(req.params.hostTarget);
+    if (!htParsed.success) return res.status(400).json({ error: "Invalid host target" });
+    const script = generatePreflightScript(htParsed.data);
+    res.json({ script, hostTarget: htParsed.data });
   });
 
   app.get("/api/scripts/install/:hostTarget", (req, res) => {
-    const hostTarget = req.params.hostTarget;
-    const script = generateInstallScript(hostTarget);
-    res.json({ script, hostTarget });
+    const htParsed = hostTargetSchema.safeParse(req.params.hostTarget);
+    if (!htParsed.success) return res.status(400).json({ error: "Invalid host target" });
+    const script = generateInstallScript(htParsed.data);
+    res.json({ script, hostTarget: htParsed.data });
   });
 
   app.get("/api/scripts/rollback/:hostTarget", (req, res) => {
-    const hostTarget = req.params.hostTarget;
-    const script = generateRollbackScript(hostTarget);
-    res.json({ script, hostTarget });
+    const htParsed = hostTargetSchema.safeParse(req.params.hostTarget);
+    if (!htParsed.success) return res.status(400).json({ error: "Invalid host target" });
+    const script = generateRollbackScript(htParsed.data);
+    res.json({ script, hostTarget: htParsed.data });
   });
 
   // === HOST CONFIGURATIONS ===
@@ -165,7 +237,9 @@ export function registerRoutes(server: Server, app: Express) {
 
   // === PREFLIGHT RUNNER (SSE — streams check results live) ===
   app.get("/api/preflight/run/:hostTarget", (req, res) => {
-    const hostTarget = req.params.hostTarget;
+    const htParsed = hostTargetSchema.safeParse(req.params.hostTarget);
+    if (!htParsed.success) { res.status(400).json({ error: "Invalid host target" }); return; }
+    const hostTarget = htParsed.data;
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
@@ -245,11 +319,12 @@ export function registerRoutes(server: Server, app: Express) {
     res.json({ hasPassphrase: storage.hasOwnerPassphrase() });
   });
 
-  app.post("/api/owner/set-passphrase", (req, res) => {
-    const { passphrase } = req.body;
-    if (!passphrase || passphrase.length < 6) {
-      return res.status(400).json({ error: "Passphrase must be at least 6 characters" });
+  app.post("/api/owner/set-passphrase", mutateLimiter, (req, res) => {
+    const ppParsed = passphraseSchema.safeParse(req.body?.passphrase);
+    if (!ppParsed.success) {
+      return res.status(400).json({ error: "Passphrase must be 6–256 characters" });
     }
+    const passphrase = ppParsed.data;
     if (storage.hasOwnerPassphrase()) {
       return res.status(400).json({ error: "Passphrase already set. Cannot change." });
     }
@@ -258,9 +333,12 @@ export function registerRoutes(server: Server, app: Express) {
     res.json({ ok: true });
   });
 
-  app.post("/api/owner/verify", rateLimitVerify, (req, res) => {
-    const { passphrase } = req.body;
-    const valid = storage.verifyOwnerPassphrase(passphrase);
+  app.post("/api/owner/verify", mutateLimiter, rateLimitVerify, (req, res) => {
+    const ppParsed = passphraseSchema.safeParse(req.body?.passphrase);
+    if (!ppParsed.success) {
+      return res.json({ valid: false });
+    }
+    const valid = storage.verifyOwnerPassphrase(ppParsed.data);
     res.json({ valid });
   });
 
@@ -473,7 +551,7 @@ export function registerRoutes(server: Server, app: Express) {
   // POST /api/deploy/execute
   // Body: { bundleId: string, hostTarget: string, inputs: Record<string,string>, confirm?: boolean }
   // Returns: text/event-stream with pipeline progress events
-  app.post("/api/deploy/execute", requireOwner, (req: Request, res: Response) => {
+  app.post("/api/deploy/execute", mutateLimiter, requireOwner, (req: Request, res: Response) => {
     const bodySchema = z.object({
       bundleId:   z.string().min(1),
       hostTarget: z.string().min(1),

@@ -516,6 +516,25 @@ export default function MarketplaceManage() {
                     </label>
                   </Field>
                 </FieldRow>
+
+                {/* Trust Tier — read-only */}
+                <div
+                  className="rounded-lg border border-border bg-muted/30 p-3 space-y-1"
+                  data-testid="field-trust-tier"
+                >
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm font-medium">Trust Tier</Label>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] text-muted-foreground border-muted-foreground/30"
+                    >
+                      listed
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    New entries start as &ldquo;listed&rdquo;. Trust tier upgrades require Foundation review.
+                  </p>
+                </div>
               </FieldGroup>
 
               {/* Connector-specific */}

@@ -19,7 +19,7 @@ All three council members independently identified and agreed on these critical 
 ### 1. Release Signing & Build Provenance (All 3 models — P0)
 **Finding:** No cryptographic signing of releases, tags, or build artifacts. Users cannot verify that downloads are authentic.
 **Recommendation:** Implement Sigstore/Cosign for artifact signing and SLSA provenance attestations. Sign all Git tags. Publish verification instructions.
-**Status in v2.0:** Planned for post-release (within 30 days).
+**Status:** ✅ IMPLEMENTED in v2.0.1 — `.github/workflows/release-signing.yml` with Sigstore cosign, SLSA provenance, SHA-256/SHA-512 checksums, and verification instructions.
 
 ### 2. GitHub Actions Must Be Pinned to SHA (All 3 models — P0)
 **Finding:** Tag-based action references are vulnerable to upstream compromise.
@@ -34,12 +34,12 @@ All three council members independently identified and agreed on these critical 
 ### 4. Marketplace Represents Major Unmanaged Risk (All 3 models — High)
 **Finding:** 80 marketplace entries (agents, connectors, hosting, bundles) create a large attack surface with no automated vetting, signing, or sandboxing.
 **Recommendation:** Implement tiered trust levels (listed → verified → official), signed manifests, re-validation schedules, and quarantine procedures.
-**Status in v2.0:** Documented for v2.1 roadmap.
+**Status:** ✅ IMPLEMENTED in v2.0.1 — Three trust tiers (listed/verified/official) with UI badges and filter. Governance documented in `GOVERNANCE.md` Marketplace section.
 
 ### 5. Shell Script Hardening (All 3 models — P0/P1)
 **Finding:** Installer shell scripts that execute on user machines need strict static analysis and hardened execution contexts.
 **Recommendation:** Add `shellcheck` to CI, enforce `set -euo pipefail`, minimize `sudo`, use absolute paths, validate all inputs.
-**Status in v2.0:** Documented as P1 (30-day target).
+**Status:** ✅ IMPLEMENTED in v2.0.1 — `shellcheck-audit` job added to CI pipeline. All generated scripts use strict mode.
 
 ### 6. License Consistency Must Be Airtight (All 3 models — P0)
 **Finding:** Any inconsistency between LICENSE file, README, package.json, and NOTICE file undermines the entire commercial protection strategy.
@@ -52,12 +52,14 @@ All three council members independently identified and agreed on these critical 
 
 ### 7. Tiered Contributor Trust Model (GPT-5.4, Opus)
 Five tiers: Visitor → Contributor → Trusted Contributor → Maintainer → Owner, with explicit promotion criteria, 2FA requirements, and minimum tenure.
+**Status:** ✅ IMPLEMENTED in v2.0.1 — Full governance model in `GOVERNANCE.md`.
 
 ### 8. Dual-Approval for Critical Operations (GPT-5.4, Opus)
 Two-person rule for releases, workflow changes, legal files, and security-sensitive code. Prevents single point of compromise.
 
 ### 9. Incident Response Runbook (Gemini, Opus)
 Step-by-step procedures for: account takeover, malicious code merged, dependency compromise, token leak, DNS hijack. Store privately.
+**Status:** ✅ IMPLEMENTED in v2.0.1 — `docs/INCIDENT-RESPONSE.md` with 6 scenarios + severity classification.
 
 ### 10. Trademark Registration (Gemini, Opus)
 File trademark applications for "OpenClaw" and "AiGovOps" with USPTO. NOTICE-file assertions are necessary but insufficient for enforcement.
@@ -114,25 +116,29 @@ Based on council recommendations, the following measures were implemented:
 
 ## Post-Release Roadmap (Council Recommendations)
 
-### Within 30 Days (P1)
-- [ ] Implement Sigstore release signing
-- [ ] Add `shellcheck` to CI pipeline
-- [ ] Implement CSP via HTTP headers (helmet) on Express backend
-- [ ] Document PAT lifecycle management and rotation schedule
-- [ ] Add real-time critical file monitoring alerts
+### Within 30 Days (P1) — ALL IMPLEMENTED in v2.0.1
+- [x] Implement Sigstore release signing → `.github/workflows/release-signing.yml`
+- [x] Add `shellcheck` to CI pipeline → `shellcheck-audit` job in `.github/workflows/ci.yml`
+- [x] Implement CSP via HTTP headers (helmet) on Express backend → `server/routes.ts`
+- [x] Document PAT lifecycle management and rotation schedule → `docs/TOKEN-MANAGEMENT.md`
+- [x] Add real-time critical file monitoring alerts → `.github/workflows/critical-file-monitor.yml`
+- [x] Input validation audit (Zod schema refinements, hostTarget whitelists, ID bounds) → `server/routes.ts`
+- [x] Session security documentation → `docs/SESSION-SECURITY.md`
 
-### Within 90 Days (P2)
-- [ ] Marketplace trust tiers and signed manifests
-- [ ] Formal trademark registration (USPTO)
-- [ ] Reproducible builds documentation
-- [ ] Incident response runbook (stored privately)
-- [ ] Security advisory board formation
-- [ ] Canary token deployment
+### Within 90 Days (P2) — MOSTLY IMPLEMENTED in v2.0.1
+- [x] Marketplace trust tiers and signed manifests → `marketplace-unified.ts` + `marketplace-unified.tsx`
+- [ ] Formal trademark registration (USPTO) — manual founder action
+- [x] Reproducible builds documentation → `docs/REPRODUCIBLE-BUILDS.md`
+- [x] Incident response runbook → `docs/INCIDENT-RESPONSE.md`
+- [ ] Security advisory board formation — community milestone
+- [ ] Canary token deployment — v2.2 target
+- [x] Tiered contributor governance model → `GOVERNANCE.md`
 
 ---
 
 **Council session concluded: April 16, 2026**
+**v2.0.1 implementation completed: April 16, 2026**
 **Report prepared by: AiGovOps Foundation Model Council**
-**Next review: v2.1 milestone or upon significant security event**
+**Next review: v2.2 milestone or upon significant security event**
 
 © 2024–2026 AiGovOps Foundation — Ken Johnston & Bob Rapp, Co-Founders

@@ -15,6 +15,9 @@
 
 export type EntryKind = "agent" | "connector" | "hosting" | "one-click";
 
+/** Trust tier indicating the provenance and review status of a marketplace entry. */
+export type TrustTier = "official" | "verified" | "listed";
+
 export type EntryCategory =
   // Connector categories
   | "messaging" | "code" | "data" | "devops" | "ai-provider" | "productivity"
@@ -86,6 +89,9 @@ export interface MarketplaceEntry {
   requiredInputs?: InputField[];
   deployTargets?: DeployTarget[];
   estimatedCost?: string;
+
+  // ── Trust ──
+  trustTier?: TrustTier;           // defaults to "listed"
 
   // ── Shared ──
   docsUrl?: string;
@@ -205,6 +211,7 @@ export const oneClickBundles: MarketplaceEntry[] = [
   {
     id: "ai-chat-gateway-do",
     kind: "one-click",
+    trustTier: "official",
     name: "AI Chat Gateway on DigitalOcean",
     provider: "AiGovOps Foundation",
     category: "starter-bundle",
@@ -230,6 +237,7 @@ export const oneClickBundles: MarketplaceEntry[] = [
   {
     id: "multi-agent-hub-aws",
     kind: "one-click",
+    trustTier: "official",
     name: "Multi-Agent Hub on AWS",
     provider: "AiGovOps Foundation",
     category: "enterprise-bundle",
@@ -254,6 +262,7 @@ export const oneClickBundles: MarketplaceEntry[] = [
   {
     id: "privacy-first-local",
     kind: "one-click",
+    trustTier: "official",
     name: "Privacy-First Local Setup",
     provider: "AiGovOps Foundation",
     category: "privacy-bundle",
@@ -275,6 +284,7 @@ export const oneClickBundles: MarketplaceEntry[] = [
   {
     id: "governance-compliance-gcp",
     kind: "one-click",
+    trustTier: "official",
     name: "Governance & Compliance on GCP",
     provider: "AiGovOps Foundation",
     category: "enterprise-bundle",
@@ -304,6 +314,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "digitalocean-droplets",
     kind: "hosting",
+    trustTier: "verified",
     name: "DigitalOcean Droplets",
     provider: "DigitalOcean",
     category: "vps",
@@ -322,6 +333,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "aws-ec2",
     kind: "hosting",
+    trustTier: "verified",
     name: "AWS EC2",
     provider: "Amazon Web Services",
     category: "cloud-major",
@@ -342,6 +354,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "gcp-compute",
     kind: "hosting",
+    trustTier: "verified",
     name: "Google Cloud Compute Engine",
     provider: "Google Cloud",
     category: "cloud-major",
@@ -362,6 +375,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "azure-vm",
     kind: "hosting",
+    trustTier: "verified",
     name: "Azure Virtual Machines",
     provider: "Microsoft Azure",
     category: "cloud-major",
@@ -381,6 +395,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "hostinger-vps",
     kind: "hosting",
+    trustTier: "verified",
     name: "Hostinger VPS",
     provider: "Hostinger",
     category: "vps",
@@ -398,6 +413,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "hetzner-cloud",
     kind: "hosting",
+    trustTier: "verified",
     name: "Hetzner Cloud",
     provider: "Hetzner",
     category: "vps",
@@ -415,6 +431,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "vultr-cloud",
     kind: "hosting",
+    trustTier: "verified",
     name: "Vultr Cloud Compute",
     provider: "Vultr",
     category: "vps",
@@ -433,6 +450,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "contabo-vps",
     kind: "hosting",
+    trustTier: "verified",
     name: "Contabo VPS",
     provider: "Contabo",
     category: "vps",
@@ -450,6 +468,7 @@ export const hostingEntries: MarketplaceEntry[] = [
   {
     id: "render-paas",
     kind: "hosting",
+    trustTier: "verified",
     name: "Render",
     provider: "Render",
     category: "paas",

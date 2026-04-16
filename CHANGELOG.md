@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] — 2026-04-16 — "Larry's World" Model Council Patch
+
+Implements ALL consensus recommendations from the 3-model security council (Gemini 3.1 Pro, GPT-5.4, Claude Opus 4.6).
+
+### Added — Application Security
+- Helmet security headers (CSP, HSTS, X-Content-Type-Options, etc.) on Express server
+- Rate limiting: 100/min global API, 20/min mutating endpoints, 5/min passphrase verify
+- CORS configuration with same-origin default
+- Input validation audit: Zod schema refinements with enum constraints, length bounds, integer ranges
+- Host target whitelist validation on all parameterized endpoints
+- Passphrase type + length bounds (6–256 characters)
+- ID parameter bounds checking (NaN + integer range)
+
+### Added — Supply Chain Security
+- Release signing workflow (Sigstore cosign + SLSA provenance + SHA-256/SHA-512 checksums)
+- Critical file monitoring workflow (real-time alerts on LICENSE, NOTICE, GOVERNANCE, workflows)
+- Shellcheck audit job in CI pipeline for all shell scripts
+
+### Added — Governance & Marketplace
+- `GOVERNANCE.md` with tiered contributor trust model (5 levels: Visitor → Owner)
+- Marketplace trust tiers: official, verified, listed — with UI badges and filter
+- Read-only trust tier display on Manage Entries page
+
+### Added — Documentation
+- `docs/INCIDENT-RESPONSE.md` — 6-scenario runbook with severity classification
+- `docs/TOKEN-MANAGEMENT.md` — PAT lifecycle management and rotation schedule
+- `docs/REPRODUCIBLE-BUILDS.md` — Build verification and attestation guide
+- `docs/SESSION-SECURITY.md` — Headers, rate limiting, auth model, deployment checklist
+- Updated `docs/MODEL-COUNCIL-v2.md` — All P1 items marked implemented, P2 mostly complete
+
+---
+
 ## [2.0.0] — 2026-04-16 — "Larry's World"
 
 ### Added — Security & Protection

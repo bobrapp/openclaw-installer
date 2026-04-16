@@ -1,0 +1,123 @@
+name: Release Signing & Provenance
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  sign-and-attest:
+    name: Sign Release Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4
+        with:
+          node-version: 20
+
+      - name: Build release artifacts
+        run: |
+          npm ci
+          npm run build
+          cp public/aigovops-wizard.html dist/public/
+          cp -r scripts dist/
+          mkdir -p dist/public/app
+          cp dist/public/index.html dist/public/app/index.html
+          cp -r dist/public/assets dist/public/app/
+          cp public/aigovops-framework.html dist/public/index.html
+          cp public/*.pdf dist/public/ 2>/dev/null || true
+
+      - name: Generate SBOM
+        run: |
+          npx --yes @cyclonedx/cyclonedx-npm --output-file sbom-${{ github.event.release.tag_name }}.json
+          echo "SBOM generated: $(wc -c < sbom-${{ github.event.release.tag_name }}.json) bytes"
+
+      - name: Generate SHA-256 checksums
+        run: |
+          CHECKSUMS_FILE="CHECKSUMS-${{ github.event.release.tag_name }}.txt"
+
+          echo "# SHA-256 Checksums for ${{ github.event.release.tag_name }}" > "$CHECKSUMS_FILE"
+          echo "# Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$CHECKSUMS_FILE"
+          echo "# AiGovOps Foundation — Ken Johnston & Bob Rapp, Co-Founders" >> "$CHECKSUMS_FILE"
+          echo "" >> "$CHECKSUMS_FILE"
+
+          # Key artifacts
+          echo "## Standalone Artifacts" >> "$CHECKSUMS_FILE"
+          sha256sum dist/public/aigovops-wizard.html >> "$CHECKSUMS_FILE" 2>/dev/null || true
+          sha256sum dist/public/aigovops-framework.html >> "$CHECKSUMS_FILE" 2>/dev/null || true
+          sha256sum dist/public/index.html >> "$CHECKSUMS_FILE" 2>/dev/null || true
+
+          echo "" >> "$CHECKSUMS_FILE"
+          echo "## PDFs" >> "$CHECKSUMS_FILE"
+          sha256sum dist/public/*.pdf >> "$CHECKSUMS_FILE" 2>/dev/null || true
+
+          echo "" >> "$CHECKSUMS_FILE"
+          echo "## Application Bundle" >> "$CHECKSUMS_FILE"
+          sha256sum dist/public/app/index.html >> "$CHECKSUMS_FILE" 2>/dev/null || true
+
+          echo "" >> "$CHECKSUMS_FILE"
+          echo "## JavaScript Assets" >> "$CHECKSUMS_FILE"
+          for f in dist/public/assets/*.js; do
+            sha256sum "$f" >> "$CHECKSUMS_FILE" 2>/dev/null || true
+          done
+
+          echo "" >> "$CHECKSUMS_FILE"
+          echo "## SBOM" >> "$CHECKSUMS_FILE"
+          sha256sum "sbom-${{ github.event.release.tag_name }}.json" >> "$CHECKSUMS_FILE" 2>/dev/null || true
+
+          echo "Checksums file generated:"
+          cat "$CHECKSUMS_FILE"
+
+      - name: Create release archive
+        run: |
+          ARCHIVE="openclaw-installer-${{ github.event.release.tag_name }}.tar.gz"
+          tar czf "$ARCHIVE" \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='*.db' \
+            --exclude='.env*' \
+            .
+          sha256sum "$ARCHIVE" >> "CHECKSUMS-${{ github.event.release.tag_name }}.txt"
+          echo "Archive: $(du -h "$ARCHIVE" | cut -f1)"
+
+      - name: Generate build provenance attestation
+        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1
+        with:
+          subject-path: |
+            CHECKSUMS-${{ github.event.release.tag_name }}.txt
+            sbom-${{ github.event.release.tag_name }}.json
+            openclaw-installer-${{ github.event.release.tag_name }}.tar.gz
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          gh release upload "$TAG" \
+            "CHECKSUMS-${TAG}.txt" \
+            "sbom-${TAG}.json" \
+            "openclaw-installer-${TAG}.tar.gz" \
+            --clobber
+
+      - name: Post summary
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          echo "## Release Signing — ${TAG}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Artifact | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| CHECKSUMS-${TAG}.txt | ✅ Generated & uploaded |" >> $GITHUB_STEP_SUMMARY
+          echo "| sbom-${TAG}.json | ✅ Generated & uploaded |" >> $GITHUB_STEP_SUMMARY
+          echo "| openclaw-installer-${TAG}.tar.gz | ✅ Archived & uploaded |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build provenance attestation | ✅ Signed |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**AiGovOps Foundation** — Signed Release" >> $GITHUB_STEP_SUMMARY

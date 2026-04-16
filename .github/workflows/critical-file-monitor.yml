@@ -1,0 +1,139 @@
+name: Critical File Monitor
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'LICENSE'
+      - 'NOTICE'
+      - 'SECURITY.md'
+      - 'GOVERNANCE.md'
+      - '.github/CODEOWNERS'
+      - '.github/workflows/**'
+      - 'scripts/**'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  monitor:
+    name: Verify Critical File Integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed critical files
+        id: detect
+        run: |
+          echo "## Critical File Change Detection" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          CRITICAL_FILES=(
+            "LICENSE"
+            "NOTICE"
+            "SECURITY.md"
+            "GOVERNANCE.md"
+            ".github/CODEOWNERS"
+          )
+
+          WORKFLOW_CHANGED=false
+          LEGAL_CHANGED=false
+          SCRIPT_CHANGED=false
+          CHANGED_LIST=""
+
+          # Check critical files
+          for f in "${CRITICAL_FILES[@]}"; do
+            if git diff --name-only HEAD~1 HEAD | grep -q "^${f}$"; then
+              LEGAL_CHANGED=true
+              CHANGED_LIST="${CHANGED_LIST}${f}\n"
+              HASH=$(sha256sum "$f" 2>/dev/null | cut -d' ' -f1 || echo "MISSING")
+              echo "⚠️ **CHANGED:** \`$f\` — SHA-256: \`${HASH:0:16}…\`" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          # Check workflows
+          WORKFLOW_CHANGES=$(git diff --name-only HEAD~1 HEAD | grep '^\.github/workflows/' || true)
+          if [ -n "$WORKFLOW_CHANGES" ]; then
+            WORKFLOW_CHANGED=true
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Workflow files changed:**" >> $GITHUB_STEP_SUMMARY
+            echo "$WORKFLOW_CHANGES" | while read -r wf; do
+              CHANGED_LIST="${CHANGED_LIST}${wf}\n"
+              echo "  - \`$wf\`" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
+
+          # Check scripts
+          SCRIPT_CHANGES=$(git diff --name-only HEAD~1 HEAD | grep '^scripts/' || true)
+          if [ -n "$SCRIPT_CHANGES" ]; then
+            SCRIPT_CHANGED=true
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Script files changed:**" >> $GITHUB_STEP_SUMMARY
+            echo "$SCRIPT_CHANGES" | while read -r sc; do
+              CHANGED_LIST="${CHANGED_LIST}${sc}\n"
+              echo "  - \`$sc\`" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
+
+          echo "legal_changed=$LEGAL_CHANGED" >> $GITHUB_OUTPUT
+          echo "workflow_changed=$WORKFLOW_CHANGED" >> $GITHUB_OUTPUT
+          echo "script_changed=$SCRIPT_CHANGED" >> $GITHUB_OUTPUT
+
+          # Record commit info
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Commit Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **SHA:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Message:** $(git log -1 --pretty=%s)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**AiGovOps Foundation** — Critical File Monitor" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create alert issue for legal/governance changes
+        if: steps.detect.outputs.legal_changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "🔒 Critical File Change Alert — $(date -u +%Y-%m-%d)" \
+            --body "## Critical File Change Detected
+
+          **Commit:** [\`${{ github.sha }}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          **Author:** @${{ github.actor }}
+          **Message:** $(git log -1 --pretty=%s)
+
+          ### Changed Files
+          $(git diff --name-only HEAD~1 HEAD | grep -E '^(LICENSE|NOTICE|SECURITY\.md|GOVERNANCE\.md|\.github/CODEOWNERS)$' | sed 's/^/- /')
+
+          ### Action Required
+          Both co-founders should verify this change was intentional and authorized.
+
+          - [ ] @bobrapp reviewed and confirmed
+          - [ ] Change is consistent with governance policy
+
+          ---
+          *Automated alert from Critical File Monitor workflow*" \
+            --label "security" \
+            2>/dev/null || echo "Issue creation skipped (may need issues:write permission)"
+
+      - name: Record current hashes
+        run: |
+          echo "## Current Critical File Hashes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | SHA-256 (first 32 chars) |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------------------------|" >> $GITHUB_STEP_SUMMARY
+
+          for f in LICENSE NOTICE SECURITY.md GOVERNANCE.md .github/CODEOWNERS; do
+            if [ -f "$f" ]; then
+              HASH=$(sha256sum "$f" | cut -d' ' -f1)
+              echo "| \`$f\` | \`${HASH:0:32}\` |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| \`$f\` | ⚠️ MISSING |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
