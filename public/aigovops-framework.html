@@ -281,6 +281,14 @@
     gap: 10px;
     margin-bottom: 24px;
   }
+  .adventure-card.featured {
+    grid-column: 1 / -1;
+    border-color: var(--teal);
+    background: linear-gradient(135deg, var(--teal-light) 0%, var(--white) 100%);
+  }
+  .adventure-card.featured h4 {
+    font-size: 14px;
+  }
   .adventure-card {
     display: flex;
     align-items: center;
@@ -512,12 +520,20 @@
     <!-- Choose Your Adventure -->
     <div class="section-label">Explore the Framework</div>
     <div class="adventure">
+      <a href="https://bobrapp.github.io/openclaw-installer/app/" target="_blank" class="adventure-card featured">
+        <div class="adventure-icon teal">🚀</div>
+        <div>
+          <h4>Full App Experience</h4>
+          <div class="adventure-desc">Complete platform: marketplace, 15-language UI, hosting deals, comparison tool, community patterns & foundation page.</div>
+          <span class="adventure-tag tag-app">Web App · All Features</span>
+        </div>
+      </a>
       <a href="https://bobrapp.github.io/openclaw-installer/" target="_blank" class="adventure-card">
         <div class="adventure-icon teal">🧙</div>
         <div>
-          <h4>Interactive Wizard</h4>
-          <div class="adventure-desc">7-step guided installer with dry-run preflight and SHA-256 audit chain. Works offline.</div>
-          <span class="adventure-tag tag-html">HTML · No Install</span>
+          <h4>Standalone Wizard</h4>
+          <div class="adventure-desc">7-step guided installer with dry-run preflight and SHA-256 audit chain. Works offline, zero dependencies.</div>
+          <span class="adventure-tag tag-html">HTML · Offline</span>
         </div>
       </a>
       <a href="https://bobrapp.github.io/openclaw-installer/openclaw-showcase.pdf" target="_blank" class="adventure-card">

@@ -22,22 +22,44 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build full app
+        run: |
+          npm ci
+          npm run build
+
       - name: Prepare Pages artifact
         run: |
-          mkdir -p _site
-          # Copy standalone wizard as the index page
+          mkdir -p _site/app
+
+          # ── Root: standalone wizard as landing page ──
           cp public/aigovops-wizard.html _site/index.html
-          # Copy conference handout
+
+          # ── Conference handout ──
           cp public/aigovops-framework.html _site/aigovops-framework.html
-          # Copy PDFs
+
+          # ── PDFs ──
           cp public/openclaw-showcase.pdf _site/openclaw-showcase.pdf 2>/dev/null || true
           cp public/aigovops-compliance-report-v1.pdf _site/aigovops-compliance-report-v1.pdf 2>/dev/null || true
-          # Copy any versioned wizard artifacts
+
+          # ── Full React app under /app/ ──
+          cp dist/public/index.html _site/app/index.html
+          cp -r dist/public/assets _site/app/assets
+          cp public/aigovops-wizard.html _site/app/aigovops-wizard.html 2>/dev/null || true
+
+          # ── Versioned wizard artifacts ──
           cp -f aigovops-wizard-v*.html _site/ 2>/dev/null || true
-          # Include README as reference
+
+          # ── README ──
           cp README.md _site/ 2>/dev/null || true
+
           echo "=== Pages artifact contents ==="
-          ls -lh _site/
+          find _site -type f | head -40
+          du -sh _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
