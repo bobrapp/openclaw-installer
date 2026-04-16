@@ -9,6 +9,9 @@ import {
   useContext,
   useState,
   useCallback,
+  useMemo,
+  useRef,
+  useEffect,
   type ReactNode,
 } from "react";
 import enTranslations from "@/locales/en.json";
@@ -241,23 +244,34 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<LangCode>("en");
   const [t, setT] = useState<Translations>(enTranslations as Translations);
   const [loading, setLoading] = useState(false);
+  const reqId = useRef(0);
 
   const setLang = useCallback((code: LangCode) => {
+    const id = ++reqId.current;
     setLoading(true);
     loadLanguage(code).then((translations) => {
+      if (id !== reqId.current) return; // Stale — ignore
       setT(translations);
       setLangState(code);
-      const meta = languages.find((l) => l.code === code) || languages[0];
-      document.documentElement.dir = meta.dir;
-      document.documentElement.lang = code === "brl" ? "en" : code;
       setLoading(false);
     });
   }, []);
 
+  // Sync dir/lang on mount and on every lang change
+  useEffect(() => {
+    const meta = languages.find((l) => l.code === lang) || languages[0];
+    document.documentElement.dir = meta.dir;
+    document.documentElement.lang = lang === "brl" ? "en" : lang;
+  }, [lang]);
+
   const meta = languages.find((l) => l.code === lang) || languages[0];
 
+  const contextValue = useMemo(() => ({
+    lang, setLang, t, dir: meta.dir as "ltr" | "rtl", langMeta: meta, loading
+  }), [lang, setLang, t, meta, loading]);
+
   return (
-    <I18nContext.Provider value={{ lang, setLang, t, dir: meta.dir, langMeta: meta, loading }}>
+    <I18nContext.Provider value={contextValue}>
       {children}
     </I18nContext.Provider>
   );

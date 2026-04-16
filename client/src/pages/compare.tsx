@@ -431,6 +431,8 @@ export default function Compare() {
                     key={f.id}
                     data-testid={`button-toggle-${f.id}`}
                     onClick={() => toggleFramework(f.id)}
+                    aria-pressed={selectedFrameworks.includes(f.id)}
+                    aria-label={`${selectedFrameworks.includes(f.id) ? "Deselect" : "Select"} ${f.name}`}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                       selectedFrameworks.includes(f.id)
                         ? "border-primary bg-primary/10 text-foreground"
@@ -454,6 +456,8 @@ export default function Compare() {
                     key={f.id}
                     data-testid={`button-toggle-${f.id}`}
                     onClick={() => toggleFramework(f.id)}
+                    aria-pressed={selectedFrameworks.includes(f.id)}
+                    aria-label={`${selectedFrameworks.includes(f.id) ? "Deselect" : "Select"} ${f.name}`}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                       selectedFrameworks.includes(f.id)
                         ? "border-primary bg-primary/10 text-foreground"
@@ -626,6 +630,8 @@ export default function Compare() {
                   <button
                     data-testid={`button-expand-${f.id}`}
                     onClick={() => setExpandedCard(isExpanded ? null : f.id)}
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? `Collapse ${f.name} details` : `Expand ${f.name} details`}
                     className="p-1 rounded-md hover:bg-accent transition-colors"
                   >
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

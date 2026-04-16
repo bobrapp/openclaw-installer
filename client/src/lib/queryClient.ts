@@ -12,8 +12,9 @@ async function throwIfResNotOk(res: Response) {
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown | undefined,
+  data?: unknown,
   extraHeaders?: Record<string, string>,
+  signal?: AbortSignal,
 ): Promise<Response> {
   const headers: Record<string, string> = { ...(extraHeaders || {}) };
   if (data) headers["Content-Type"] = "application/json";
@@ -22,6 +23,7 @@ export async function apiRequest(
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
+    signal,
   });
 
   await throwIfResNotOk(res);
@@ -33,15 +35,16 @@ export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const res = await fetch(`${API_BASE}${queryKey.join("/")}`);
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+  async ({ queryKey, signal }) => {
+    try {
+      const res = await apiRequest("GET", String(queryKey[0]), undefined, undefined, signal);
+      return await res.json();
+    } catch (err: unknown) {
+      if (unauthorizedBehavior === "returnNull" && err instanceof Error && err.message.startsWith("401")) {
+        return null;
+      }
+      throw err;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({

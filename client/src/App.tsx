@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import React, { Suspense, lazy } from "react";
 import { Switch, Route, Router } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import { queryClient } from "./lib/queryClient";
@@ -12,10 +12,18 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { I18nProvider } from "@/lib/i18n";
 import { LanguagePicker } from "@/components/language-picker";
+import { OwnerAuthProvider } from "@/lib/owner-auth";
 
-/* Build-time data validation (dev only — tree-shaken in prod) */
-import "@/data/validate-data";
+if (import.meta.env.DEV) {
+  import("@/data/validate-data");
+}
 import { allRoutes } from "@/lib/routes";
+
+/* ─── Precomputed lazy page components (hoisted to module scope) ─── */
+const lazyPages: Record<string, React.LazyExoticComponent<React.ComponentType>> = {};
+allRoutes.forEach((route) => {
+  lazyPages[route.path] = lazy(route.lazy);
+});
 
 /* ─── Lazy-loaded ambient effects ─── */
 const AmbientBackground = lazy(() =>
@@ -39,23 +47,18 @@ function PageLoader() {
 
 function AppRouter() {
   return (
-    <ErrorBoundary>
-      <Suspense fallback={<PageLoader />}>
-        <Switch>
-          {allRoutes.map((route) => {
-            const PageComponent = lazy(route.lazy);
-            return (
-              <Route
-                key={route.path}
-                path={route.path}
-                component={PageComponent}
-              />
-            );
-          })}
-          <Route component={NotFound} />
-        </Switch>
-      </Suspense>
-    </ErrorBoundary>
+    <Switch>
+      {allRoutes.map((route) => (
+        <Route key={route.path} path={route.path}>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              {React.createElement(lazyPages[route.path])}
+            </Suspense>
+          </ErrorBoundary>
+        </Route>
+      ))}
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
@@ -68,6 +71,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <I18nProvider>
+        <OwnerAuthProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <Router hook={useHashLocation}>
@@ -105,6 +109,7 @@ export default function App() {
             <Toaster />
           </TooltipProvider>
         </QueryClientProvider>
+        </OwnerAuthProvider>
       </I18nProvider>
     </ThemeProvider>
   );

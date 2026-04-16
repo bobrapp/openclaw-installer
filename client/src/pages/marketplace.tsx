@@ -4,6 +4,7 @@
  * Uses shared ConfigCard, centralized icon-map, useCopyToClipboard, and full i18n.
  */
 import { useState, useMemo } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounce";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -278,10 +279,11 @@ export default function Marketplace() {
   const [activeCategory, setActiveCategory] = useState<SkillCategory | "all">("all");
   const { t } = useI18n();
   const skillCategories = getSkillCategories();
+  const debouncedSearch = useDebouncedValue(searchQuery, 200);
 
   const filtered = useMemo(
-    () => getSkills({ category: activeCategory, search: searchQuery }),
-    [searchQuery, activeCategory]
+    () => getSkills({ category: activeCategory, search: debouncedSearch }),
+    [debouncedSearch, activeCategory]
   );
 
   const categoryFilters = useMemo(() => {
@@ -352,7 +354,7 @@ export default function Marketplace() {
 
       {/* Skill grid — by category or flat if filtered */}
       <div aria-live="polite" aria-atomic="false">
-        {activeCategory === "all" && searchQuery === "" ? (
+        {activeCategory === "all" && debouncedSearch === "" ? (
           skillCategories.map((cat) => (
             <CategorySection
               key={cat.id}

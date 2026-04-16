@@ -12,6 +12,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
+import { hostLabel } from "@/lib/host-utils";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
 interface HardeningCheck {
   id: number;
@@ -28,6 +30,7 @@ export default function Hardening() {
   const params = useParams<{ hostTarget: string }>();
   const hostTarget = params.hostTarget || "macos";
   const { toast } = useToast();
+  const { copy } = useCopyToClipboard();
 
   const { data: checks, isLoading } = useQuery<HardeningCheck[]>({
     queryKey: [`/api/hardening/${hostTarget}`],
@@ -59,20 +62,9 @@ export default function Hardening() {
     }
   };
 
-  const hostLabel = (h: string) => {
-    switch (h) {
-      case "macos": return "macOS";
-      case "digitalocean": return "DigitalOcean";
-      case "azure": return "Azure VM";
-      case "generic-vps": return "Generic VPS";
-      default: return h;
-    }
-  };
-
   const copyCommand = (cmd: string) => {
-    navigator.clipboard.writeText(cmd).then(() => {
-      toast({ title: "Copied", description: "Command copied to clipboard." });
-    });
+    copy(cmd);
+    toast({ title: "Copied", description: "Command copied to clipboard." });
   };
 
   if (isLoading) {

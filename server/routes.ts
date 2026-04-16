@@ -307,7 +307,7 @@ export function registerRoutes(server: Server, app: Express) {
       try { if (fs.existsSync(tmpPdf)) fs.unlinkSync(tmpPdf); } catch (_) {}
       if (!res.headersSent) {
         // Don't leak internal paths or Python tracebacks to clients
-        console.error("PDF generation failed:", err instanceof Error ? err.message : err);
+        console.error('[/api/audit/export-pdf]', err instanceof Error ? err.message : err);
         res.status(500).json({ error: "PDF generation failed" });
       }
     }
@@ -323,8 +323,15 @@ export function registerRoutes(server: Server, app: Express) {
     }
   });
 
+  // ─── Release cache (5-min TTL) ──────────────────────────────────────
+  let releasesCache: { data: unknown; expires: number } | null = null;
+  const RELEASES_CACHE_TTL_MS = 5 * 60_000;
+
   // === RELEASE DASHBOARD — GitHub release data, SBOM diffs, governance health ===
   app.get("/api/releases", async (_req, res) => {
+    if (releasesCache && Date.now() < releasesCache.expires) {
+      return res.json(releasesCache.data);
+    }
     const OWNER = "bobrapp";
     const REPO = "openclaw-installer";
     const apiBase = `https://api.github.com/repos/${OWNER}/${REPO}`;
@@ -417,7 +424,8 @@ export function registerRoutes(server: Server, app: Express) {
               description: gf.description,
               url: r2.ok ? `https://github.com/${OWNER}/${REPO}/blob/master/${gf.path}` : undefined,
             };
-          } catch {
+          } catch (err) {
+            console.error('[/api/releases governance]', err instanceof Error ? err.message : err);
             return { name: gf.name, status: "missing" as const, description: gf.description };
           }
         })
@@ -432,7 +440,8 @@ export function registerRoutes(server: Server, app: Express) {
           description: "Prevent force-push and require reviews",
           url: bpRes.ok ? `https://github.com/${OWNER}/${REPO}/settings/branches` : undefined,
         });
-      } catch {
+      } catch (err) {
+        console.error('[/api/releases branch-protection]', err instanceof Error ? err.message : err);
         govChecks.push({ name: "Branch protection", status: "missing", description: "Prevent force-push and require reviews" });
       }
 
@@ -446,13 +455,16 @@ export function registerRoutes(server: Server, app: Express) {
           description: "Prevent tag deletion (v* pattern)",
           url: `https://github.com/${OWNER}/${REPO}/settings/tag_protection`,
         });
-      } catch {
+      } catch (err) {
+        console.error('[/api/releases tag-protection]', err instanceof Error ? err.message : err);
         govChecks.push({ name: "Tag protection", status: "missing", description: "Prevent tag deletion (v* pattern)" });
       }
 
-      res.json({ releases, governance: govChecks });
+      const responsePayload = { releases, governance: govChecks };
+      releasesCache = { data: responsePayload, expires: Date.now() + RELEASES_CACHE_TTL_MS };
+      res.json(responsePayload);
     } catch (err: unknown) {
-      console.error("Release data fetch failed:", err instanceof Error ? err.message : err);
+      console.error('[/api/releases]', err instanceof Error ? err.message : err);
       res.status(502).json({ error: "Failed to fetch release data from GitHub" });
     }
   });

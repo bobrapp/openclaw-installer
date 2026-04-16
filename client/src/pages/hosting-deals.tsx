@@ -21,6 +21,7 @@ import {
   CloudUpload,
 } from "lucide-react";
 import { useState } from "react";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
 interface HostingDeal {
   name: string;
@@ -196,16 +197,12 @@ const ONE_LINER_SCRIPT = `curl -fsSL https://raw.githubusercontent.com/bobrapp/o
 
 const CLOUD_INIT_URL = "https://raw.githubusercontent.com/bobrapp/openclaw-installer/master/deploy/cloud-init.yaml";
 
-function CopyButton({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+function CopyButton({ code, label }: { code: string; label?: string }) {
+  const { copy, copied } = useCopyToClipboard();
   return (
     <button
-      onClick={handleCopy}
+      onClick={() => copy(code)}
+      aria-label={copied ? `Copied${label ? " " + label : ""}` : `Copy${label ? " " + label : ""}`}
       className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
       data-testid="button-copy-coupon"
     >

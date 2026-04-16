@@ -4,23 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Laptop, Cloud, Server, Terminal, ArrowRight, Shield, FileCode2 } from "lucide-react";
+import { ArrowRight, Shield, FileCode2, Terminal } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-
-const iconMap: Record<string, typeof Laptop> = {
-  laptop: Laptop,
-  cloud: Cloud,
-  server: Server,
-  terminal: Terminal,
-};
-
-interface HostConfig {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-  steps: string[];
-}
+import { resolveHostIcon } from "@/lib/host-utils";
+import type { HostConfig } from "@/lib/host-utils";
 
 export default function Home() {
   const { t } = useI18n();
@@ -82,7 +69,7 @@ export default function Home() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {hosts?.map((host) => {
-            const Icon = iconMap[host.icon] || Terminal;
+            const Icon = resolveHostIcon(host.icon);
             return (
               <Card key={host.id} className="group hover:border-primary/40 transition-colors" data-testid={`card-host-${host.id}`}>
                 <CardHeader className="pb-3">

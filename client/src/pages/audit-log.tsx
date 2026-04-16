@@ -21,6 +21,7 @@ import {
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useI18n } from "@/lib/i18n";
+import { useOwnerAuth } from "@/lib/owner-auth";
 
 interface AuditLog {
   id: number;
@@ -35,13 +36,12 @@ interface AuditLog {
 
 export default function AuditLogViewer() {
   const [passphrase, setPassphrase] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showPassphrase, setShowPassphrase] = useState(false);
   const [authError, setAuthError] = useState("");
-  const [storedPassphrase, setStoredPassphrase] = useState("");
   const [setupPassphrase, setSetupPassphrase] = useState("");
   const [showHashes, setShowHashes] = useState(false);
   const { lang } = useI18n();
+  const { passphrase: storedPassphrase, setPassphrase: storePassphrase, clearPassphrase, isAuthenticated } = useOwnerAuth();
 
   // Check if owner passphrase has been set
   const { data: ownerStatus, isLoading: isCheckingOwner } = useQuery<{ hasPassphrase: boolean }>({
@@ -65,8 +65,7 @@ export default function AuditLogViewer() {
     },
     onSuccess: (data: { valid: boolean }) => {
       if (data.valid) {
-        setIsAuthenticated(true);
-        setStoredPassphrase(passphrase);
+        storePassphrase(passphrase);
         setAuthError("");
       } else {
         setAuthError("Invalid passphrase");
@@ -80,7 +79,7 @@ export default function AuditLogViewer() {
     enabled: isAuthenticated,
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/audit/logs", undefined, {
-        "x-owner-passphrase": storedPassphrase,
+        "x-owner-passphrase": storedPassphrase || "",
       });
       return res.json();
     },
@@ -92,7 +91,7 @@ export default function AuditLogViewer() {
     enabled: false,
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/audit/verify", undefined, {
-        "x-owner-passphrase": storedPassphrase,
+        "x-owner-passphrase": storedPassphrase || "",
       });
       return res.json();
     },
@@ -111,8 +110,7 @@ export default function AuditLogViewer() {
   };
 
   const lockAndExit = () => {
-    setIsAuthenticated(false);
-    setStoredPassphrase("");
+    clearPassphrase();
     setPassphrase("");
     queryClient.removeQueries({ queryKey: ["/api/audit/logs"] });
     queryClient.removeQueries({ queryKey: ["/api/audit/verify"] });
@@ -198,6 +196,7 @@ export default function AuditLogViewer() {
                   type="button"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   onClick={() => setShowPassphrase(!showPassphrase)}
+                  aria-label={showPassphrase ? "Hide passphrase" : "Show passphrase"}
                 >
                   {showPassphrase ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -242,6 +241,8 @@ export default function AuditLogViewer() {
             size="sm"
             variant="outline"
             onClick={() => setShowHashes(!showHashes)}
+            aria-pressed={showHashes}
+            aria-label={showHashes ? "Hide hash values" : "Show hash values"}
             data-testid="button-toggle-hashes"
           >
             <Hash className="h-3 w-3 mr-1" />
@@ -251,6 +252,7 @@ export default function AuditLogViewer() {
             size="sm"
             variant="outline"
             onClick={() => verifyChain()}
+            aria-label="Verify chain integrity"
             data-testid="button-verify-chain"
           >
             <ShieldCheck className="h-3 w-3 mr-1" />
@@ -275,6 +277,7 @@ export default function AuditLogViewer() {
                 console.error("PDF export failed", e);
               }
             }}
+            aria-label="Export audit log as PDF"
             data-testid="button-export-pdf"
           >
             <FileDown className="h-3 w-3 mr-1" />
@@ -284,6 +287,7 @@ export default function AuditLogViewer() {
             size="sm"
             variant="outline"
             onClick={() => refetchLogs()}
+            aria-label="Refresh audit log"
             data-testid="button-refresh-audit"
           >
             <RefreshCw className="h-3 w-3 mr-1" />
@@ -293,6 +297,7 @@ export default function AuditLogViewer() {
             size="sm"
             variant="destructive"
             onClick={lockAndExit}
+            aria-label="Lock and exit audit log viewer"
             data-testid="button-lock-audit"
           >
             <Lock className="h-3 w-3 mr-1" />

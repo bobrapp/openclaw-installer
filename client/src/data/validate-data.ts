@@ -25,7 +25,7 @@ const SkillSchema = z.object({
   id: z.string().min(1, "Skill id is required"),
   name: z.string().min(1, "Skill name is required"),
   provider: z.string().min(1, "Skill provider is required"),
-  category: z.enum(["connections", "ai-providers", "community", "devops", "data", "communication"]),
+  category: z.enum(["connections", "ai-providers", "community", "devops", "data"]),
   icon: z.string().min(1, "Skill icon name is required"),
   description: z.string().min(10, "Skill description too short"),
   mcpEndpoint: z.string().startsWith("mcp://", "MCP endpoint must start with mcp://"),

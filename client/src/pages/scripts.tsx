@@ -7,17 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileCode2, Copy, Download, Shield, Undo2, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-
-interface ScriptResponse {
-  script: string;
-  hostTarget: string;
-}
+import { hostLabel } from "@/lib/host-utils";
+import type { ScriptResponse } from "@/lib/host-utils";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 
 export default function Scripts() {
   const params = useParams<{ hostTarget: string }>();
   const hostTarget = params.hostTarget || "macos";
   const { toast } = useToast();
+  const { copy } = useCopyToClipboard();
 
   const { data: preflight, isLoading: preLoading } = useQuery<ScriptResponse>({
     queryKey: [`/api/scripts/preflight/${hostTarget}`],
@@ -31,10 +29,9 @@ export default function Scripts() {
     queryKey: [`/api/scripts/rollback/${hostTarget}`],
   });
 
-  const copy = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      toast({ title: "Copied", description: "Script copied to clipboard." });
-    });
+  const handleCopy = (text: string) => {
+    copy(text);
+    toast({ title: "Copied", description: "Script copied to clipboard." });
   };
 
   const download = (content: string, filename: string) => {
@@ -45,16 +42,6 @@ export default function Scripts() {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  const hostLabel = (h: string) => {
-    switch (h) {
-      case "macos": return "macOS";
-      case "digitalocean": return "DigitalOcean";
-      case "azure": return "Azure VM";
-      case "generic-vps": return "Generic VPS";
-      default: return h;
-    }
   };
 
   const isLoading = preLoading || instLoading || rollLoading;
@@ -113,7 +100,7 @@ export default function Scripts() {
                   <pre className="text-xs leading-relaxed"><code>{preflight?.script}</code></pre>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => copy(preflight?.script || "")} data-testid="button-copy-preflight">
+                  <Button size="sm" variant="outline" onClick={() => handleCopy(preflight?.script || "")} data-testid="button-copy-preflight">
                     <Copy className="h-3 w-3 mr-1" />
                     Copy
                   </Button>
@@ -144,7 +131,7 @@ export default function Scripts() {
                   <pre className="text-xs leading-relaxed"><code>{install?.script}</code></pre>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => copy(install?.script || "")} data-testid="button-copy-install">
+                  <Button size="sm" variant="outline" onClick={() => handleCopy(install?.script || "")} data-testid="button-copy-install">
                     <Copy className="h-3 w-3 mr-1" />
                     Copy
                   </Button>
@@ -175,7 +162,7 @@ export default function Scripts() {
                   <pre className="text-xs leading-relaxed"><code>{rollback?.script}</code></pre>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={() => copy(rollback?.script || "")} data-testid="button-copy-rollback">
+                  <Button size="sm" variant="outline" onClick={() => handleCopy(rollback?.script || "")} data-testid="button-copy-rollback">
                     <Copy className="h-3 w-3 mr-1" />
                     Copy
                   </Button>

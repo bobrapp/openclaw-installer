@@ -10,8 +10,7 @@ export type SkillCategory =
   | "ai-providers"
   | "community"
   | "devops"
-  | "data"
-  | "communication";
+  | "data";
 
 export interface MarketplaceSkill {
   id: string;

@@ -209,6 +209,8 @@ function SbomDiffDetail({ diff }: { diff: SbomDiff }) {
           <div key={s.key}>
             <button
               onClick={() => toggle(s.key)}
+              aria-expanded={expanded === s.key}
+              aria-label={expanded === s.key ? `Collapse ${s.label} list` : `Expand ${s.label} list`}
               className={`flex items-center gap-1.5 text-xs font-medium ${s.color} hover:underline`}
               data-testid={`button-expand-${s.key}`}
             >

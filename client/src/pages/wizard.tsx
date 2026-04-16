@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Circle, Loader2, ArrowRight, ArrowLeft, Copy, Download, Play, Eye, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 // Note: apiRequest signature is (method, url, data) for mutations
 // For GET queries, rely on the default queryFn
 
@@ -33,6 +34,7 @@ export default function Wizard() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [mode, setMode] = useState<"preview" | "execute">("preview");
   const { toast } = useToast();
+  const { copy } = useCopyToClipboard();
 
   const { data: hosts } = useQuery<HostConfig[]>({
     queryKey: ["/api/hosts"],
@@ -54,11 +56,8 @@ export default function Wizard() {
   const steps = host?.steps || ["Environment Check", "Dependencies", "Permissions", "Configuration", "Install", "Verify"];
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      toast({ title: "Copied to clipboard", description: "Script copied. Paste into your terminal to run." });
-    }).catch(() => {
-      toast({ title: "Copy failed", description: "Select and copy the script manually.", variant: "destructive" });
-    });
+    copy(text);
+    toast({ title: "Copied to clipboard", description: "Script copied. Paste into your terminal to run." });
   };
 
   const downloadScript = (content: string, filename: string) => {
@@ -246,6 +245,7 @@ export default function Wizard() {
                       size="sm"
                       variant="outline"
                       onClick={() => setCurrentStep(currentStep - 1)}
+                      aria-label={`Go to previous step: ${steps[currentStep - 1]}`}
                       data-testid="button-prev-step"
                     >
                       <ArrowLeft className="h-3 w-3 mr-1" />
@@ -255,6 +255,7 @@ export default function Wizard() {
                   <Button
                     size="sm"
                     onClick={markStepComplete}
+                    aria-label={currentStep < steps.length - 1 ? `Mark step ${currentStep + 1} complete and go to next` : "Finish installation"}
                     data-testid="button-next-step"
                   >
                     {currentStep < steps.length - 1 ? (

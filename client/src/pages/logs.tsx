@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollText, Trash2, RefreshCw } from "lucide-react";
+import { ScrollText, Archive, RefreshCw } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 
@@ -22,8 +22,8 @@ export default function Logs() {
     queryKey: ["/api/logs"],
   });
 
-  const clearMutation = useMutation({
-    mutationFn: () => apiRequest("DELETE", "/api/logs"),
+  const archiveMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/logs/archive"),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/logs"] });
     },
@@ -69,12 +69,13 @@ export default function Logs() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => clearMutation.mutate()}
-            disabled={clearMutation.isPending}
-            data-testid="button-clear-logs"
+            onClick={() => archiveMutation.mutate()}
+            disabled={archiveMutation.isPending}
+            data-testid="button-archive-logs"
+            aria-label="Archive log entries"
           >
-            <Trash2 className="h-3 w-3 mr-1" />
-            Clear
+            <Archive className="h-3 w-3 me-1" />
+            Archive
           </Button>
         </div>
       </div>

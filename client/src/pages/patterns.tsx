@@ -4,6 +4,7 @@
  * Organized by category with section headers
  */
 import { useState, useMemo } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounce";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,23 +23,10 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { resolveIcon } from "@/lib/icon-map";
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
-import { getPatternConfig } from "@/data/config-loader";
 import { PageHero } from "@/components/page-hero";
 import { PageFooter } from "@/components/page-footer";
-import { communityPatterns } from "@/data/community-patterns";
-
-/* ─── Types ─── */
-interface Pattern {
-  id: string;
-  name: string;
-  tagline: string;
-  icon: string;
-  color: string;
-  audience: string;
-  description: string;
-  whyItMatters: string;
-  config: string;
-}
+import { allPatterns, type PatternEntry } from "@/lib/data-access";
+type Pattern = PatternEntry;
 
 interface PatternCategory {
   id: string;
@@ -48,89 +36,8 @@ interface PatternCategory {
   patterns: Pattern[];
 }
 
-/* ─────────────────────────────────────────────────────────────────────
- * CATEGORY 0: Core Patterns (original 6)
- * ───────────────────────────────────────────────────────────────────── */
-const corePatterns: Pattern[] = [
-  {
-    id: "greeter",
-    name: "The Greeter",
-    tagline: "Every interaction starts with warmth",
-    icon: "HandHeart",
-    color: "text-teal-500",
-    audience: "Customer-facing teams, community managers",
-    description:
-      "A conversational agent that welcomes users with genuine warmth, remembers their context, and guides them to what they need without feeling transactional.",
-    whyItMatters:
-      "First impressions set the tone for every relationship. When AI greets people with care, it signals that the humans behind the technology care too.",
-    config: getPatternConfig("greeter"),
-  },
-  {
-    id: "guardian",
-    name: "The Guardian",
-    tagline: "Protecting what matters, transparently",
-    icon: "Shield",
-    color: "text-blue-500",
-    audience: "Security teams, compliance officers, DevOps",
-    description:
-      "A security-focused agent that monitors systems, flags anomalies, and explains risks in plain language — never hiding behind jargon or alarm fatigue.",
-    whyItMatters:
-      "Security should empower, not intimidate. When protection is transparent and understandable, everyone becomes a partner in keeping systems safe.",
-    config: getPatternConfig("guardian"),
-  },
-  {
-    id: "storyteller",
-    name: "The Storyteller",
-    tagline: "Making complexity feel like a story",
-    icon: "BookOpen",
-    color: "text-purple-500",
-    audience: "Technical writers, educators, product teams",
-    description:
-      "An agent that transforms complex technical documentation into engaging narratives, using analogies, progressive disclosure, and a natural reading flow.",
-    whyItMatters:
-      "Knowledge shouldn't be locked behind walls of jargon. When technology tells its own story clearly, more people can participate in shaping it.",
-    config: getPatternConfig("storyteller"),
-  },
-  {
-    id: "teacher",
-    name: "The Teacher",
-    tagline: "Learning at your own pace, with encouragement",
-    icon: "GraduationCap",
-    color: "text-amber-500",
-    audience: "Training programs, onboarding, self-learners",
-    description:
-      "A patient, adaptive learning agent that meets people where they are, celebrates small wins, adjusts difficulty dynamically, and never makes anyone feel behind.",
-    whyItMatters:
-      "Everyone learns differently, at different speeds. When AI adapts to the learner instead of forcing the learner to adapt, education becomes truly accessible.",
-    config: getPatternConfig("teacher"),
-  },
-  {
-    id: "peacekeeper",
-    name: "The Peacekeeper",
-    tagline: "Finding common ground through understanding",
-    icon: "Handshake",
-    color: "text-green-500",
-    audience: "Mediators, community moderators, team leads",
-    description:
-      "A conflict-aware agent that facilitates respectful dialogue, identifies common ground, de-escalates tension, and helps groups find consensus without forcing agreement.",
-    whyItMatters:
-      "The hardest problems are human ones. When AI helps people listen to each other instead of talk past each other, it creates space for real solutions.",
-    config: getPatternConfig("peacekeeper"),
-  },
-  {
-    id: "celebrator",
-    name: "The Celebrator",
-    tagline: "Because every win deserves acknowledgment",
-    icon: "PartyPopper",
-    color: "text-pink-500",
-    audience: "Teams, project managers, community builders",
-    description:
-      "An agent that tracks milestones, celebrates achievements (big and small), maintains a gratitude journal, and helps teams feel the progress they're making.",
-    whyItMatters:
-      "Humans need to feel their progress. When we're buried in to-do lists, it's easy to forget how far we've come. This agent makes sure no win goes unnoticed.",
-    config: getPatternConfig("celebrator"),
-  },
-];
+/* Core patterns are sourced from data-access.ts — no local definition needed */
+
 
 /* ─────────────────────────────────────────────────────────────────────
  * Organize into categories
@@ -187,8 +94,7 @@ const categoryDefs: { id: string; title: string; subtitle: string; icon: string;
   },
 ];
 
-const localAllPatterns: Pattern[] = [...corePatterns, ...communityPatterns as Pattern[]];
-const patternMap = new Map(localAllPatterns.map((p) => [p.id, p]));
+const patternMap = new Map(allPatterns.map((p) => [p.id, p]));
 
 const categories: PatternCategory[] = categoryDefs.map((def) => ({
   id: def.id,
@@ -305,9 +211,10 @@ export default function Patterns() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const { t } = useI18n();
+  const debouncedSearch = useDebouncedValue(searchQuery, 200);
 
   const filteredCategories = useMemo(() => {
-    if (searchQuery === "" && activeCategory === "all") return categories;
+    if (debouncedSearch === "" && activeCategory === "all") return categories;
 
     return categories
       .map((cat) => {
@@ -315,8 +222,8 @@ export default function Patterns() {
           return { ...cat, patterns: [] };
         }
         const filtered = cat.patterns.filter((p) => {
-          if (searchQuery === "") return true;
-          const q = searchQuery.toLowerCase();
+          if (debouncedSearch === "") return true;
+          const q = debouncedSearch.toLowerCase();
           return (
             p.name.toLowerCase().includes(q) ||
             p.description.toLowerCase().includes(q) ||
@@ -327,7 +234,7 @@ export default function Patterns() {
         return { ...cat, patterns: filtered };
       })
       .filter((cat) => cat.patterns.length > 0);
-  }, [searchQuery, activeCategory]);
+  }, [debouncedSearch, activeCategory]);
 
   const totalVisible = filteredCategories.reduce((sum, cat) => sum + cat.patterns.length, 0);
 
@@ -342,7 +249,7 @@ export default function Patterns() {
           { icon: <Globe className="h-3 w-3" aria-hidden="true" />, label: t.patternsOpenSource },
           { icon: <Heart className="h-3 w-3" aria-hidden="true" />, label: t.patternsHumanFirst },
           { icon: <Shield className="h-3 w-3" aria-hidden="true" />, label: t.patternsGovernanceReady },
-          { icon: <Users className="h-3 w-3" aria-hidden="true" />, label: `${localAllPatterns.length} ${t.patternsTotal || "patterns"}` },
+          { icon: <Users className="h-3 w-3" aria-hidden="true" />, label: `${allPatterns.length} ${t.patternsTotal || "patterns"}` },
         ]}
         testId="text-patterns-title"
       />

@@ -11,11 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { useI18n, languages } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { playSound } from "@/lib/sound-engine";
 
 export function LanguagePicker() {
-  const { lang, setLang, t } = useI18n();
+  const { lang, setLang, t, langMeta } = useI18n();
 
   return (
     <DropdownMenu>
@@ -29,8 +29,7 @@ export function LanguagePicker() {
         >
           <Globe className="h-3.5 w-3.5" />
           <span className="text-xs font-medium hidden sm:inline">
-            {languages.find((l) => l.code === lang)?.flag}{" "}
-            {languages.find((l) => l.code === lang)?.nativeName}
+            {langMeta.flag} {langMeta.nativeName}
           </span>
         </Button>
       </DropdownMenuTrigger>

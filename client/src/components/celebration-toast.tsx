@@ -2,7 +2,7 @@
  * CelebrationToast — animated affirming message shown after milestones
  * Fades in, stays briefly, fades out. Non-blocking.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Sparkles } from "lucide-react";
 
 interface CelebrationToastProps {
@@ -13,17 +13,22 @@ interface CelebrationToastProps {
 
 export function CelebrationToast({ message, visible, onDone }: CelebrationToastProps) {
   const [show, setShow] = useState(false);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   useEffect(() => {
-    if (visible) {
-      setShow(true);
-      const timer = setTimeout(() => {
-        setShow(false);
-        setTimeout(onDone, 500); // Wait for fade-out
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [visible, onDone]);
+    if (!visible) return;
+    setShow(true);
+    let innerTimer: ReturnType<typeof setTimeout>;
+    const timer = setTimeout(() => {
+      setShow(false);
+      innerTimer = setTimeout(() => onDoneRef.current(), 500);
+    }, 3000);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(innerTimer);
+    };
+  }, [visible]);
 
   if (!visible && !show) return null;
 

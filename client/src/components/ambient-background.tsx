@@ -113,8 +113,12 @@ function DarkModeParticles() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Only run particles when dark mode is active
+    if (!document.documentElement.classList.contains("dark")) return;
+
     let w = (canvas.width = window.innerWidth);
     let h = (canvas.height = window.innerHeight);
+    let running = true;
 
     const particles: { x: number; y: number; vx: number; vy: number; size: number; alpha: number; hue: number }[] = [];
     const count = 50;
@@ -132,6 +136,10 @@ function DarkModeParticles() {
     }
 
     const animate = () => {
+      if (!running || document.hidden) {
+        animRef.current = requestAnimationFrame(animate);
+        return;
+      }
       ctx.clearRect(0, 0, w, h);
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
@@ -173,19 +181,47 @@ function DarkModeParticles() {
       animRef.current = requestAnimationFrame(animate);
     };
 
+    // Debounced resize handler (150ms)
+    let resizeTimer: ReturnType<typeof setTimeout>;
     const onResize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }, 150);
     };
+
+    // Pause on visibility change
+    const onVisibilityChange = () => {
+      // animate() already checks document.hidden — no extra action needed
+    };
+
+    // MutationObserver to detect theme toggle (class changes on <html>)
+    const observer = new MutationObserver(() => {
+      if (!document.documentElement.classList.contains("dark")) {
+        running = false;
+        cancelAnimationFrame(animRef.current);
+        ctx.clearRect(0, 0, w, h);
+      } else if (!running) {
+        running = true;
+        animate();
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
     window.addEventListener("mousemove", handleMouse);
     window.addEventListener("resize", onResize);
+    document.addEventListener("visibilitychange", onVisibilityChange);
     animate();
 
     return () => {
+      running = false;
       cancelAnimationFrame(animRef.current);
+      clearTimeout(resizeTimer);
       window.removeEventListener("mousemove", handleMouse);
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      observer.disconnect();
     };
   }, [handleMouse]);
 
