@@ -1,8 +1,8 @@
-# OpenClaw Installer — API Reference
+# OpenClaw Guided Install — API Reference
 
 ## Overview
 
-OpenClaw Installer exposes a REST API served by an Express.js backend (default port `5000`). All endpoints return JSON unless otherwise noted. Shell-script endpoints return `text/plain` and the SSE preflight stream returns `text/event-stream`.
+OpenClaw Guided Install exposes a REST API served by an Express.js backend (default port `5000`). All endpoints return JSON unless otherwise noted. Shell-script endpoints return `text/plain` and the SSE preflight stream returns `text/event-stream`.
 
 ### Base URL
 
@@ -633,7 +633,7 @@ All error responses use a consistent envelope:
 
 ## Authentication
 
-OpenClaw Installer uses a **single-owner passphrase** model. There are no user accounts or session tokens — one passphrase controls all write access.
+OpenClaw Guided Install uses a **single-owner passphrase** model. There are no user accounts or session tokens — one passphrase controls all write access.
 
 ### Setting the passphrase (first run)
 

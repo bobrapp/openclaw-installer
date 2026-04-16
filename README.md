@@ -1,6 +1,6 @@
-# OpenClaw Installer
+# OpenClaw Guided Install by AiGovOps
 
-A guided macOS/cloud installer for **OpenClaw/Clawdbot/Moltbot** that checks permissions, missing dependencies, low-privilege constraints, logging, and rollback steps before it changes anything. Packaged as a web UI plus shell scripts, with a production-hardening checklist and observability defaults.
+A guided macOS/cloud installer for **OpenClaw** that checks permissions, missing dependencies, low-privilege constraints, logging, and rollback steps before it changes anything. Packaged as a web UI plus shell scripts, with a production-hardening checklist and observability defaults.
 
 Built with **AiGovOps Foundation** immutable logging — every action is cryptographically secured in a SHA-256 hash chain.
 
@@ -247,7 +247,7 @@ This project implements standards from the [AiGovOps Foundation](https://www.aig
 
 ### April 2026 v1.0 — AiGovOps Foundation Framework Release
 
-This release establishes OpenClaw Installer as the reference implementation for the AiGovOps Foundation's Governance-as-Code standard.
+This release establishes OpenClaw Guided Install as the reference implementation for the AiGovOps Foundation's Governance-as-Code standard.
 
 #### Core Platform
 - **15-language internationalization** — English, French, German, Simplified Chinese, Portuguese, Hindi, Spanish, Arabic, Russian, Turkish, Urdu, Pashto, Swahili, Cherokee, and Braille display mode
@@ -348,7 +348,7 @@ Both workflows support `workflow_dispatch` for manual runs with configurable ser
 
 ## Authentication
 
-OpenClaw Installer uses a **single-owner passphrase** model. There are no user accounts or session tokens — one passphrase gates all write and sensitive-read access.
+OpenClaw Guided Install uses a **single-owner passphrase** model. There are no user accounts or session tokens — one passphrase gates all write and sensitive-read access.
 
 ### How it works
 

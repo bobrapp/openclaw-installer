@@ -1,4 +1,4 @@
-# OpenClaw Installer — End-to-End Review
+# OpenClaw Guided Install — End-to-End Review
 
 **Analytical Angle: Enterprise-Grade Governance & Immutable Audit Constraints**
 While the project excels at reducing the friction of deploying AI agents, its claim to "immutable audit logging" and "AiGovOps Foundation standard" requires rigorous scrutiny. My review focuses heavily on the integrity of these claims, security posture, and the operational reality of running a "hardened" node in production.

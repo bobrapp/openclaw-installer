@@ -1,6 +1,6 @@
 # AiGovOps Foundation Framework — v1.0.0 (April 2026)
 
-The inaugural release of the **OpenClaw Installer** — a guided macOS/cloud installer with AiGovOps immutable audit logging, production hardening, and compliance tooling.
+The inaugural release of the **OpenClaw Guided Install** — a guided macOS/cloud installer with AiGovOps immutable audit logging, production hardening, and compliance tooling.
 
 ## Highlights
 
@@ -20,8 +20,8 @@ The inaugural release of the **OpenClaw Installer** — a guided macOS/cloud ins
 ## Changelog
 
 ### Features
-- Complete OpenClaw Installer: wizard UI, shell scripts, hardening checklist, multi-host deploy (`95a6686`)
-- OpenClaw Installer v1.0 — Guided macOS/cloud installer with AiGovOps immutable logging (`b14b046`)
+- Complete OpenClaw Guided Install: wizard UI, shell scripts, hardening checklist, multi-host deploy (`95a6686`)
+- OpenClaw Guided Install v1.0 — Guided macOS/cloud installer with AiGovOps immutable logging (`b14b046`)
 - AiGovOps Foundation Framework v1 — CI pipeline, PDF export, standalone wizard, How I Built This timeline (`2912ab1`)
 
 ### Documentation
@@ -31,7 +31,7 @@ The inaugural release of the **OpenClaw Installer** — a guided macOS/cloud ins
 - PDF hash chain verification — match Node.js genesis hash and column names (`06e5d06`)
 
 ### Initial
-- Initial scaffold: OpenClaw Installer (`cbca34f`)
+- Initial scaffold: OpenClaw Guided Install (`cbca34f`)
 
 ## Artifacts
 

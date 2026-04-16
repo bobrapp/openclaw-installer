@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug to help us improve OpenClaw Installer
+about: Report a bug to help us improve OpenClaw Guided Install
 title: "[BUG] "
 labels: bug
 assignees: bobrapp

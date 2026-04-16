@@ -19,7 +19,7 @@ const timeline: TimelineEntry[] = [
     icon: Lightbulb,
     badge: "Foundation",
     description:
-      "The project started with researching the OpenClaw/Clawdbot/Moltbot setup path and understanding what a guided macOS installer needed. The goal: check permissions, dependencies, low-privilege constraints, logging, and rollback steps before changing anything.",
+      "The project started with researching the OpenClaw setup path and understanding what a guided macOS installer needed. The goal: check permissions, dependencies, low-privilege constraints, logging, and rollback steps before changing anything.",
     details: [
       "Researched 8 AI agent frameworks: OpenClaw, NemoClaw (NVIDIA), Anthropic Computer Use, OpenAI Operator, Browser Use, Agent S2, AutoGen, CrewAI",
       "Defined 4 host targets: macOS (Local), DigitalOcean, Azure VM, Generic VPS",
@@ -167,7 +167,7 @@ export default function HowIBuiltThis() {
           </h1>
         </div>
         <p className="text-muted-foreground text-sm max-w-2xl">
-          The complete story of building the OpenClaw Installer — from research through
+          The complete story of building OpenClaw Guided Install — from research through
           the AiGovOps Foundation Framework v1. Every phase, every decision, every lesson.
         </p>
       </div>

@@ -1,6 +1,6 @@
-# Contributing to OpenClaw Installer
+# Contributing to OpenClaw Guided Install
 
-Thank you for your interest in contributing to the OpenClaw Installer. This project is maintained by the [AiGovOps Foundation](https://www.aigovopsfoundation.org/) and welcomes contributions from the community.
+Thank you for your interest in contributing to the OpenClaw Guided Install. This project is maintained by the [AiGovOps Foundation](https://www.aigovopsfoundation.org/) and welcomes contributions from the community.
 
 ## Getting Started
 

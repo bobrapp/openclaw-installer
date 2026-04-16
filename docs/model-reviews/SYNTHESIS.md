@@ -1,6 +1,6 @@
 # Model Council Review — Synthesis
 
-Three frontier AI models independently reviewed the OpenClaw Installer project end-to-end on April 15, 2026. Each model brought a different analytical focus:
+Three frontier AI models independently reviewed the OpenClaw Guided Install project end-to-end on April 15, 2026. Each model brought a different analytical focus:
 
 - **GPT 5.4** — Broad coverage with emphasis on trust boundaries and deployment supply-chain
 - **Claude Opus 4.6** — Deep focus on authentication architecture, audit chain integrity, and deployment pipeline safety

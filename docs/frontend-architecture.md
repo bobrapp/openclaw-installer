@@ -1,6 +1,6 @@
-# OpenClaw Installer — Frontend Architecture
+# OpenClaw Guided Install — Frontend Architecture
 
-> A contributor guide to the OpenClaw Installer frontend.
+> A contributor guide to the OpenClaw Guided Install frontend.
 > Last updated: April 2026
 
 ## Tech Stack

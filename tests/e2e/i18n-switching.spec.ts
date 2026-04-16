@@ -28,7 +28,7 @@ test.describe('i18n — English (default)', () => {
   test('home page shows English content by default', async ({ page }) => {
     await goHome(page);
     const bodyText = await page.locator('body').textContent();
-    // English homeTitle: "OpenClaw / Moltbot Installer"
+    // English homeTitle: "OpenClaw Guided Install"
     expect(bodyText).toMatch(/OpenClaw|Installer/i);
   });
 

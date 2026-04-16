@@ -1,6 +1,6 @@
 # Council Review — GPT-5.4
 
-Below is the next round of improvements I would prioritize for the OpenClaw Installer codebase.
+Below is the next round of improvements I would prioritize for the OpenClaw Guided Install codebase.
 
 ## 1) Route queries should go through `apiRequest` and support cancellation
 - **Files affected:** `client/src/lib/queryClient.ts`

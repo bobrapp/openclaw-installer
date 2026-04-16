@@ -1,5 +1,5 @@
 /**
- * i18n — Internationalization system for OpenClaw Installer
+ * i18n — Internationalization system for OpenClaw Guided Install
  * 15 languages + Braille display mode
  * Uses React Context. No localStorage (sandboxed iframe).
  * Language files are split into per-language JSON in src/locales/.

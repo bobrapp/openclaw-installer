@@ -9,7 +9,7 @@
 
 ## Reporting a Vulnerability
 
-The OpenClaw Installer team takes security seriously. If you discover a security vulnerability, please report it responsibly.
+The OpenClaw Guided Install team takes security seriously. If you discover a security vulnerability, please report it responsibly.
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
@@ -53,7 +53,7 @@ We maintain a security acknowledgments section in our release notes for research
 
 ## Security Best Practices
 
-When deploying OpenClaw Installer:
+When deploying OpenClaw Guided Install:
 
 1. **Set a strong owner passphrase** — minimum 12 characters recommended
 2. **Run behind a reverse proxy** (nginx/Caddy) with TLS

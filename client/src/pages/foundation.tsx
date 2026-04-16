@@ -138,7 +138,7 @@ export default function Foundation() {
 
       {/* License */}
       <div className="text-center mt-6 text-xs text-muted-foreground">
-        <p>OpenClaw Installer \u2014 A work of Bob Rapp and Ken Johnston</p>
+        <p>OpenClaw Guided Install by AiGovOps \u2014 A work of Bob Rapp and Ken Johnston</p>
         <p className="mt-0.5">AiGovOps Foundation \u00a9 {new Date().getFullYear()}</p>
       </div>
     </div>

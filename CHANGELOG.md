@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the OpenClaw Installer project will be documented in this file.
+All notable changes to the OpenClaw Guided Install project will be documented in this file.
 
 ## [v1.1] — 2026-04-16
 

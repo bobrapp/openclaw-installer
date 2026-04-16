@@ -91,7 +91,7 @@ export default function App() {
                             <path d="M2 17l10 5 10-5"/>
                             <path d="M2 12l10 5 10-5"/>
                           </svg>
-                          <span className="font-semibold text-sm tracking-tight">OpenClaw Installer</span>
+                          <span className="font-semibold text-sm tracking-tight">OpenClaw Guided Install</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-1">

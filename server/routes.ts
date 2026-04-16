@@ -476,7 +476,7 @@ function getHostConfigs() {
       id: "macos",
       name: "macOS (Local)",
       icon: "laptop",
-      description: "Install OpenClaw/Moltbot on your Mac with LaunchAgent, Keychain secrets, and local-first operation.",
+      description: "Install OpenClaw on your Mac with LaunchAgent, Keychain secrets, and local-first operation.",
       steps: ["Environment Check", "Dependencies", "Permissions", "Configuration", "Install", "Verify"],
     },
     {
@@ -506,7 +506,7 @@ function getHostConfigs() {
 function generatePreflightScript(hostTarget: string): string {
   const common = `#!/bin/bash
 set -euo pipefail
-# OpenClaw/Moltbot Preflight Check — ${hostTarget}
+# OpenClaw Preflight Check — ${hostTarget}
 # Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # This script checks prerequisites WITHOUT making changes.
 
@@ -805,7 +805,7 @@ exit $FAIL
 function generateInstallScript(hostTarget: string): string {
   const header = `#!/bin/bash
 set -euo pipefail
-# OpenClaw/Moltbot Install — ${hostTarget}
+# OpenClaw Install — ${hostTarget}
 # Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # DRY RUN MODE: Set DRY_RUN=1 to preview without making changes
 
@@ -1134,7 +1134,7 @@ echo "✅ Installation complete — Rollback: $ROLLBACK_LOG"
 function generateRollbackScript(hostTarget: string): string {
   const header = `#!/bin/bash
 set -euo pipefail
-# OpenClaw/Moltbot Rollback — ${hostTarget}
+# OpenClaw Rollback — ${hostTarget}
 # Reverses installation steps in reverse order
 
 echo "═══════════════════════════════════════"

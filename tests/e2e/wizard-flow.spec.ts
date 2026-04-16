@@ -20,8 +20,8 @@ test.describe('Home Page', () => {
     await page.waitForTimeout(1000);
 
     const bodyText = await page.locator('body').textContent();
-    // Should show some form of "OpenClaw" or "Moltbot" or "Installer"
-    expect(bodyText).toMatch(/OpenClaw|Moltbot|Installer/i);
+    // Should show some form of "OpenClaw" or "Guided Install" or "Installer"
+    expect(bodyText).toMatch(/OpenClaw|Guided Install|Installer/i);
   });
 
   test('home page shows feature highlights', async ({ page }) => {

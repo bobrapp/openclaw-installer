@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a feature or improvement for OpenClaw Installer
+about: Suggest a feature or improvement for OpenClaw Guided Install
 title: "[FEATURE] "
 labels: enhancement
 assignees: bobrapp

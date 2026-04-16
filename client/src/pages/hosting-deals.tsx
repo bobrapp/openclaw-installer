@@ -257,7 +257,7 @@ export default function HostingDeals() {
           Hosting Deals for OpenClaw
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Budget-friendly VPS providers vetted for running OpenClaw, Moltbot, and AI governance workloads
+          Budget-friendly VPS providers vetted for running OpenClaw and AI governance workloads
         </p>
       </div>
 

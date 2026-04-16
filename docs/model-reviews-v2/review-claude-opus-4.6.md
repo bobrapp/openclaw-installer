@@ -1,4 +1,4 @@
-# OpenClaw Installer — Council Review (Round 2)
+# OpenClaw Guided Install — Council Review (Round 2)
 
 **Reviewer:** Claude Opus (Senior Frontend Architect)
 **Date:** 2026-04-19

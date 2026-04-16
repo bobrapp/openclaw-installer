@@ -1,4 +1,4 @@
-# OpenClaw Installer — Deep-Dive Review
+# OpenClaw Guided Install — Deep-Dive Review
 
 **Reviewer focus**: Authentication & secrets architecture, immutable audit chain integrity, and deployment pipeline safety. This review prioritizes findings that could lead to data loss, unauthorized access, or silent security regression in production.
 
