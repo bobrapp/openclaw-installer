@@ -697,7 +697,7 @@ body {
         <option value="chr">ᏣᎳᎩ</option>
         <option value="brl">⠃⠗⠇</option>
     </select>
-    <button class="dark-toggle" onclick="toggleTheme()" id="themeBtn">
+    <button class="dark-toggle"  id="themeBtn">
       <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
     </button>
   </div>
@@ -3235,16 +3235,41 @@ async function addAuditEntry(action, result, extra = {}) {
 /* ═══════════════════════════════════════════════════════════════
    THEME
    ═══════════════════════════════════════════════════════════════ */
-function toggleTheme() {
-  const html = document.documentElement;
-  const isDark = html.getAttribute('data-theme') === 'dark';
-  const nowDark = !isDark;
-  html.setAttribute('data-theme', nowDark ? 'dark' : 'light');
-  document.getElementById('themeIcon').textContent = nowDark ? '☀️' : '🌙';
-  const labelEl = document.getElementById('themeLabel');
-  if (labelEl) labelEl.textContent = nowDark ? t('lightMode') : t('darkMode');
-}
-
+      function toggleTheme() {
+        try {
+          const html = document.documentElement;
+          const isDark = html.getAttribute('data-theme') === 'dark';
+          const nowDark = !isDark;
+          html.setAttribute('data-theme', nowDark ? 'dark' : 'light');
+          const iconEl = document.getElementById('themeIcon');
+          if (iconEl) iconEl.textContent = nowDark ? '☀️' : '🌙';
+          const labelEl = document.getElementById('themeLabel');
+          if (labelEl) {
+            try {
+              labelEl.textContent = nowDark ? t('lightMode') : t('darkMode');
+            } catch (e) {
+              labelEl.textContent = nowDark ? 'Light' : 'Dark';
+            }
+          }
+        } catch (err) {
+          console.error('toggleTheme failed:', err);
+        }
+      }
+      // Bind theme toggle via addEventListener for deterministic E2E behavior
+      (function bindThemeToggle() {
+        const attach = () => {
+          const btn = document.getElementById('themeBtn');
+          if (btn && !btn.dataset.bound) {
+            btn.addEventListener('click', toggleTheme);
+            btn.dataset.bound = '1';
+          }
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', attach);
+        } else {
+          attach();
+        }
+      })();
 /* ═══════════════════════════════════════════════════════════════
    HOST DEFAULTS
    ═══════════════════════════════════════════════════════════════ */
