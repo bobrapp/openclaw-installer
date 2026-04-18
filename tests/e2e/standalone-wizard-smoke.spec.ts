@@ -56,10 +56,8 @@ async function clickNext(page: Page) {
 
 /** Select a host target on Step 1 */
 async function selectHost(page: Page, hostKey: string) {
-  // The radio input is hidden (display:none); click the parent label instead
-  const card = page.locator(`label.radio-card`, {
-    has: page.locator(`input[value="${hostKey}"]`),
-  });
+  // Click the host card by data-testid
+  const card = page.locator(`[data-testid="hostCard-${hostKey}"]`);
   await card.click();
   // Verify selection registered — the card gets .selected class
   await expect(card).toHaveClass(/selected/);
@@ -196,8 +194,8 @@ for (const { key, label } of HOST_TARGETS) {
       expect(footerText).toContain('Ken Johnston');
 
       // Verify progress bar is at 100%
-      const fill = page.locator('.progress-fill');
-      const width = await fill.evaluate((el) => el.style.width);
+      const fill = page.locator('[data-testid="progressFill"]');
+      const width = await fill.evaluate((el) => (el as HTMLElement).style.width);
       expect(width).toBe('100%');
 
       // All step bubbles before step 7 should be done
@@ -231,9 +229,7 @@ test('restart wizard resets to Step 1 with macOS default', async ({ page }) => {
   await waitForStep(page, 1);
 
   // Azure should still be selected
-  const azureCard = page.locator('label.radio-card', {
-    has: page.locator('input[value="azure"]'),
-  });
+  const azureCard = page.locator('[data-testid="hostCard-azure"]');
   await expect(azureCard).toHaveClass(/selected/);
 });
 
@@ -246,7 +242,7 @@ test('dark mode toggle works on standalone wizard', async ({ page }) => {
   await expect(html).toHaveAttribute('data-theme', 'light');
 
   // Click dark mode toggle
-  const toggle = page.locator('.dark-toggle');
+  const toggle = page.locator('[data-testid="themeBtn"]');
   await toggle.click();
   await expect(html).toHaveAttribute('data-theme', 'dark');
 

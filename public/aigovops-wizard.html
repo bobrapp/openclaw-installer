@@ -680,7 +680,7 @@ body {
     </div>
   </div>
   <div class="header-controls">
-    <select class="locale-switcher" id="localeSwitcher" onchange="switchLocale(this.value)" aria-label="Language">
+    <select class="locale-switcher" id="localeSwitcher" data-testid="localeSwitcher" aria-label="Language">
         <option value="en">English</option>
         <option value="fr">Français</option>
         <option value="de">Deutsch</option>
@@ -697,7 +697,7 @@ body {
         <option value="chr">ᏣᎳᎩ</option>
         <option value="brl">⠃⠗⠇</option>
     </select>
-    <button class="dark-toggle" onclick="toggleTheme()" id="themeBtn">
+    <button class="dark-toggle" id="themeBtn" data-testid="themeBtn">
       <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
     </button>
   </div>
@@ -711,7 +711,7 @@ body {
     <div class="progress-wrap">
       <div class="progress-steps" id="progressSteps"></div>
       <div class="progress-bar-track">
-        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+        <div class="progress-bar-fill" id="progressFill" data-testid="progressFill" style="width:0%"></div>
       </div>
     </div>
 
@@ -3430,7 +3430,7 @@ function renderStep1() {
 
     <div class="radio-grid" id="hostGrid">
       ${Object.entries(hosts).map(([key, info]) => `
-        <label class="radio-card ${STATE.host === key ? 'selected' : ''}" onclick="selectHost('${key}')">
+        <label class="radio-card ${STATE.host === key ? 'selected' : ''}" data-testid="hostCard-${key}" data-action="select-host" data-host="${key}">
           <input type="radio" name="host" value="${key}" ${STATE.host === key ? 'checked' : ''}>
           <div class="radio-name">
             <span class="radio-check"></span>
@@ -3448,7 +3448,7 @@ function renderStep1() {
 
     <div class="btn-row">
       <span style="font-size:12px;color:var(--muted);">${t('stepXofY', { x: 1, y: STATE.totalSteps })}</span>
-      <button class="btn btn-primary" onclick="goNext()">
+      <button class="btn btn-primary" data-action="go-next" data-testid="stepBtn-1">
         ${t('btnContinue')} <span>${arrow}</span>
       </button>
     </div>
@@ -3461,7 +3461,8 @@ function selectHost(key) {
   // Reset config when host changes
   STATE.config = {};
   document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector(`.radio-card[onclick="selectHost('${key}')"]`).classList.add('selected');
+  const card = document.querySelector(`[data-testid="hostCard-${key}"]`);
+  if (card) card.classList.add('selected');
 }
 
 // STEP 2 — Configuration
@@ -3489,7 +3490,7 @@ function renderStep2() {
     <div class="form-group">
       <label class="form-label">${t('s2InstallDir')}</label>
       <input class="form-input" id="cfg_installDir" type="text" value="${val('installDir')}"
-        oninput="setCfg('installDir', this.value)">
+        data-action="set-cfg" data-cfg-key="installDir">
       <div class="form-hint">${t('s2InstallDirHint')}</div>
       ${isModified('installDir', d) ? `<div class="warn-tag">${t('s2ModifiedTag')}</div>` : ''}
     </div>
@@ -3497,7 +3498,7 @@ function renderStep2() {
     <div class="form-group">
       <label class="form-label">${t('s2ServiceName')}</label>
       <input class="form-input" id="cfg_serviceName" type="text" value="${val('serviceName')}"
-        oninput="setCfg('serviceName', this.value)">
+        data-action="set-cfg" data-cfg-key="serviceName">
       <div class="form-hint">${isMac ? t('s2ServiceHintMac') : t('s2ServiceHintLinux')}</div>
       ${isModified('serviceName', d) ? `<div class="warn-tag">${t('s2ModifiedTag')}</div>` : ''}
     </div>
@@ -3505,7 +3506,7 @@ function renderStep2() {
     <div class="form-group">
       <label class="form-label">${t('s2BindAddress')}</label>
       <input class="form-input" id="cfg_bindAddress" type="text" value="${val('bindAddress')}"
-        oninput="setCfg('bindAddress', this.value); checkBind()">
+        data-action="set-cfg-bind" data-cfg-key="bindAddress">
       <div id="bindWarn" style="display:none;">
         <div class="warn-tag">${t('s2BindWarn')}</div>
       </div>
@@ -3515,7 +3516,7 @@ function renderStep2() {
     <div class="form-group">
       <label class="form-label">${t('s2LogDir')}</label>
       <input class="form-input" id="cfg_logDir" type="text" value="${val('logDir')}"
-        oninput="setCfg('logDir', this.value)">
+        data-action="set-cfg" data-cfg-key="logDir">
       <div class="form-hint">${t('s2LogDirHint')}</div>
       ${isModified('logDir', d) ? `<div class="warn-tag">${t('s2ModifiedTag')}</div>` : ''}
     </div>
@@ -3523,14 +3524,14 @@ function renderStep2() {
     <div class="form-group">
       <label class="form-label">${t('s2NodeVersion')}</label>
       <input class="form-input" id="cfg_nodeVersion" type="text" value="${val('nodeVersion')}"
-        oninput="setCfg('nodeVersion', this.value)">
+        data-action="set-cfg" data-cfg-key="nodeVersion">
       <div class="form-hint">${t('s2NodeVersionHint')}</div>
     </div>
 
     <div class="form-group">
       <label class="form-label">${t('s2SecretMethod')}</label>
       <input class="form-input" id="cfg_secretMethod" type="text" value="${val('secretMethod')}"
-        oninput="setCfg('secretMethod', this.value)">
+        data-action="set-cfg" data-cfg-key="secretMethod">
       <div class="secret-tag">🔒 ${t('s2SecretTag')}</div>
       <div class="form-hint">${t('s2SecretMethodHint')}</div>
     </div>
@@ -3538,14 +3539,14 @@ function renderStep2() {
     <div class="form-group">
       <label class="form-label">${t('s2ApiKey')}</label>
       <input class="form-input" id="cfg_apiKey" type="password" placeholder="${t('s2ApiKeyPlaceholder')}"
-        oninput="setCfg('apiKey', this.value, true)">
+        data-action="set-cfg-secret" data-cfg-key="apiKey">
       <div class="secret-tag">🔒 ${t('s2SecretTag')}</div>
       <div class="form-hint">${t('s2ApiKeyHint', { method: val('secretMethod') })}</div>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
-      <button class="btn btn-primary" onclick="saveConfigAndNext()">${t('btnContinue')} ${arrowF}</button>
+      <button class="btn btn-ghost" data-action="go-prev" data-testid="stepBtn-prev-2">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" data-action="save-config-next" data-testid="stepBtn-2">${t('btnContinue')} ${arrowF}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -3613,7 +3614,7 @@ function renderStep3() {
       ${items.map(item => `
         <div class="check-item" id="chk_wrap_${item.id}">
           <input type="checkbox" id="${item.id}" ${STATE.security[item.id] ? 'checked' : ''}
-            onchange="toggleSecurity('${item.id}', this.checked, ${item.critical})">
+            data-action="toggle-security" data-security-id="${item.id}" data-critical="${item.critical}">
           <div>
             <div class="check-label">
               ${item.label}
@@ -3629,8 +3630,8 @@ function renderStep3() {
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
-      <button class="btn btn-primary" onclick="saveSecurityAndNext()">${t('btnContinue')} ${arrowF}</button>
+      <button class="btn btn-ghost" data-action="go-prev" data-testid="stepBtn-prev-3">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" data-action="save-security-next" data-testid="stepBtn-3">${t('btnContinue')} ${arrowF}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -3728,8 +3729,8 @@ function renderStep4() {
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
-      <button class="btn btn-primary" onclick="confirmReview()">${t('btnConfirmContinue')} ${arrowF}</button>
+      <button class="btn btn-ghost" data-action="go-prev" data-testid="stepBtn-prev-4">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" data-action="confirm-review" data-testid="stepBtn-4">${t('btnConfirmContinue')} ${arrowF}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -3762,8 +3763,8 @@ function renderStep5() {
     <div id="dryRunSummary"></div>
 
     <div class="btn-row" id="dryBtnRow">
-      <button class="btn btn-ghost" onclick="goPrev()" id="dryPrevBtn">${arrowB} ${t('btnBack')}</button>
-      <button class="btn btn-teal" id="runDryBtn" onclick="runDryRun()">▶ ${t('btnRunPreflight')}</button>
+      <button class="btn btn-ghost" data-action="go-prev" data-testid="stepBtn-prev-5" id="dryPrevBtn">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-teal" id="runDryBtn" data-action="run-dry" data-testid="stepBtn-5">▶ ${t('btnRunPreflight')}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -3833,9 +3834,9 @@ function showDryRunResults(results) {
     const arrowF = isRtl ? '←' : '→';
     const arrowB = isRtl ? '→' : '←';
     btnRow.innerHTML = `
-      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-ghost" data-action="go-prev">${arrowB} ${t('btnBack')}</button>
       ${failed === 0
-        ? `<button class="btn btn-primary" onclick="goNext()">${t('btnProceedInstall')} ${arrowF}</button>`
+        ? `<button class="btn btn-primary" data-action="go-next">${t('btnProceedInstall')} ${arrowF}</button>`
         : `<button class="btn btn-ghost" disabled>${t('btnInstallBlocked')}</button>`}
     `;
   }
@@ -3860,8 +3861,8 @@ function renderStep6() {
     <div id="installComplete"></div>
 
     <div class="btn-row" id="installBtnRow">
-      <button class="btn btn-ghost" onclick="goPrev()" id="installPrevBtn">${arrowB} ${t('btnBack')}</button>
-      <button class="btn btn-primary" id="runInstallBtn" onclick="runInstall()">▶ ${t('btnBeginInstall')}</button>
+      <button class="btn btn-ghost" data-action="go-prev" data-testid="stepBtn-prev-6" id="installPrevBtn">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" id="runInstallBtn" data-action="run-install" data-testid="stepBtn-6">▶ ${t('btnBeginInstall')}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -3921,7 +3922,7 @@ function showInstallComplete() {
     const arrowF = isRtl ? '←' : '→';
     btnRow.innerHTML = `
       <span></span>
-      <button class="btn btn-primary" onclick="goNext()">${t('btnViewAuditLog')} ${arrowF}</button>
+      <button class="btn btn-primary" data-action="go-next">${t('btnViewAuditLog')} ${arrowF}</button>
     `;
   }
 }
@@ -3956,7 +3957,7 @@ function renderStep7() {
     <div class="divider"></div>
 
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-      <button class="btn btn-teal" onclick="exportAuditLog()">⬇ ${t('btnExportJson')}</button>
+      <button class="btn btn-teal" data-action="export-audit">⬇ ${t('btnExportJson')}</button>
       <span style="font-size:12px;color:var(--muted);">
         ${t('s7Entries', { n: STATE.auditLog.length })}
       </span>
@@ -3974,8 +3975,8 @@ function renderStep7() {
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-ghost" onclick="goPrev()">${arrowB} ${t('btnBack')}</button>
-      <button class="btn btn-primary" onclick="restartWizard()">🔄 ${t('btnStartNewSession')}</button>
+      <button class="btn btn-ghost" data-action="go-prev" data-testid="stepBtn-prev-7">${arrowB} ${t('btnBack')}</button>
+      <button class="btn btn-primary" data-action="restart" data-testid="stepBtn-7">🔄 ${t('btnStartNewSession')}</button>
     </div>
   </div>`;
   document.getElementById('stepContent').innerHTML = html;
@@ -4049,9 +4050,63 @@ function goPrev() {
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 /* ═══════════════════════════════════════════════════════════════
+   EVENT BINDINGS (addEventListener — no inline handlers)
+   ═══════════════════════════════════════════════════════════════ */
+function initEventBindings() {
+  // Static header controls
+  const themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+
+  const localeSwitcher = document.getElementById('localeSwitcher');
+  if (localeSwitcher) localeSwitcher.addEventListener('change', function (e) {
+    switchLocale(e.target.value);
+  });
+
+  // Event delegation for dynamically-rendered step content (click)
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    switch (btn.dataset.action) {
+      case 'go-next':            goNext(); break;
+      case 'go-prev':            goPrev(); break;
+      case 'select-host':        selectHost(btn.dataset.host); break;
+      case 'save-config-next':   saveConfigAndNext(); break;
+      case 'save-security-next': saveSecurityAndNext(); break;
+      case 'confirm-review':     confirmReview(); break;
+      case 'run-dry':            runDryRun(); break;
+      case 'run-install':        runInstall(); break;
+      case 'export-audit':       exportAuditLog(); break;
+      case 'restart':            restartWizard(); break;
+    }
+  });
+
+  // Event delegation for dynamically-rendered inputs (input)
+  document.addEventListener('input', function (e) {
+    const el = e.target;
+    if (el.dataset.action === 'set-cfg') {
+      setCfg(el.dataset.cfgKey, el.value);
+    } else if (el.dataset.action === 'set-cfg-bind') {
+      setCfg(el.dataset.cfgKey, el.value);
+      checkBind();
+    } else if (el.dataset.action === 'set-cfg-secret') {
+      setCfg(el.dataset.cfgKey, el.value, true);
+    }
+  });
+
+  // Event delegation for dynamically-rendered checkboxes (change)
+  document.addEventListener('change', function (e) {
+    const el = e.target;
+    if (el.dataset.action === 'toggle-security') {
+      toggleSecurity(el.dataset.securityId, el.checked, el.dataset.critical === 'true');
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
    INIT
    ═══════════════════════════════════════════════════════════════ */
 (async () => {
+  initEventBindings();
   // Set initial locale from <select>
   const sel = document.getElementById('localeSwitcher');
   if (sel) sel.value = currentLocale;
