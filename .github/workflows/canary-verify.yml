@@ -1,0 +1,98 @@
+# =============================================================================
+# Canary Batch Verify - Cryptographic hash verification (manual/weekly)
+# =============================================================================
+# This is the "expensive" half of the AIGovOps audit system.
+# Runs hash verification against .canary-manifest.json only when:
+#   - Manually triggered (after a major update batch)
+#   - Weekly scheduled check (Sunday 06:00 UTC)
+# Updates manifest with new blessed hashes when changes are legitimate.
+# =============================================================================
+name: Canary Batch Verify
+
+on:
+  schedule:
+    - cron: '0 6 * * 0'  # Weekly Sunday 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      update_manifest:
+        description: 'Update manifest with current hashes (bless changes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  verify:
+    name: Batch hash verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run hash verification
+        id: verify
+        run: |
+          chmod +x scripts/canary-check.sh
+          set +e
+          OUTPUT=$(bash scripts/canary-check.sh --verify 2>&1)
+          EXIT_CODE=$?
+          echo "exit_code=${EXIT_CODE}" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "${OUTPUT}" > /tmp/canary-output.txt
+          printf '%s\n' "${OUTPUT}"
+          echo "## Canary Batch Verification" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          printf '%s\n' "${OUTPUT}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "result=PASS" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=FAIL" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0  # Don't fail the job - report via issue instead
+
+      - name: Update manifest if requested
+        if: inputs.update_manifest == 'true'
+        run: |
+          chmod +x scripts/canary-check.sh
+          bash scripts/canary-check.sh --update
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .canary-manifest.json
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "security(canary): batch update manifest hashes [skip ci]"
+          git push
+
+      - name: Create issue on verification failure
+        if: steps.verify.outputs.result == 'FAIL' && inputs.update_manifest != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let output = '';
+            try { output = fs.readFileSync('/tmp/canary-output.txt', 'utf8'); }
+            catch (e) { output = '(unable to read output)'; }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '[CANARY] Batch verification found mismatches - ' + new Date().toISOString().slice(0,10),
+              body: [
+                '## Canary Batch Verification Report',
+                '',
+                '**Run:** ' + context.serverUrl + '/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId,
+                '',
+                'To bless these changes, re-run this workflow with `update_manifest: true`.',
+                '',
+                '```',
+                output.trim(),
+                '```',
+              ].join('\n'),
+              labels: ['SECURITY'],
+            });
