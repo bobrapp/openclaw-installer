@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout (full history)
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4
         with:
           fetch-depth: 0
 
@@ -104,7 +104,7 @@ jobs:
           echo "- **Size:** $(du -h "${ARCHIVE_NAME}" | cut -f1)" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload backup artifact
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         with:
           name: nightly-backup-${{ github.run_number }}
           path: openclaw-backup-*.tar.gz

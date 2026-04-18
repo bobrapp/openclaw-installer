@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -54,7 +54,7 @@ jobs:
 
       - name: Create GitHub issue on tampering detected
         if: failure() && steps.canary.outputs.exit_code == '1'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
