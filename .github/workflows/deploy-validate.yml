@@ -105,7 +105,7 @@ jobs:
 
       # --- Dry-run build to ensure deploy would succeed ---
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v4
         with:
           node-version: "20"
           cache: "npm"
