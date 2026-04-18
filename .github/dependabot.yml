@@ -19,6 +19,12 @@ updates:
         update-types:
           - "major"
 
+  # GitHub Actions — supply-chain hardening policy:
+  # All third-party actions MUST be pinned to a full commit SHA with a
+  # "# vX.Y.Z" comment so the version is human-readable and trackable.
+  # When merging Dependabot PRs for GitHub Actions, manually update the
+  # floating-tag bumps to SHA-pinned equivalents before merging.
+  # See: https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

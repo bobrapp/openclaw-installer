@@ -20,7 +20,7 @@ jobs:
     name: Validate Deploy Configs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       # --- ShellCheck: lint install.sh ---
       - name: Lint install.sh with ShellCheck
@@ -105,7 +105,7 @@ jobs:
 
       # --- Dry-run build to ensure deploy would succeed ---
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: "20"
           cache: "npm"
@@ -128,7 +128,7 @@ jobs:
       # --- Post summary comment to PR ---
       - name: Post validation summary to PR
         if: always()
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const shellcheck = '${{ steps.shellcheck.outputs.result }}';
