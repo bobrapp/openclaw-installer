@@ -195,7 +195,7 @@ for (const { key, label } of HOST_TARGETS) {
 
       // Verify progress bar is at 100%
       const fill = page.locator('[data-testid="progressFill"]');
-      const width = await fill.evaluate((el: HTMLElement) => el.style.width);
+      const width = await fill.evaluate((el) => (el as HTMLElement).style.width);
       expect(width).toBe('100%');
 
       // All step bubbles before step 7 should be done
