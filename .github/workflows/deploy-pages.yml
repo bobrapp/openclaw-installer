@@ -73,7 +73,7 @@ jobs:
           du -sh _site/
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@56afc609e74202f3d62108215b6baac7aad98853 # v3
+        uses: actions/upload-pages-artifact@v3 # v3
 
   deploy:
     needs: build
