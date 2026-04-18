@@ -12,9 +12,20 @@ updates:
       prefix: "deps"
     groups:
       npm-minor-and-patch:
+        # Stable (>= 1.0.0) packages only. Pre-1.0 (zerover) packages are
+        # intentionally excluded: under zerover semantics a "minor" bump can
+        # be a breaking change, so they are left ungrouped and receive
+        # individual, review-gated PRs — the same scrutiny as major updates.
         update-types:
           - "minor"
           - "patch"
+        exclude-patterns:
+          - "drizzle-orm"
+          - "drizzle-zod"
+          - "drizzle-kit"
+          - "esbuild"
+          - "@esbuild/*"
+          - "lucide-react"
       npm-major:
         update-types:
           - "major"
