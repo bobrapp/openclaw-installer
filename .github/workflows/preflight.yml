@@ -6,19 +6,22 @@ on:
   push:
     branches: [master, main]
 
+permissions:
+  statuses: write
+
 jobs:
   preflight:
     name: Preflight Checks
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -39,7 +42,7 @@ jobs:
 
           # Check 1: Build success (already passed if we got here)
           echo "- ✅ **Build**: Production build successful" >> $GITHUB_STEP_SUMMARY
-          
+
           # Check 2: Schema validation
           echo "### Schema Validation" >> $GITHUB_STEP_SUMMARY
           if grep -q "auditLogs" shared/schema.ts && grep -q "ownerAuth" shared/schema.ts; then
@@ -51,21 +54,21 @@ jobs:
 
           # Check 3: Security — no hardcoded secrets
           echo "### Security Checks" >> $GITHUB_STEP_SUMMARY
-          if grep -rn "password\s*=\s*['\"]" server/ client/ shared/ --include="*.ts" --include="*.tsx" | grep -v "passphrase" | grep -v "PasswordAuthentication" | grep -v "placeholder" | head -5; then
+          if grep -rn "password\\s*=\\s*['\"]\ server/ client/ shared/ --include="*.ts" --include="*.tsx" | grep -v "passphrase" | grep -v "PasswordAuthentication" | grep -v "placeholder" | head -5; then
             echo "- ⚠️ **Hardcoded secrets**: Possible hardcoded passwords detected" >> $GITHUB_STEP_SUMMARY
           else
             echo "- ✅ **Hardcoded secrets**: No hardcoded passwords found" >> $GITHUB_STEP_SUMMARY
           fi
 
           # Check 4: PII check — no emails/names in logs
-          if grep -rn "@.*\.com\|@.*\.org\|@.*\.net" server/storage.ts server/routes.ts 2>/dev/null | grep -v "github.com\|aigovops\|openclaw\|nodesource\|brew.sh\|apple.com" | head -5; then
+          if grep -rn "@.*\\.com\\|@.*\\.org\\|@.*\\.net" server/storage.ts server/routes.ts 2>/dev/null | grep -v "github.com\\|aigovops\\|openclaw\\|nodesource\\|brew.sh\\|apple.com" | head -5; then
             echo "- ⚠️ **PII in backend**: Possible PII found in server code" >> $GITHUB_STEP_SUMMARY
           else
             echo "- ✅ **PII check**: No PII detected in server code" >> $GITHUB_STEP_SUMMARY
           fi
 
           # Check 5: Hash chain implementation
-          if grep -q "sha256\|SHA-256\|createHash" server/storage.ts; then
+          if grep -q "sha256\\|SHA-256\\|createHash" server/storage.ts; then
             echo "- ✅ **Hash chain**: SHA-256 crypto implementation present" >> $GITHUB_STEP_SUMMARY
           else
             echo "- ❌ **Hash chain**: Missing SHA-256 hash chain implementation" >> $GITHUB_STEP_SUMMARY
@@ -88,7 +91,7 @@ jobs:
           fi
 
           # Check 8: No localhost binding bypass
-          if grep -rn "0\.0\.0\.0" server/ --include="*.ts" | grep -v "comment\|NEVER\|Never" | head -5; then
+          if grep -rn "0\\.0\\.0\\.0" server/ --include="*.ts" | grep -v "comment\\|NEVER\\|Never" | head -5; then
             echo "- ⚠️ **Network binding**: Found 0.0.0.0 binding — should be 127.0.0.1" >> $GITHUB_STEP_SUMMARY
           else
             echo "- ✅ **Network binding**: No public binding detected" >> $GITHUB_STEP_SUMMARY
@@ -107,14 +110,14 @@ jobs:
 
       - name: Post commit status
         if: always()
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@v7
         with:
           script: |
             const state = '${{ job.status }}' === 'success' ? 'success' : 'failure';
-            const description = state === 'success' 
-              ? 'All preflight checks passed — AiGovOps compliant' 
+            const description = state === 'success'
+              ? 'All preflight checks passed — AiGovOps compliant'
               : 'Preflight checks failed — review required';
-            
+
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
