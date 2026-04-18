@@ -1,11 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Heart, Shield, Code2, Users, Coffee } from "lucide-react";
+import { ExternalLink, Heart, Shield, Code2, Users, Coffee, DollarSign } from "lucide-react";
 
 export default function Foundation() {
   const openFoundation = () => {
     window.open("https://www.aigovopsfoundation.org/", "_blank", "noopener,noreferrer");
+  };
+
+  const openDonation = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -112,11 +116,35 @@ export default function Foundation() {
               If this tool has been useful, consider buying the co-founders a cup of coffee.
               Every contribution helps advance responsible AI governance.
             </p>
-            <div className="flex items-center justify-center gap-3">
-              <Button onClick={openFoundation} data-testid="button-donate">
-                <Heart className="h-4 w-4 mr-2" />
-                Buy Us a Coffee
-              </Button>
+            <p className="text-xs text-muted-foreground mb-3">
+              Secure payments via Stripe — Credit cards and Apple Pay accepted.
+            </p>
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <Button
+                  variant="outline"
+                  onClick={() => openDonation("https://buy.stripe.com/eVq7sMb015ss9Obd6V4Vy00")}
+                  data-testid="button-donate-25"
+                >
+                  <DollarSign className="h-4 w-4 mr-1" />
+                  $25 Donation
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => openDonation("https://buy.stripe.com/28E00kfgh1ccbWjgj74Vy01")}
+                  data-testid="button-donate-50"
+                >
+                  <DollarSign className="h-4 w-4 mr-1" />
+                  $50 Donation
+                </Button>
+                <Button
+                  onClick={() => openDonation("https://buy.stripe.com/cNi9AU8RT0884tR6Ix4Vy02")}
+                  data-testid="button-donate-custom"
+                >
+                  <Heart className="h-4 w-4 mr-2" />
+                  Pick Your Amount
+                </Button>
+              </div>
               <Button variant="outline" onClick={openFoundation} data-testid="button-visit-foundation">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Visit Foundation
