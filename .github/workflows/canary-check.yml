@@ -1,106 +1,67 @@
-name: Canary Check
+# =============================================================================
+# Canary Audit Logger - Lightweight immutable build provenance
+# =============================================================================
+# Replaces per-commit hash verification with cheap append-only logging.
+# Hash verification is batched via canary-verify.yml (manual/weekly).
+#
+# AIGovOps Foundation Design:
+#   1. Every action logged (who, what, when, artifact, GUID)
+#   2. Crypto hash verification batched at milestones, not per-commit
+#   3. GUIDs provide provenance chain for batch verification
+#   4. Append-only JSONL stored as workflow artifact (no commit loop)
+# =============================================================================
+name: Canary Audit Log
 
 on:
   push:
     branches:
       - master
-  schedule:
-    # Runs daily at 06:00 UTC
-    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write
 
 jobs:
-  canary-verify:
-    name: Verify canary manifest
+  audit-log:
+    name: Append audit entry
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Make canary-check.sh executable
-        run: chmod +x scripts/canary-check.sh
-
-      - name: Run canary verification
-        id: canary
+      - name: Generate and log audit entry
+        id: audit
         run: |
-          set +e
-          OUTPUT=$(bash scripts/canary-check.sh --verify 2>&1)
-          EXIT_CODE=$?
-          echo "exit_code=${EXIT_CODE}" >> "$GITHUB_OUTPUT"
-          # Write output to a file for use in later steps
-          printf '%s\n' "${OUTPUT}" > /tmp/canary-output.txt
-          # Also print to the Actions log
-          printf '%s\n' "${OUTPUT}"
-          exit "${EXIT_CODE}"
+          GUID=$(uuidgen)
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          ACTOR="${{ github.actor }}"
+          EVENT="${{ github.event_name }}"
+          COMMIT="${{ github.sha }}"
+          REF="${{ github.ref }}"
+          RUN_ID="${{ github.run_id }}"
+          MESSAGE=$(git log -1 --pretty=%s 2>/dev/null || echo "unknown")
+          ENTRY=$(jq -cn \
+            --arg guid "$GUID" \
+            --arg ts "$TIMESTAMP" \
+            --arg actor "$ACTOR" \
+            --arg event "$EVENT" \
+            --arg commit "$COMMIT" \
+            --arg ref "$REF" \
+            --arg run_id "$RUN_ID" \
+            --arg message "$MESSAGE" \
+            '{guid: $guid, timestamp: $ts, actor: $actor, event: $event, commit: $commit, ref: $ref, run_id: $run_id, message: $message}')
+          echo "$ENTRY" > /tmp/audit-entry.jsonl
+          echo "## Audit Entry" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          echo "$ENTRY" | jq . >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "guid=$GUID" >> "$GITHUB_OUTPUT"
 
-      - name: Extract tampered files list
-        if: failure() && steps.canary.outputs.exit_code == '1'
-        id: tampered
-        run: |
-          TAMPERED=$(grep -E '^\[TAMPERED\]|^\[MISSING\]' /tmp/canary-output.txt \
-            | sed 's/^\[TAMPERED\][[:space:]]*//' \
-            | sed 's/^\[MISSING\][[:space:]]*//' \
-            || echo "(could not extract file list)")
-          # Escape newlines for GitHub output
-          TAMPERED="${TAMPERED//$'\n'/'%0A'}"
-          echo "files=${TAMPERED}" >> "$GITHUB_OUTPUT"
-
-      - name: Create GitHub issue on tampering detected
-        if: failure() && steps.canary.outputs.exit_code == '1'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      - name: Upload audit entry as artifact
+        uses: actions/upload-artifact@v4
         with:
-          script: |
-            const fs = require('fs');
-            let output = '';
-            try {
-              output = fs.readFileSync('/tmp/canary-output.txt', 'utf8');
-            } catch (e) {
-              output = '(unable to read verify output)';
-            }
-
-            const tamperedFiles = '${{ steps.tampered.outputs.files }}'
-              .split('%0A')
-              .filter(Boolean)
-              .map(f => `- \`${f.trim()}\``)
-              .join('\n');
-
-            const body = [
-              '## :rotating_light: Canary Token Alert — Tampering Detected',
-              '',
-              '**Triggered by:** `' + context.eventName + '`  ',
-              '**Workflow run:** ' + context.serverUrl + '/' + context.repo.owner + '/' + context.repo.repo + '/actions/runs/' + context.runId,
-              '**Ref:** `' + context.ref + '`  ',
-              '**Commit:** `' + context.sha + '`',
-              '',
-              '### Tampered / Missing Files',
-              tamperedFiles || '_(see full output below)_',
-              '',
-              '### Full Verify Output',
-              '```',
-              output.replace(/\x1B\[[0-9;]*m/g, '').trim(),
-              '```',
-              '',
-              '### Recommended Actions',
-              '1. Review the listed files against the last known-good commit.',
-              '2. Check the GitHub audit log for unauthorized changes.',
-              '3. Follow the [Canary Token Alerts](../blob/master/docs/INCIDENT-RESPONSE.md#canary-token-alerts) runbook.',
-              '4. After confirming changes are legitimate, run `scripts/canary-check.sh --update` locally and commit the updated manifest.',
-              '',
-              '---',
-              '_Automated alert from the OpenClaw Canary Token System — AiGovOps Foundation_',
-            ].join('\n');
-
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: '[SECURITY] Canary alert: critical file tampering detected — ' + new Date().toISOString().slice(0,10),
-              body: body,
-              labels: ['SECURITY'],
-            });
+          name: audit-entry-${{ steps.audit.outputs.guid }}
+          path: /tmp/audit-entry.jsonl
+          retention-days: 365
